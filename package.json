@@ -1,0 +1,22 @@
+{
+  "name": "ngym",
+  "version": "1.0.0",
+  "description": "nygm web server app",
+  "main": "server,js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "nodemon server.js"
+  },
+  "author": "Raghavendra Prasad",
+  "license": "ISC",
+  "devDependencies": {
+    "nodemon": "^1.12.1"
+  },
+  "dependencies": {
+    "body-parser": "^1.18.1",
+    "express": "^4.15.4",
+    "method-override": "^2.3.9",
+    "mongodb": "^2.2.31",
+    "mongoose": "^4.11.12"
+  }
+}
