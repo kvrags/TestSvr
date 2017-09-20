@@ -11,16 +11,16 @@
 
 'use strict';
 module.exports = function (app) {
-    var profiles = require('../controllers/profileController');
+    var questions = require('../controllers/questionController');
 
     // Profiles Routes
-    app.route('/profiles')
-      .get(profiles.list_all_profiles)
-      .post(profiles.create_a_profile);
+    app.route('/questions')
+      .get(questions.list_all_questions)
+      .post(questions.create_a_question);
 
 
-    app.route('/profiles/:profileId')
-      .get(profiles.read_a_profile)
-      .put(profiles.update_a_profile)
-      .delete(profiles.delete_a_profile);
+    app.route('/questions/:questionId')
+      .get(questions.read_a_question)
+      .put(questions.update_a_question)
+      .delete(questions.delete_a_question);
 };
