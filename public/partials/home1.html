@@ -1,0 +1,97 @@
+﻿<!DOCTYPE html>
+
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="utf-8" />
+    <title>Home</title>
+</head>
+<body>
+    <div class="container" ng-controller="ctrlHome">
+    {{message}}
+        <form class="form-horizontal" name="formRegister">
+
+            <div class="form-group">
+                <div class="col-md-10">
+                    <h3> Login or Register </h3>
+                </div>
+            </div>
+            <div class="form-group">
+                <div class="col-md-1">
+                    <label>Name</label>
+                </div>
+                <div class="col-md-5">
+                    <input type="text" name="name" class="form-control" ng-model="model.name" required>
+
+                    <div class="alert alert-danger" ng-show="(formRegister.name.$touched || formRegister.$submitted) && formRegister.name.$error.required">
+                        Name is required
+
+                    </div>
+                </div>
+            </div>
+            <div class="form-group">
+                <div class="col-md-1">
+                    <label>e-mail</label>
+                </div>
+                <div class="col-md-5">
+                    <input type="email" name="email" class="form-control" ng-model="model.email" ng-required="true">
+
+                    <div class="alert alert-danger" ng-show="(formRegister.email.$touched || formRegister.$submitted) && formRegister.email.$error.required">
+                        e-Mail is required
+
+                    </div>
+                </div>
+            </div>
+            <div class="form-group">
+                <div class="col-md-1">
+                    <label>Phone</label>
+                </div>
+                <div class="col-md-5">
+                    <input type="number" name="phone" class="form-control" ng-model="model.phone" ng-required="false">
+
+                    <div class="alert alert-danger" ng-show="(formRegister.phone.$touched || formRegister.$submitted) && formRegister.phone.$error.required">
+                        Phone number is required
+
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <div class="col-md-1">
+                    <label>Password</label>
+                </div>
+                <div class="col-md-5">
+                    <input type="password" name="password" class="form-control" ng-model="model.password" required>
+
+                    <div class="alert alert-danger" ng-show="(formRegister.password.$touched || formRegister.$submitted) && formRegister.password.$error.required">
+                        Password is required
+
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <div class="col-md-offset-2 col-md-5">
+                    <!-- <input type="submit" value="Register" class="btn btn-primary" ng-click="formRegister.$valid && Register(model)"> -->
+                    <input type="submit" value="Register" class="btn btn-primary" ng-click="Register(model)" ng-disabled="formRegister.$invalid">
+
+                    <button class="btn btn-default" ng-click="reset()">Reset</button>
+                </div>
+            </div>
+            <div>
+                <b>Already registered before? Retrieve your details <a href="#!retrieveUser">here</a></b>
+            </div>
+            <div class="form-group">
+                <div class="col-md-5">
+                    <pre>{{model | json}}</pre>
+                    <pre> {{status}}</pre>
+
+                </div>
+                </div>
+            </form>
+
+    </div>
+    
+    <script>
+    </script>
+</body>
+</html>

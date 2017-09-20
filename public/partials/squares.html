@@ -1,0 +1,97 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+
+    <title>JS array to HTML table</title>
+    <meta name="description" content="array to table demo by mtf">
+    <style>
+        table {
+            border-spacing:1px;
+            border: 10px;
+            width: 70%;
+            height: 50%;
+            position: relative;
+            left: 15%;
+            align-content: center;
+        }
+
+        tr {
+            height: 100px;
+            align-content: space-around;
+            border-collapse: collapse;
+        }
+
+        td {
+           align-content:inherit;     
+            }
+       </style>
+</head>
+
+<body >
+    <div>Here goes the MENU to select task level</div>
+    
+    
+        <div ng-controller="ctrlSquares"  ng-init="Draw()" >
+            <span>
+
+                <label><input type="radio" name="Level" ng-click="setDifficultyLevel('0')" checked /> Level 1</label>
+                <label><input type="radio" name="Level" ng-click="setDifficultyLevel('1')" /> Level 2</label>
+                <label><input type="radio" name="Level" ng-click="setDifficultyLevel('2')" /> Level 3</label>
+                <!-- <pre>Selected Task Level :: {{taskLevel}} </pre>-->
+
+            </span>
+            <table id="myTable"  ng-click="Draw(model)">
+                <tr ng-repeat="row in array_Table track by $index" style=background-color:{{row_clrs[$index]}}>
+                    <td ng-repeat="col in row track by $index" align="center" ng-switch="col" >
+                        <!-- if the table display is not proper, check array and low-seed and high seed settings -->
+                        <span ng-switch-when="1"><img src="./res/white_rect.jpg" height="40" width="60"/></span>
+                        <span ng-switch-when="0">&nbsp;</span>
+                    </td>
+                </tr>
+            </table>
+           <!-- {{array_Table}} --><p>&nbsp;</p>
+            Show Answer: <input type="checkbox" ng-model="checked" aria-label="Toggle ngHide"><br />
+            <div class="check-element animate-show-hide" ng-hide="!checked">
+                <h3>{{message}}</h3>
+                <input type="number" ng-model="model.usrResult" />
+                {{$scope.calsResult}}
+            </div>
+        </div>
+   
+        <script>
+            //document.addEventListener("click", Draw());
+        </script>
+
+        <script>
+            /*
+                        $scope.names = [
+                    { Name: 'Jani', Country: 'Norway' },
+                    { Name: 'Hege', Country: 'Sweden' },
+                    { Name: 'Kai', Country: 'Denmark' }
+                ];
+
+                <!--- ng-class="category==16 ? 'icon-pfeil_unten' : 'icon-pfeil-oben'" 
+        ng-class="{true: 'icon-pfeil_unten', false: 'icon-pfeil-oben'}[category == 16]"-->
+    
+
+            var rootApp = angular.module('rootApp', []);
+
+            rootApp.controller('ctrlSquares', function ($scope) {
+                $scope.message = 'from Squares.HTML445646554 Controller';
+
+                $scope.Draw = function () {
+                $scope.message = 'from ctrlSquares in Draw()';
+
+                $scope.rows = [
+                      { col: [1, 2, 3, 4] },
+                      { col: [5, 6, 7] },
+                      { col: [9, 10, 11, 12] }
+                    ];
+                  }
+            });
+            */
+        </script>
+    <script src="./js/CountSquares-ng.js"> </script>
+</body>
+</html>

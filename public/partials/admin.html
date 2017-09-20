@@ -1,0 +1,483 @@
+﻿    <style>
+        body {
+            font-family: "Lato", sans-serif;
+        }
+
+        /* Style the tab */
+        div.tab {
+            overflow: hidden;
+            border: 1px solid #ccc;
+            background-color: #f1f1f1;
+        }
+
+            /* Style the buttons inside the tab */
+            div.tab button {
+                background-color: inherit;
+                float: left;
+                border: none;
+                outline: none;
+                cursor: pointer;
+                padding: 14px 16px;
+                transition: 0.3s;
+                font-size: 17px;
+            }
+
+                /* Change background color of buttons on hover */
+                div.tab button:hover {
+                    background-color: #ddd;
+                }
+
+                /* Create an active/current tablink class */
+                div.tab button.active {
+                    background-color: #ccc;
+                }
+
+        /* Style the tab content */
+        .tabcontent {
+            display: none;
+            padding: 6px 12px;
+            border: 1px solid #ccc;
+            border-top: none;
+        }
+        /* Style the Table*/
+        table, th, td {
+            border: 1px solid grey;
+            border-collapse: collapse;
+            padding: 5px;
+            font-size:large;
+            text-align:center
+        }
+
+            table tr:nth-child(odd) {
+                background-color: #f1f1f1;
+            }
+
+            table tr:nth-child(even) {
+                background-color: #ffffff;
+            }
+    </style>
+
+    <p>Click on the buttons inside the tabbed menu:</p>
+
+    <div class="tab" >
+        <button class="tablinks" onclick="openTab(event, 'users')">Users</button>
+        <button class="tablinks" onclick="openTab(event, 'profiles')">Profiles</button>
+        <button class="tablinks" onclick="openTab(event, 'profilesMedian')">Profiles Median</button>
+        <button class="tablinks" onclick="openTab(event, 'questions')">Questions</button>
+        <button class="tablinks" onclick="openTab(event, 'survey')">Survey</button>
+    </div>
+
+    <div id="users" class="tabcontent">
+        <h3>Manage Users</h3>
+        <p>Here you manage users.</p>
+    </div>
+
+    <div id="profiles" class="tabcontent" ng-controller="ctrlProfiles">
+        <h3>Manage Profiles here</h3>
+        <div class="container">
+            <form class="form-horizontal" name="form" novalidate>
+                <div class="form-group">
+                    <div class="col-md-2">
+                        <label>Profile Name</label>
+                    </div>
+                    <div class="col-md-2">
+                        <input type="text" name="name" ng-model="model.name" ng-required="true" autofocus/>
+                        <div class="alert alert-danger" ng-show="(form.name.$touched || form.$submitted) && form.name.$error.required">
+                            Profile name is required
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="col-md-2">
+                        <label>Age Group</label>
+                    </div>
+                    <div class="col-md-2">
+                        <select name="ageGroup" class="form-control" ng-model="model.ageGroup" ng-required="true">
+                            <option value="6to16">6 to 16 years</option>
+                            <option value="16to25">16 to 25 years</option>
+                            <option value="26to35">26 to 35 years</option>
+                            <option value="36to50">36 to 50 years</option>
+                            <option value="above51">Above 50 years</option>
+                            <option value="above65">Above 65 years</option>
+                        </select>
+
+                        <div class="alert alert-danger" ng-show="(form.ageGroup.$touched || form.$submitted) && form.ageGroup.$error.required">
+                            Age Group is required
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="col-md-2">
+                        <label>Occupation</label>
+                    </div>
+                    <div class="col-md-5">
+                        <select ng-model="model.occupation" ng-options="item.type for item in occupationType" ng-required="true"></select>
+<!--                        <select name="occupation" class="form-control" ng-model="model.occupation" ng-required="true">
+                            <option value="student">Student</option>
+                            <option value="working">Working</option>
+                            <option value="housewife">Housewife</option>
+                            <option value="retired">Retired</option>
+                        </select>
+    -->
+                        <div class="alert alert-danger" ng-show="(form.occupation.$touched || form.$submitted) && form.occupation.$error.required">
+                            Occupation is required
+                        </div>
+                    </div>
+                </div><!-- end div form-group -->
+
+                <div class="form-group">
+                    <div class="col-md-2">
+                        <label>Stream</label>
+                    </div>
+                    <div class="col-md-5">
+                        <select name="stream" ng-model="model.stream" ng-options="item for item in model.occupation.data" ></select>
+                        <!-- <select name="occupation" class="form-control" ng-model="model.occupation" ng-required="true">
+                                        <option value="student">Student</option>
+                                        <option value="working">Working</option>
+                                        <option value="housewife">Housewife</option>
+                                        <option value="retired">Retired</option>
+                             </select>
+                     <div class="alert alert-danger" ng-show="(form.stream.$touched || form.$submitted) && form.stream.$error.required">
+                            Stream is required
+                     </div>-->
+                    </div>
+                </div><!-- end div form-group -->
+
+                <div class="form-group">
+                    <div class="col-md-2">
+                        <label>City Type</label>
+                    </div>
+                    <div class="col-md-2">
+                        <select name="cityType" class="form-control" ng-model="model.cityType" ng-required="true">
+                            <option value="urban">Urban</option>
+                            <option value="rural">Rural</option>
+                        </select>
+
+                        <div class="alert alert-danger" ng-show="(form.cityType.$touched || form.$submitted) && form.cityType.$error.required">
+                        City type is required
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <div class="col-md-offset-2 col-md-5">
+                        <input type="submit" value="Create" class="btn btn-primary" ng-click="createProfile(model)" ng-disabled="form.$invalid" />
+                    </div>
+                </div>
+
+            </form>
+        </div>
+        <pre>{{message | json}}</pre>
+    </div>
+
+    <div id="profilesMedian" class="tabcontent" ng-controller="ctrlprofilesMedian">
+        <h3>Manage Median for Profiles here</h3> 
+        <div class="container">
+            <div class="form-group">
+                <div class="col-md-2">
+                    <label>Select a Profile Type</label>
+                </div>
+                <div class="col-md-2">
+                    <select name="occupation" class="form-control" ng-model="model.occupation" ng-change="fetchProfiles(model)">
+                        <option value="Student">Student</option>
+                        <option value="Working">Working</option>
+                        <option value="Housewife">Housewife</option>
+                        <option value="Retired">Retired</option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-group">&nbsp;</div>
+            <div class="form-group">
+                <table>
+                    <tr>
+                        <th>Select</th>
+                        <th>Profile Name</th>
+                        <th>Age Group</th>
+                        <th>Occupation</th>
+                        <th>Stream</th>
+                        <th>City Type</th>
+                    </tr>
+                    <tr ng-repeat="profile in profiles track by $index">
+                        <td><input type="radio" name="row" ng-click="fetchProfileMedianFromRowID($index,profile.name)"/></td>
+                        <td>{{profile.name}}</td>
+                        <td>{{profile.ageGroup}}</td>
+                        <td>{{profile.occupation}}</td>
+                        <td>{{profile.stream}}</td>
+                        <td>{{profile.cityType}}</td>
+                    </tr>
+                </table>
+            </div>
+            <div class="container">
+                <p> Median Values for the above profile:</p>
+                <form class="form-horizontal" name="form" novalidate>
+                    <div class="form-group">
+                        <div class="col-md-2">
+                            <label>Attention</label>
+                        </div>
+                        <div class="col-md-2">
+                            <input type="number" name="attention" ng-model="model.attention" ng-required="true" autofocus />
+                            <div class="alert alert-danger" ng-show="(form.attention.$touched || form.$submitted) && form.attention.$error.required">
+                                Attention Median value is required
+                            </div>
+                        </div>
+                    </div> <!--end of class="form-group"-->
+                    <div class="form-group">
+                        <div class="col-md-2">
+                            <label>Working Memory</label>
+                        </div>
+                        <div class="col-md-2">
+                            <input type="number" name="workingMemory" ng-model="model.workingMemory" ng-required="true" />
+                            <div class="alert alert-danger" ng-show="(form.workingMemory.$touched || form.$submitted) && form.workingMemory.$error.required">
+                                Working Memory Median value is required
+                            </div>
+                        </div>
+                    </div> <!--end of class="form-group"-->
+                    <div class="form-group">
+                        <div class="col-md-2">
+                            <label>Impulsivity</label>
+                        </div>
+                        <div class="col-md-2">
+                            <input type="number" name="impulsivity" ng-model="model.impulsivity" ng-required="true" autofocus />
+                            <div class="alert alert-danger" ng-show="(form.impulsivity.$touched || form.$submitted) && form.impulsivity.$error.required">
+                                Impulsivity Median value is required
+                            </div>
+                        </div>
+                    </div> <!--end of class="form-group"-->
+                    <div class="form-group">
+                        <div class="col-md-2">
+                            <label>Mental Flexibility</label>
+                        </div>
+                        <div class="col-md-2">
+                            <input type="number" name="mentalFlexibility" ng-model="model.mentalFlexibility" ng-required="true" autofocus />
+                            <div class="alert alert-danger" ng-show="(form.mentalFlexibility.$touched || form.$submitted) && form.mentalFlexibility.$error.required">
+                                Mental Flexibility Median value is required
+                            </div>
+                        </div>
+                    </div> <!--end of class="form-group"-->
+
+                    <div class="form-group">
+                        <div class="col-md-offset-2 col-md-5">
+                            <input type="submit" value="Create" class="btn btn-primary" ng-click="submitMedian(model)" ng-disabled="form.$invalid" />
+                        </div>
+                    </div>
+
+                    </form>
+                </div>
+                    <!--<pre>{{profiles | json}}</pre>-->
+            </div>
+
+        </div>
+
+    <div id="questions" class="tabcontent" ng-controller="ctrladminQuestions">
+
+    <div>
+        <input type="radio" name="selectQ" ng-click="selectMode('create')" checked> <label>Create New</label>
+        <input type="radio" name="selectQ" ng-click="selectMode('modify')"> <label>Modify</label>
+    </div>
+    <div class="container" id="QCreate" ng-hide="selectQ">
+        <h3>Create new Assessment Questions</h3>
+        <form class="form-horizontal" name="form" novalidate>
+            <div class="form-group">
+                <div class="col-md-2">
+                    <label>Choose a Cognitive Domain</label>
+                </div>
+                <div class="col-md-5">
+                    <select name="domain" class="form-control" ng-model="model.domain" ng-required="true">
+                        <option value="Attention">Attention</option>
+                        <option value="WorkingMemory">Working Memory</option>
+                        <option value="Implusivity">Implusivity</option>
+                        <option value="MentalFlexibility">Mental Flexibility</option>
+                    </select>
+
+                    <div class="alert alert-danger" ng-show="(form.domain.$touched || form.$submitted) && form.domain.$error.required">
+                        Cognitive Domain is required
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <div class="col-md-2">
+                    <label>New Question</label>
+                </div>
+                <div class="col-md-5">
+                    <textarea style="border:ridge" name="qText" ng-model="model.qText" rows="4" cols="70" style="align-content:stretch" ng-required="true"></textarea>
+                    <div class="alert alert-danger" ng-show="(form.qText.$touched || form.$submitted) && form.qText.$error.required">
+                        Questions text is required
+                    </div>
+
+                </div>
+            </div>
+
+            <div class="form-group">
+                <div class="col-md-2">
+                    <label>Response Options</label>
+                </div>
+            </div>
+            <div class="form-group">
+                <div class="col-md-2">
+                    <label>'Never' Option Weightage </label>
+                </div>
+                <div class="col-md-5">
+                    <input type="number" value="{{Never}}" name="Never" ng-model="model.Never" disabled>
+                    <!--<div class="alert alert-danger" ng-show="(form.Never.$touched || form.$submitted) && form.Never.$error.required">
+                        Weightage for 'Never' option is required
+                    </div>-->
+                </div>
+            </div>
+            <div class="form-group">
+                <div class="col-md-2">
+                    <label>'Rarely' Option Weightage</label>
+                </div>
+                <div class="col-md-5">
+                    <input type="number" value="{{Rarely}}" name="Rarely" ng-model="model.Rarely" disabled>
+                    <!--<div class="alert alert-danger" ng-show="(form.Rarely.$touched || form.$submitted) && form.Rarely.$error.required">
+                        Weightage for 'Rarely' option is required
+                    </div>-->
+                </div>
+            </div>
+            <div class="form-group">
+                <div class="col-md-2">
+                    <label>'Sometimes' Option Weightage</label>
+                </div>
+                <div class="col-md-5">
+                    <input type="number" value="{{Sometimes}}" name="Sometimes" ng-model="model.Sometimes" disabled>
+                   <!-- <div class="alert alert-danger" ng-show="(form.Rarely.$touched || form.$submitted) && form.Rarely.$error.required">
+                        Weightage for 'Sometimes' option is required
+                    </div> -->
+                </div>
+            </div>
+            <div class="form-group">
+                <div class="col-md-2">
+                    <label>'Most often' Option Weightage</label>
+                </div>
+                <div class="col-md-5">
+                    <input type="number" value="{{MostOften}}" name="MostOften" ng-model="model.MostOften" disabled>
+                    <!--<div class="alert alert-danger" ng-show="(form.Mostoften.$touched || form.$submitted) && form.Mostoften.$error.required">
+                        Weightage for 'Most often' option is required
+                    </div> -->
+                </div>
+            </div>
+            <div class="form-group">
+                <div class="col-md-2">
+                    <label>'Always' Option Weightage</label>
+                </div>
+                <div class="col-md-2">
+                    <input type="number" value="{{Always}}" name="Always" ng-model="model.Always" disabled>
+                    <!--<div class="alert alert-danger" ng-show="(form.Always.$touched || form.$submitted) && form.Always.$error.required">
+                        Weightage for 'Always' option is required 
+                    </div> -->
+                </div>
+            </div>
+           <div class="form-group">
+                <div class="col-md-offset-2 col-md-5">
+                    <input type="submit" value="Create" class="btn btn-primary" ng-click="createQuestion(model)" ng-disabled="form.$invalid" />
+                </div>
+            </div>
+        </form>
+
+            <pre>{{message | json}}</pre>
+    </div>
+
+
+    <div class="container" id="QModify" ng-hide="!selectQ">
+        <h4>
+            Total:{{questions.length}}
+            Attention:{{(questions| filter:domain='Attention').length}}
+            Working Memory:{{(questions| filter:domain='Working Memory').length}}
+            Implusivity:{{(questions| filter:domain='Implusivity').length}}
+            Mental Flexibility:{{(questions| filter:domain='Mental Flexibility').length}}
+        </h4>
+            <!--<p>
+                <h4>
+                    Select Cognitive Domain
+                    <select name="domain" ng-model="searchDomain">
+                        <option value="Attention" selected>Attention</option>
+                        <option value="WorkingMemory">Working Memory</option>
+                        <option value="Implusivity">Implusivity</option>
+                        <option value="MentalFlexibility">Mental Flexibility</option>
+                    </select>
+                </h4>
+            </p>-->
+        
+        <table>
+            <tr>
+                <th width="30">Sl No.</th>
+                <th width="60"> Domain</th>
+                <th width="500">Assesment Question</th>
+                <th width="60">Never Weightage</th>
+                <th width="60">Rarely Weightage</th>
+                <th width="80">Sometimes Weightage</th>
+                <th width="80">Most Often Weightage</th>
+                <th width="80">Always Weightage</th>
+            </tr>
+
+            <tr ng-repeat="question in questions ">
+                <td>
+                    {{$index +1}}
+                </td>
+                <td style="text-align:left">
+                    {{questions[$index].domain}}
+                </td>
+                <td style="text-align:left">
+                    {{questions[$index].qText}}
+                </td>
+                <td>
+                    {{questions[$index].Never}}
+                </td>
+                <td>
+                    {{questions[$index].Rarely}}
+                </td>
+                <td>
+                    {{questions[$index].Sometimes}}
+                </td>
+                <td>
+                    {{questions[$index].MostOften}}
+                </td>
+                <td>
+                    {{questions[$index].Always}}
+                </td>
+                <td>edit</td>
+                <td>del</td>
+            </tr>
+        </table>
+    </div>
+    </div>
+    <div id="survey" class="tabcontent" ng-controller="ctrladminSurvey"> 
+        <div><h3>Listing all the {{survey.length}} Survey Responses : </h3></div>
+        <table>
+            <th>Name</th><th> Age </th> <th> Attention</th> <th>Working Memory </th><th>Implusivity</th>
+            <th>Mental Flexibility</th><th>Total Score</th>
+            <tr ng-repeat="user in survey track by $index" >
+                <td>{{user.username}}</td>
+                <td>{{user.age}}</td>
+                <td>{{user.Attention}}</td>
+                <td>{{user.WorkingMemory}}</td>
+                <td>{{user.Implusivity}}</td>
+                <td>{{user.MentalFlexibility}}</td>
+                <td>{{user.Total}}</td>
+            </tr>
+        </table>
+        <!--<pre> {{survey | json}} </pre> -->
+    </div>
+
+
+
+    
+        <script>
+            function openTab(evt, evtName) {
+                var i, tabcontent, tablinks;
+                tabcontent = document.getElementsByClassName("tabcontent");
+                for (i = 0; i < tabcontent.length; i++) {
+                    tabcontent[i].style.display = "none";
+                }
+                tablinks = document.getElementsByClassName("tablinks");
+                for (i = 0; i < tablinks.length; i++) {
+                    tablinks[i].className = tablinks[i].className.replace(" active", "");
+                }
+                document.getElementById(evtName).style.display = "block";
+                evt.currentTarget.className += " active";
+            }
+        </script>
+
+        <script src="./js/ng.js"></script>
+
