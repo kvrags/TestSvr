@@ -1,0 +1,655 @@
+[
+	{
+		"question-1505367733429": {
+			"domain": "Attention",
+			"qText": "My child has trouble sitting for long hours and studying.",
+			"Never": 2,
+			"Rarely": 3,
+			"Sometimes": 4,
+			"Most Often": 5,
+			"Always": 1
+		}
+	},
+	"question-1505367765040"
+	{
+		"domain": "Attention",
+		"qText": "He/she leaves work unfinished.",
+		"Never": 1,
+		"Rarely": 3,
+		"Sometimes": 4,
+		"Most Often": 4,
+		"Always": 1
+	},
+	"question-1505367878544"
+	{
+		"domain": "Attention",
+		"qText": "My child gets tired in the middle of an activity and gives up.",
+		"Never": 1,
+		"Rarely": 3,
+		"Sometimes": 4,
+		"Most Often": 4,
+		"Always": 1
+	},
+	"question-1505367887036"
+	{
+		"domain": "Attention",
+		"qText": "My child cannot focus on work allotted to him/her because of distractions around (such as TV, friends playing, music system)",
+		"Never": 1,
+		"Rarely": 3,
+		"Sometimes": 4,
+		"Most Often": 4,
+		"Always": 1
+	},
+	"question-1505367898222"
+	{
+		"domain": "Attention",
+		"qText": "My child cannot attend to tasks given compared to others his/her age.",
+		"Never": 1,
+		"Rarely": 3,
+		"Sometimes": 4,
+		"Most Often": 4,
+		"Always": 1
+	},
+	"question-1505367907752"
+	{
+		"domain": "Attention",
+		"qText": "My child gets distracted easily.",
+		"Never": 1,
+		"Rarely": 3,
+		"Sometimes": 4,
+		"Most Often": 4,
+		"Always": 1
+	},
+	"question-1505367923001"
+	{
+		"domain": "Attention",
+		"qText": "My child’s mind wanders in the middle of his/her work.",
+		"Never": 1,
+		"Rarely": 3,
+		"Sometimes": 4,
+		"Most Often": 4,
+		"Always": 1
+	},
+	"question-1505367933256"
+	{
+		"domain": "Attention",
+		"qText": "My child needs frequent reminders to complete work allotted/assigned.",
+		"Never": 1,
+		"Rarely": 3,
+		"Sometimes": 4,
+		"Most Often": 4,
+		"Always": 1
+	},
+	"question-1505367947928"
+	{
+		"domain": "Attention",
+		"qText": "My child cannot complete a task without my supervision or presence.",
+		"Never": 1,
+		"Rarely": 3,
+		"Sometimes": 4,
+		"Most Often": 4,
+		"Always": 1
+	},
+	"question-1505367956429"
+	{
+		"domain": "Attention",
+		"qText": "My child distracts him/herself while studying.",
+		"Never": 1,
+		"Rarely": 3,
+		"Sometimes": 4,
+		"Most Often": 4,
+		"Always": 1
+	},
+	"question-1505367972349"
+	{
+		"domain": "Attention",
+		"qText": "My child fidgets /squirms a lot.",
+		"Never": 1,
+		"Rarely": 3,
+		"Sometimes": 4,
+		"Most Often": 4,
+		"Always": 1
+	},
+	"question-1505367982039"
+	{
+		"domain": "Attention",
+		"qText": "My child is very restless and constantly on the go.",
+		"Never": 1,
+		"Rarely": 3,
+		"Sometimes": 4,
+		"Most Often": 4,
+		"Always": 1
+	},
+	"question-1505367993471"
+	{
+		"domain": "Attention",
+		"qText": "My child loses interest quickly.",
+		"Never": 1,
+		"Rarely": 3,
+		"Sometimes": 4,
+		"Most Often": 4,
+		"Always": 1
+	},
+	"question-1505368004914"
+	{
+		"domain": "Attention",
+		"qText": "My child gets bored easily.",
+		"Never": 1,
+		"Rarely": 3,
+		"Sometimes": 4,
+		"Most Often": 4,
+		"Always": 1
+	},
+	"question-1505368017204"
+	{
+		"domain": "Attention",
+		"qText": "My child gives up easily when the task gets a little difficult.",
+		"Never": 1,
+		"Rarely": 3,
+		"Sometimes": 4,
+		"Most Often": 4,
+		"Always": 1
+	},
+	"question-1505368027315"
+	{
+		"domain": "Attention",
+		"qText": "My child requires less sleep compared to others his/her age.",
+		"Never": 1,
+		"Rarely": 3,
+		"Sometimes": 4,
+		"Most Often": 4,
+		"Always": 1
+	},
+	"question-1505368035331"
+	{
+		"domain": "Attention",
+		"qText": "It is difficult to control my child in new and unfamiliar environments.",
+		"Never": 1,
+		"Rarely": 3,
+		"Sometimes": 4,
+		"Most Often": 4,
+		"Always": 1
+	},
+	"question-1505368043708"
+	{
+		"domain": "Attention",
+		"qText": "My child prefers to be engaged in physical exercise all the time.",
+		"Never": 1,
+		"Rarely": 3,
+		"Sometimes": 4,
+		"Most Often": 4,
+		"Always": 1
+	},
+	"question-1505368053123"
+	{
+		"domain": "Attention",
+		"qText": "My child have a lot of energy and does not tire easily.",
+		"Never": 1,
+		"Rarely": 3,
+		"Sometimes": 4,
+		"Most Often": 4,
+		"Always": 1
+	},
+	"question-1505368073623"
+	{
+		"domain": "Attention",
+		"qText": "My child finds it difficult to keep track of the line he/she is reading.",
+		"Never": 1,
+		"Rarely": 3,
+		"Sometimes": 4,
+		"Most Often": 4,
+		"Always": 1
+	},
+	"question-1505368106868"
+	{
+		"domain": "Working Memory",
+		"qText": "My child has trouble remembering long/multiple instructions.",
+		"Never": 3,
+		"Rarely": 2,
+		"Sometimes": 3,
+		"Most Often": 1,
+		"Always": 5
+	},
+	"question-1505368118713"
+	{
+		"domain": "Working Memory",
+		"qText": "My child cannot remember details of conversations after a while.",
+		"Never": 3,
+		"Rarely": 2,
+		"Sometimes": 3,
+		"Most Often": 1,
+		"Always": 5
+	},
+	"question-1505368128139"
+	{
+		"domain": "Working Memory",
+		"qText": "My child cannot pass on verbal messages effectively.",
+		"Never": 3,
+		"Rarely": 2,
+		"Sometimes": 3,
+		"Most Often": 1,
+		"Always": 5
+	},
+	"question-1505368140388"
+	{
+		"domain": "Working Memory",
+		"qText": "My child cannot remember a series of items effectively- like a shopping list or things to do.",
+		"Never": 3,
+		"Rarely": 2,
+		"Sometimes": 3,
+		"Most Often": 1,
+		"Always": 5
+	},
+	"question-1505368149622"
+	{
+		"domain": "Working Memory",
+		"qText": "My child has trouble carrying out activities involving multiple steps.",
+		"Never": 3,
+		"Rarely": 2,
+		"Sometimes": 3,
+		"Most Often": 1,
+		"Always": 5
+	},
+	"question-1505368174583"
+	{
+		"domain": "Working Memory",
+		"qText": "My child loses or misplaces things frequently.",
+		"Never": 3,
+		"Rarely": 2,
+		"Sometimes": 3,
+		"Most Often": 1,
+		"Always": 5
+	},
+	"question-1505368184604"
+	{
+		"domain": "Working Memory",
+		"qText": "My child forgets instructions/events that happen during the day.",
+		"Never": 3,
+		"Rarely": 2,
+		"Sometimes": 3,
+		"Most Often": 1,
+		"Always": 5
+	},
+	"question-1505368193032"
+	{
+		"domain": "Working Memory",
+		"qText": "My child cannot report important messages from school.",
+		"Never": 3,
+		"Rarely": 2,
+		"Sometimes": 3,
+		"Most Often": 1,
+		"Always": 5
+	},
+	"question-1505368205794"
+	{
+		"domain": "Working Memory",
+		"qText": "My child has to read a line/para repeatedly to understand and remember facts.",
+		"Never": 3,
+		"Rarely": 2,
+		"Sometimes": 3,
+		"Most Often": 1,
+		"Always": 5
+	},
+	"question-1505368218697"
+	{
+		"domain": "Working Memory",
+		"qText": "My child cannot reconstruct his/her experience during the day in a proper order.",
+		"Never": 3,
+		"Rarely": 2,
+		"Sometimes": 3,
+		"Most Often": 1,
+		"Always": 5
+	},
+	"question-1505368236269"
+	{
+		"domain": "Working Memory",
+		"qText": "My child cannot remember what he/she has just read.",
+		"Never": 3,
+		"Rarely": 2,
+		"Sometimes": 3,
+		"Most Often": 1,
+		"Always": 5
+	},
+	"question-1505368257312"
+	{
+		"domain": "Working Memory",
+		"qText": "My child cannot accurately carry out simple mental math sums quickly.",
+		"Never": 2,
+		"Rarely": 1,
+		"Sometimes": 4,
+		"Most Often": 3,
+		"Always": 1
+	},
+	"question-1505368272494"
+	{
+		"domain": "Working Memory",
+		"qText": "My child struggle to recall math facts.",
+		"Never": 2,
+		"Rarely": 1,
+		"Sometimes": 4,
+		"Most Often": 3,
+		"Always": 1
+	},
+	"question-1505368284864"
+	{
+		"domain": "Working Memory",
+		"qText": "My child has trouble remembering the multiplication tables.",
+		"Never": 2,
+		"Rarely": 1,
+		"Sometimes": 3,
+		"Most Often": 3,
+		"Always": 1
+	},
+	"question-1505368298232"
+	{
+		"domain": "Working Memory",
+		"qText": "My child has trouble with statement/ word problems in Maths.",
+		"Never": 2,
+		"Rarely": 1,
+		"Sometimes": 3,
+		"Most Often": 3,
+		"Always": 1
+	},
+	"question-1505368330063"
+	{
+		"domain": "Implusivity",
+		"qText": "My child is always in a hurry to finish things.",
+		"Never": 1,
+		"Rarely": 4,
+		"Sometimes": 4,
+		"Most Often": 3,
+		"Always": 1
+	},
+	"question-1505368340144"
+	{
+		"domain": "Implusivity",
+		"qText": "My child’s answers scripts have several silly mistakes in them.",
+		"Never": 1,
+		"Rarely": 4,
+		"Sometimes": 4,
+		"Most Often": 3,
+		"Always": 1
+	},
+	"question-1505368348955"
+	{
+		"domain": "Implusivity",
+		"qText": "My child has trouble waiting for his/her turn.",
+		"Never": 1,
+		"Rarely": 4,
+		"Sometimes": 4,
+		"Most Often": 3,
+		"Always": 1
+	},
+	"question-1505368357685"
+	{
+		"domain": "Implusivity",
+		"qText": "My child blurts out answers even when told not to.",
+		"Never": 1,
+		"Rarely": 4,
+		"Sometimes": 4,
+		"Most Often": 3,
+		"Always": 1
+	},
+	"question-1505368369660"
+	{
+		"domain": "Implusivity",
+		"qText": "My child has trouble waiting to open gifts/eat his/her favourite food.",
+		"Never": 1,
+		"Rarely": 4,
+		"Sometimes": 4,
+		"Most Often": 3,
+		"Always": 1
+	},
+	"question-1505368382897"
+	{
+		"domain": "Implusivity",
+		"qText": "My child shifts form one hobby to another within short periods of time.",
+		"Never": 1,
+		"Rarely": 4,
+		"Sometimes": 4,
+		"Most Often": 3,
+		"Always": 1
+	},
+	"question-1505368404499"
+	{
+		"domain": "Implusivity",
+		"qText": "My child acts “impulsively’-without thinking about the consequences.",
+		"Never": 4,
+		"Rarely": 2,
+		"Sometimes": 4,
+		"Most Often": 1,
+		"Always": 5
+	},
+	"question-1505368419397"
+	{
+		"domain": "Implusivity",
+		"qText": "My child is unable to control his/her feelings when his/her demands are not met with.",
+		"Never": 4,
+		"Rarely": 2,
+		"Sometimes": 4,
+		"Most Often": 1,
+		"Always": 5
+	},
+	"question-1505368430134"
+	{
+		"domain": "Implusivity",
+		"qText": "My child loses marks in tests/exams because he/she did not read the question properly or did not read/answer all parts of the question.",
+		"Never": 4,
+		"Rarely": 2,
+		"Sometimes": 4,
+		"Most Often": 1,
+		"Always": 5
+	},
+	"question-1505368449731"
+	{
+		"domain": "Implusivity",
+		"qText": "My child uses foul language or physical violence to display anger.",
+		"Never": 4,
+		"Rarely": 2,
+		"Sometimes": 4,
+		"Most Often": 1,
+		"Always": 5
+	},
+	"question-1505368461061"
+	{
+		"domain": "Implusivity",
+		"qText": "I find my child repeating his/her mistakes despite several warnings.",
+		"Never": 4,
+		"Rarely": 2,
+		"Sometimes": 4,
+		"Most Often": 1,
+		"Always": 5
+	},
+	"question-1505368473591"
+	{
+		"domain": "Implusivity",
+		"qText": "My child has a hard time accepting a “No” from anyone.",
+		"Never": 4,
+		"Rarely": 2,
+		"Sometimes": 4,
+		"Most Often": 1,
+		"Always": 5
+	},
+	"question-1505368486748"
+	{
+		"domain": "Implusivity",
+		"qText": "My child has trouble refraining from correcting others when they are wrong (especially authority figures).",
+		"Never": 4,
+		"Rarely": 2,
+		"Sometimes": 4,
+		"Most Often": 1,
+		"Always": 5
+	},
+	"question-1505368505478"
+	{
+		"domain": "Implusivity",
+		"qText": "My child often interrupts conversations.",
+		"Never": 4,
+		"Rarely": 2,
+		"Sometimes": 4,
+		"Most Often": 1,
+		"Always": 5
+	},
+	"question-1505368516245"
+	{
+		"domain": "Implusivity",
+		"qText": "My child struggles to multi-task (i.e. to do 2 tasks simultaneously).",
+		"Never": 4,
+		"Rarely": 2,
+		"Sometimes": 4,
+		"Most Often": 1,
+		"Always": 5
+	},
+	"question-1505368558949"
+	{
+		"domain": "Mental Flexibility",
+		"qText": "If I am not able to keep my word/promise my child gets upset/angry.",
+		"Never": 3,
+		"Rarely": 1,
+		"Sometimes": 2,
+		"Most Often": 5,
+		"Always": 2
+	},
+	"question-1505368578898"
+	{
+		"domain": "Mental Flexibility",
+		"qText": "My child repeats his/her requests again and again till I give in to it.",
+		"Never": 3,
+		"Rarely": 1,
+		"Sometimes": 2,
+		"Most Often": 5,
+		"Always": 2
+	},
+	"question-1505368588314"
+	{
+		"domain": "Mental Flexibility",
+		"qText": "My child throws tantrums when his/her needs are not met with.",
+		"Never": 3,
+		"Rarely": 1,
+		"Sometimes": 2,
+		"Most Often": 5,
+		"Always": 2
+	},
+	"question-1505368598415"
+	{
+		"domain": "Mental Flexibility",
+		"qText": "I have to distract my child in order to stop him/her from making demands or anger/crying spells.",
+		"Never": 3,
+		"Rarely": 1,
+		"Sometimes": 2,
+		"Most Often": 5,
+		"Always": 2
+	},
+	"question-1505368609906"
+	{
+		"domain": "Mental Flexibility",
+		"qText": "My child reacts strongly (negatively) to changes in set plan.",
+		"Never": 3,
+		"Rarely": 1,
+		"Sometimes": 2,
+		"Most Often": 5,
+		"Always": 2
+	},
+	"question-1505368619210"
+	{
+		"domain": "Mental Flexibility",
+		"qText": "Even small changes in his/her routine is disturbing for my child.",
+		"Never": 3,
+		"Rarely": 1,
+		"Sometimes": 2,
+		"Most Often": 5,
+		"Always": 2
+	},
+	"question-1505368627777"
+	{
+		"domain": "Mental Flexibility",
+		"qText": "My child gets into trouble with friends as he/she wants to have his/her way all the time.",
+		"Never": 3,
+		"Rarely": 1,
+		"Sometimes": 2,
+		"Most Often": 5,
+		"Always": 2
+	},
+	"question-1505368639400"
+	{
+		"domain": "Mental Flexibility",
+		"qText": "Convincing my child to do something he/she does not want to do is difficult.",
+		"Never": 3,
+		"Rarely": 1,
+		"Sometimes": 2,
+		"Most Often": 5,
+		"Always": 2
+	},
+	"question-1505368649268"
+	{
+		"domain": "Mental Flexibility",
+		"qText": "My child finds it difficult to leave an interesting activity in the middle when necessary.",
+		"Never": 3,
+		"Rarely": 1,
+		"Sometimes": 2,
+		"Most Often": 5,
+		"Always": 2
+	},
+	"question-1505368672244"
+	{
+		"domain": "Mental Flexibility",
+		"qText": "It is difficult for my child to control his/her screen time (includes iPad, Tab, TV, laptop, mobile phone or computer)",
+		"Never": 3,
+		"Rarely": 1,
+		"Sometimes": 2,
+		"Most Often": 5,
+		"Always": 2
+	},
+	"question-1505368686960"
+	{
+		"domain": "Mental Flexibility",
+		"qText": "My child insists that he/she has his/her way all the time.",
+		"Never": 3,
+		"Rarely": 1,
+		"Sometimes": 2,
+		"Most Often": 5,
+		"Always": 2
+	},
+	"question-1505368696373"
+	{
+		"domain": "Mental Flexibility",
+		"qText": "My child has trouble letting go.",
+		"Never": 3,
+		"Rarely": 1,
+		"Sometimes": 2,
+		"Most Often": 5,
+		"Always": 2
+	},
+	"question-1505368703892"
+	{
+		"domain": "Mental Flexibility",
+		"qText": "My child wants to have his/her way all the time.",
+		"Never": 3,
+		"Rarely": 1,
+		"Sometimes": 2,
+		"Most Often": 5,
+		"Always": 2
+	},
+	"question-1505368716462"
+	{
+		"domain": "Mental Flexibility",
+		"qText": "It is a struggle for my child to switch from one activity to another.",
+		"Never": 3,
+		"Rarely": 1,
+		"Sometimes": 2,
+		"Most Often": 5,
+		"Always": 2
+	},
+	"question-1505368726339"
+	{
+		"domain": "Mental Flexibility",
+		"qText": "When my child gets upset or angry it is difficult for him/her to get over it.",
+		"Never": 3,
+		"Rarely": 1,
+		"Sometimes": 2,
+		"Most Often": 5,
+		"Always": 2
+	},
+
+]
+
