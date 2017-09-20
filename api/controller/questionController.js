@@ -1,0 +1,61 @@
+// JavaScript source code
+'use strict';
+
+
+var mongoose = require('mongoose'),
+  Questions = mongoose.model('Questions'); //get a db handle for Questions schema/Model
+
+exports.list_all_questions = function (req, res) {
+    Questions.find({}, function (err, data) {
+        console.log("Calling GET ./Questions --> list_all_questions from question controller .js");
+        //console.log(req.body);
+        if (err)
+            res.send(err);
+        res.json(data);
+    });
+};
+
+
+exports.create_a_question = function (req, res) {
+    console.log("Calling POST ./Questions --> create_a_question from question controller .js");
+    var new_question = new Questions(req.body);
+    new_question.save(function (err, data) {
+        if (err)
+            res.send(err);
+        console.log("Error: Calling POST ./Questions :" + err);
+        res.json(data);
+    });
+};
+
+
+exports.read_a_question = function (req, res) {
+    console.log("Calling GET ./questions --> read_a_question from question controller .js");
+    console.log("Fetching Question details for questionId:" + req.params.questionId);
+    Questions.findById(req.params.questionId, function (err, data) {
+        if (err)
+            res.send(err);
+        res.json(data);
+    });
+};
+
+
+exports.update_a_question = function (req, res) {
+    Questions.findOneAndUpdate({ _id: req.params.questionId }, req.body, { new: true }, function (err, profile) {
+        if (err)
+            res.send(err);
+        res.json(profile);
+    });
+};
+
+
+exports.delete_a_question = function (req, res) {
+    console.log("Calling DELETE ./question --> delete_a_question from question controller .js");
+
+    Questions.remove({
+        _id: req.params.questionId
+    }, function (err, data) {
+        if (err)
+            res.send(err);
+        res.json({ message: 'Question successfully deleted' });
+    });
+};
