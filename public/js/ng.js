@@ -172,10 +172,10 @@ rootApp.controller('ctrlConnectShapes', function ($scope) {
 // Profies
 
 rootApp.controller('ctrlProfiles', function ($scope,$http) {
-    $scope.message = 'Hello from ctrlProfiles Controller';
+    $scope.message = "Please fill in the above fields";
 
     $scope.Student = ["CBSE", "ICSE", "State"];
-    $scope.Working = ["Professioinal", "Self-Employed", "Govt Employee"];
+    $scope.Working = ["Professional", "Self-Employed", "Govt Employee"];
     $scope.Retired = [];
     $scope.Housewife = [];
 
@@ -211,20 +211,20 @@ rootApp.controller('ctrlProfiles', function ($scope,$http) {
     $scope.createProfile = function (model) {
         $scope.id = model.ID = Date.now();
         model.occupation = model.occupation.type;
-        $scope.message = model;
+        //$scope.message = model;
         //$scope.model = {};
         //writeLocalStorageJson("profile", $scope.model, true);
 
-        $http.post('http://localhost:8080/profiles', model)
-            .success(function (data) {
-                $scope.model = {}; // clear the form so our user is ready to enter another
-                //$scope.todos = data;
-                console.log(data);
-            })
-            .error(function (data) {
-                console.log('Error: ' + data);
-            });
+        $http.post("http://localhost:8080/profiles", model)
+        .then(function (res) {
+            $scope.model = {}; // clear the form so our user is ready to enter another
+            $scope.message = "Successfully Posted";
+            alert("Success posted new profile!" );
 
+        }, function (res) {
+            alert("Error while posting new profiles:" + res.error);
+            $scope.message = "Error:" + res.error;
+        });
     }
 });
 
@@ -237,24 +237,25 @@ rootApp.controller('ctrlprofilesMedian', function ($scope,$http) {
     //$scope.profileMedianMaster = {};
     $scope.profileMedian = [];
 
+    //retrieve all the profiles record
+    $http.get("http://localhost:8080/profiles")
+    .then(function (res) {
+        $scope.profilesMaster = res.data;
+        }, function (res) {
+            //failure callback
+            $scope.message = res.data;
+    });
+
+
     $scope.fetchProfiles = function (model) {
         //$scope.profilesMaster = readLocalStorageJson("profile");
-
-        $http.get("http://localhost:8080/profiles")
-            .then(function (res) {
-                $scope.profilesMaster = res.data;
-                $scope.profiles = [];
-                for (var i = 0; i < $scope.profilesMaster.length; ++i) {
-                    if ($scope.profilesMaster[i].occupation == model.occupation) {
-                        $scope.profiles.push($scope.profilesMaster[i]);
-                    }
-                }
-            }, function (res) {
-                //failure callback
-                $scope.message = res.data; 
-            });
+        $scope.profiles = [];
+        for (var i = 0; i < $scope.profilesMaster.length; ++i) {
+            if ($scope.profilesMaster[i].occupation == model.occupation) {
+                $scope.profiles.push($scope.profilesMaster[i]);
+            }
+        }
     }
-
     //read operation
     $scope.fetchProfileMedianFromRowID = function (rowID,profileName) {
         //alert("selected row:" + rowID);
@@ -309,7 +310,9 @@ rootApp.controller('ctrlprofilesMedian', function ($scope,$http) {
             $scope.profileMedian.Impulsivity = model.impulsivity;
             $scope.profileMedian.MentalFlexibility = model.mentalFlexibility;
 
-            writeLocalStorageJson("PrfMedian-" + $scope.profileName, $scope.profileMedian,false)
+            //writeLocalStorageJson("PrfMedian-" + $scope.profileName, $scope.profileMedian,false);
+
+
         }
     }
 
@@ -370,7 +373,7 @@ rootApp.controller('ctrladminQuestions', function ($scope, $http) {
             'Never': $scope.Never, 
             'Rarely': $scope.Rarely, //model.Rarely,
             'Sometimes': $scope.Sometimes,//model.Sometimes ,
-            'MostOten': $scope.MostOften,//model.MostOften ,
+            'MostOften': $scope.MostOften,//model.MostOften ,
             'Always': $scope.Always //model.Always
         };
 
