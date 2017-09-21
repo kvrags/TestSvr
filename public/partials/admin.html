@@ -153,12 +153,57 @@
                             <option value="rural">Rural</option>
                         </select>
 
+
                         <div class="alert alert-danger" ng-show="(form.cityType.$touched || form.$submitted) && form.cityType.$error.required">
                         City type is required
                         </div>
                     </div>
-                </div>
-
+                </div> <!--end of form group-->
+                <p> Median Values for the above profile:</p>
+                <div class="form-group">
+                    <div class="col-md-2">
+                        <label>Attention</label>
+                    </div>
+                    <div class="col-md-2">
+                        <input type="number" ng-model="model.Attention" ng-required="true" autofocus />
+                        <div class="alert alert-danger" ng-show="(form.attention.$touched || form.$submitted) && form.attention.$error.required">
+                            Attention Median value is required
+                        </div>
+                    </div>
+                </div> <!--end of class="form-group"-->
+                <div class="form-group">
+                    <div class="col-md-2">
+                        <label>Working Memory</label>
+                    </div>
+                    <div class="col-md-2">
+                        <input type="number" ng-model="model.WorkingMemory" ng-required="true" />
+                        <div class="alert alert-danger" ng-show="(form.workingMemory.$touched || form.$submitted) && form.workingMemory.$error.required">
+                            Working Memory Median value is required
+                        </div>
+                    </div>
+                </div> <!--end of class="form-group"-->
+                <div class="form-group">
+                    <div class="col-md-2">
+                        <label>Impulsivity</label>
+                    </div>
+                    <div class="col-md-2">
+                        <input type="number" ng-model="model.Impulsivity" ng-required="true" autofocus />
+                        <div class="alert alert-danger" ng-show="(form.impulsivity.$touched || form.$submitted) && form.impulsivity.$error.required">
+                            Impulsivity Median value is required
+                        </div>
+                    </div>
+                </div> <!--end of class="form-group"-->
+                <div class="form-group">
+                    <div class="col-md-2">
+                        <label>Mental Flexibility</label>
+                    </div>
+                    <div class="col-md-2">
+                        <input type="number" name="mentalFlexibility" ng-model="model.MentalFlexibility" ng-required="true" autofocus />
+                        <div class="alert alert-danger" ng-show="(form.mentalFlexibility.$touched || form.$submitted) && form.mentalFlexibility.$error.required">
+                            Mental Flexibility Median value is required
+                        </div>
+                    </div>
+                </div> <!--end of class="form-group"-->
                 <div class="form-group">
                     <div class="col-md-offset-2 col-md-5">
                         <input type="submit" value="Create" class="btn btn-primary" ng-click="createProfile(model)" ng-disabled="form.$invalid" />
@@ -262,7 +307,7 @@
                     </div>
 
                     </form>
-                </div>
+             </div>
                     <!--<pre>{{profiles | json}}</pre>-->
             </div>
 
@@ -315,7 +360,7 @@
             </div>
             <div class="form-group">
                 <div class="col-md-2">
-                    <label>'Never' Option Weightage </label>
+                    <label>'Never' Option score </label>
                 </div>
                 <div class="col-md-5">
                     <input type="number" value="{{Never}}" name="Never" ng-model="model.Never" disabled>
@@ -326,7 +371,7 @@
             </div>
             <div class="form-group">
                 <div class="col-md-2">
-                    <label>'Rarely' Option Weightage</label>
+                    <label>'Rarely' Option score</label>
                 </div>
                 <div class="col-md-5">
                     <input type="number" value="{{Rarely}}" name="Rarely" ng-model="model.Rarely" disabled>
@@ -337,7 +382,7 @@
             </div>
             <div class="form-group">
                 <div class="col-md-2">
-                    <label>'Sometimes' Option Weightage</label>
+                    <label>'Sometimes' Option score</label>
                 </div>
                 <div class="col-md-5">
                     <input type="number" value="{{Sometimes}}" name="Sometimes" ng-model="model.Sometimes" disabled>
@@ -348,7 +393,7 @@
             </div>
             <div class="form-group">
                 <div class="col-md-2">
-                    <label>'Most often' Option Weightage</label>
+                    <label>'Most Often'  Option score</label>
                 </div>
                 <div class="col-md-5">
                     <input type="number" value="{{MostOften}}" name="MostOften" ng-model="model.MostOften" disabled>
@@ -359,7 +404,7 @@
             </div>
             <div class="form-group">
                 <div class="col-md-2">
-                    <label>'Always' Option Weightage</label>
+                    <label>'Always' Option score</label>
                 </div>
                 <div class="col-md-2">
                     <input type="number" value="{{Always}}" name="Always" ng-model="model.Always" disabled>
@@ -383,18 +428,19 @@
         <h4>
             Total:{{questions.length}}
             Attention:{{(questions| filter:domain='Attention').length}}
-            Working Memory:{{(questions| filter:domain='Working Memory').length}}
+            Working Memory:{{(questions| filter:domain='WorkingMemory').length}}
             Implusivity:{{(questions| filter:domain='Implusivity').length}}
-            Mental Flexibility:{{(questions| filter:domain='Mental Flexibility').length}}
+            Mental Flexibility:{{(questions| filter:domain='MentalFlexibility').length}}
         </h4>
             <!--<p>
                 <h4>
                     Select Cognitive Domain
-                    <select name="domain" ng-model="searchDomain">
+                    <select ng-model="searchDomain">
                         <option value="Attention" selected>Attention</option>
                         <option value="WorkingMemory">Working Memory</option>
                         <option value="Implusivity">Implusivity</option>
                         <option value="MentalFlexibility">Mental Flexibility</option>
+                        <option value="">Select All</option>
                     </select>
                 </h4>
             </p>-->
@@ -411,8 +457,9 @@
                 <th width="80">Always Weightage</th>
             </tr>
 
-            <tr ng-repeat="question in questions ">
-                <td>
+            <!--<tr ng-repeat="question in questions | filter: question:domain:searchDomain ">-->
+            <tr ng-repeat="question in questions">
+            <td>
                     {{$index +1}}
                 </td>
                 <td style="text-align:left">
