@@ -12,7 +12,10 @@ var Schema = mongoose.Schema;
     "occupation":"Student",
     "stream":"CBSE",
     "cityType":"rural",
-    "ID":1505661846259
+    "Attention" : medianValue,
+    "WorkingMemory" : medianValue,
+    "Implusivity" : medianValue,
+    "MentalFlexibility" : medianValue,
 }*/
 
 var ProfileSchema = new Schema({
@@ -39,8 +42,24 @@ var ProfileSchema = new Schema({
     cityType: {
     type: String,
     required: 'Kindly enter the City Type'
-    }
+    },
 
+    Attention: {
+    type: Number,
+    required: 'Kindly enter the Attention Median value (number)'
+    },
+    WorkingMemory: {
+        type: Number,
+        required: 'Kindly enter the Working Memory Median value (number)'
+    },
+    Impulsivity: {
+        type: Number,
+        required: 'Kindly enter the Impulsivity Median value (number)'
+    },
+    MentalFlexibility: {
+        type: Number,
+        required: 'Kindly enter the Mental Flexibility Median value (number)'
+    }
 });
 
 /* example
