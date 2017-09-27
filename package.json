@@ -18,5 +18,6 @@
     "method-override": "^2.3.9",
     "mongodb": "^2.2.31",
     "mongoose": "^4.11.12"
-  }
+  },
+  "keywords": []
 }

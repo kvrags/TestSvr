@@ -13,6 +13,10 @@ var methodOverride = require('method-override'); // simulate DELETE and PUT (exp
 Profiles = require('./api/models/profileModel'); //created model loading here
 Questions = require('./api/models/questionModel'); //created model loading here
 
+
+// config files TBD
+//var db = require('./config/db');
+
 ////DB connection setting
 var mongoURI = "mongodb://localhost/neurogym";
 
@@ -27,6 +31,14 @@ app.use(bodyParser.urlencoded({ 'extended': 'true' })); 			// parse application/
 app.use(bodyParser.json()); 									// parse application/json
 app.use(bodyParser.json({ type: 'application/vnd.api+json' })); // parse application/vnd.api+json as json
 app.use(methodOverride());
+//app.use(methodOverride('X-HTTP-Method-Override')); // override with the X-HTTP-Method-Override header in the request. simulate DELETE/PUT
+app.use(express.static(__dirname + '../public')); // set the static files location /public/img will be /img for users
+
+/*app.use(function (err, req, res, next) {
+    console.error(err.stack);
+    res.status(500);
+    res.render('NeuroGym Server error', { error: err });
+});*/
 
 // REST API routes ======================================================================
 require('./api/routes/profileRoutes.js')(app);
@@ -35,10 +47,15 @@ require('./api/routes/questionRoutes.js')(app);
 
 //// frontend client application routes-------------------------------------------------------------
 app.get('*', function (req, res) {
-    res.sendFile(path.join(__dirname, '../public', 'index.html'));
+    var path = __dirname + "\\public";
+    //console.log("Settig up route for public access -->  " + path);
+    res.sendFile(path, 'index.html');
+
+    //res.sendFile(path.join(__dirname, '/public', 'index.html'));
     //res.sendFile('./public/index.html'); // load the single view file (angular will handle the page changes on the front-end)
 });
 
 // listen (start app with node server.js) ======================================
 app.listen(port);
 console.log("App listening on port " + port);
+exports = module.exports = app;
