@@ -11,6 +11,8 @@
 
 'use strict';
 module.exports = function (app) {
+//    app.use(function (err, req, res, next) { //handle next here.. pending
+
     var profiles = require('../controllers/profileController');
 
     // Profiles Routes
@@ -23,4 +25,13 @@ module.exports = function (app) {
       .get(profiles.read_a_profile)
       .put(profiles.update_a_profile)
       .delete(profiles.delete_a_profile);
+
+        //console.error(err.stack);
+        //res.status(500);
+        //res.render('NeuroGym Server error in Profiles Controller:', { error: err });
+  //  next(err);
+    //});
+
+    
+
 };
