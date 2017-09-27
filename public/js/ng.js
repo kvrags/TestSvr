@@ -209,7 +209,7 @@ rootApp.controller('ctrlProfiles', function ($scope,$http) {
     }*/
 
     $scope.createProfile = function (model) {
-        $scope.id = model.ID = Date.now();
+        //$scope.id = model.ID = Date.now();
         model.occupation = model.occupation.type;
         //$scope.message = model;
         //$scope.model = {};
@@ -217,9 +217,8 @@ rootApp.controller('ctrlProfiles', function ($scope,$http) {
 
         $http.post("http://localhost:8080/profiles", model)
         .then(function (res) {
-            $scope.model = {}; // clear the form so our user is ready to enter another
-            $scope.message = "Successfully Posted";
-            alert("Success posted new profile!" );
+            //$scope.model = {}; // clear the form so our user is ready to enter another
+            $scope.message = model.name + " profile is submitted for processing";
 
         }, function (res) {
             alert("Error while posting new profiles:" + res.error);
@@ -232,38 +231,85 @@ rootApp.controller('ctrlProfiles', function ($scope,$http) {
 //manage profiles median score for various cognitive domains
 rootApp.controller('ctrlprofilesMedian', function ($scope,$http) {
     $scope.message = 'Hello from ctrlprofilesMedian Controller11';
-    $scope.profilesMaster = {};
-    $scope.profiles = {};
+    $scope.profilesList = {};
+    $scope.profile = {};
     //$scope.profileMedianMaster = {};
     $scope.profileMedian = [];
 
-    //retrieve all the profiles record
-    $http.get("http://localhost:8080/profiles")
-    .then(function (res) {
-        $scope.profilesMaster = res.data;
-        }, function (res) {
-            //failure callback
-            $scope.message = res.data;
-    });
+   $scope.Student = ["CBSE", "ICSE", "State"];
+    $scope.Working = ["Professional", "Self-Employed", "Govt Employee"];
+    $scope.Retired = [];
+    $scope.Housewife = [];
 
 
-    $scope.fetchProfiles = function (model) {
-        //$scope.profilesMaster = readLocalStorageJson("profile");
-        $scope.profiles = [];
-        for (var i = 0; i < $scope.profilesMaster.length; ++i) {
-            if ($scope.profilesMaster[i].occupation == model.occupation) {
-                $scope.profiles.push($scope.profilesMaster[i]);
+    $scope.occupationType = [
+        { type: 'Student', data: $scope.Student, displayName: 'Student' },
+         { type: 'Working', data: $scope.Working, displayName: 'Working' },
+         { type: 'Retired', data: $scope.Retired, displayName: 'Retired' },
+         { type: 'Housewife', data: $scope.Retired, displayName: 'Retired' }
+
+    ];
+
+	$scope.fetchAllProfiles = function (){
+	   //retrieve all the profiles record
+		$http.get("http://localhost:8080/profiles")
+		.then(function (res) {
+			$scope.profilesList = res.data;
+		}, function (res) {
+			//failure callback
+			$scope.message = res.data;
+		});	
+}
+	//narrow down the list of profile from the profilesList
+    $scope.fetchProfilesByOccupation = function (model) {
+        //$scope.profilesList = readLocalStorageJson("profile");
+
+        $scope.profile = [];
+		$scope.fetchAllProfiles(); //refresh
+        for (var i = 0; i < $scope.profilesList.length; ++i) {
+            if ($scope.profilesList[i].occupation == model.occupation) {
+                $scope.profile.push($scope.profilesList[i]);
             }
         }
     }
     //read operation
-    $scope.fetchProfileMedianFromRowID = function (rowID,profileName) {
+    $scope.fetchProfileByName = function (profileName) {
         //alert("selected row:" + rowID);
 
-        //save rowID and profileName to be used to write back later
-        $scope.rowID = rowID;
+        //save profileName to be used to write back later
         $scope.profileName = profileName;
 
+        //reset the values
+		$scope.focusProfileId = 0;
+		$scope.name = "";
+		$scope.ageGroup = "";
+		$scope.occupation = "";
+		$scope.stream = "";
+		$scope.cityType = "";
+		$scope.model.Attention = 0;
+        $scope.model.WorkingMemory = 0;
+        $scope.model.Impulsivity = 0;
+        $scope.model.MentalFlexibility = 0;
+
+		
+
+        for (var i = 0; i < $scope.profilesList.length; ++i) {
+            if ($scope.profilesList[i].name == profileName) {
+				$scope.focusProfileId = $scope.profilesList[i]._id;
+				$scope.model.name = $scope.profilesList[i].name;
+				$scope.model.ageGroup = $scope.profilesList[i].ageGroup;
+				$scope.model.occupation = $scope.profilesList[i].occupation;
+				$scope.model.stream = $scope.profilesList[i].stream;
+						
+                $scope.model.Attention = $scope.profilesList[i].Attention;
+                $scope.model.WorkingMemory = $scope.profilesList[i].WorkingMemory;
+                $scope.model.Impulsivity = $scope.profilesList[i].Impulsivity;
+                $scope.model.MentalFlexibility = $scope.profilesList[i].MentalFlexibility;
+				break;
+            }
+        }
+
+		
         //$scope.profileMedianMaster = readLocalStorageJson("PrfMedian"+profileName);
         //$scope.profileMedian = [];
 
@@ -271,8 +317,8 @@ rootApp.controller('ctrlprofilesMedian', function ($scope,$http) {
           //  $scope.profileMedian = $scope.profileMedianMaster[rowID];
         //Names = sample.map(function (item) { return item.Name; });
 
-        $scope.profileMedian = readLocalStorageJson("PrfMedian-" + profileName);
-
+        //$scope.profileMedian = readLocalStorageJson("PrfMedian-" + profileName);
+        /*
         if ($scope.profileMedian.length > 0) { //check if we have median array available
             $scope.model.attention = getItemByKey("Attention",$scope.profileMedian);//$scope.profileMedian.Attention;
             $scope.model.workingMemory = getItemByKey("WorkingMemory",$scope.profileMedian) ; 
@@ -285,6 +331,7 @@ rootApp.controller('ctrlprofilesMedian', function ($scope,$http) {
             $scope.model.mentalFlexibility = 0;
 
         }
+        */
     }
     //utility
     function getItemByKey(key, array) {
@@ -300,10 +347,21 @@ rootApp.controller('ctrlprofilesMedian', function ($scope,$http) {
     }
 
 
-    //write median using the rowID selected from operation fetchProfileMedianFromRowID
-    $scope.submitMedian = function (model) {
+	$scope.updateProfileMedian = function (model) {
+		model.occupation = model.occupation.type;
+		//59c387e8d997c325b4b6afe0
+		$http.put('http://localhost:8080/profiles/'+ $scope.focusProfileId, model)
+		.then(function (res) {
+			$scope.message = res.data;
+		},
+		function (res) {
+			//failure callback
+			$scope.message = res.data
+		});
 
-        if ($scope.rowID >= 0) {
+	
+	
+/*        if ($scope.rowID >= 0) {
             $scope.profileMedian = {};
             $scope.profileMedian.Attention = model.attention;
             $scope.profileMedian.WorkingMemory = model.workingMemory;
@@ -311,9 +369,9 @@ rootApp.controller('ctrlprofilesMedian', function ($scope,$http) {
             $scope.profileMedian.MentalFlexibility = model.mentalFlexibility;
 
             //writeLocalStorageJson("PrfMedian-" + $scope.profileName, $scope.profileMedian,false);
+*/
 
-
-        }
+        
     }
 
 });
@@ -346,6 +404,18 @@ rootApp.controller('ctrladminQuestions', function ($scope, $http) {
     $scope.MostOften = 3;
     $scope.Always = 4;
 
+
+    //retrieve all the Median profiles 
+    $http.get("http://localhost:8080/profiles")
+    .then(function (res) {
+        $scope.profileList = res.data;
+    }, function (res) {
+        //failure callback
+        $scope.message = res.data;
+    });
+	
+	
+	
     $scope.selectMode = function (mode){
         if (mode == "create"){
             $scope.selectQ = false;
@@ -367,15 +437,26 @@ rootApp.controller('ctrladminQuestions', function ($scope, $http) {
     }
 
     $scope.createQuestion = function (model) {
-        $scope.question = {
+
+	$scope.question = {
             'domain': model.domain,
             'qText': model.qText,
             'Never': $scope.Never, 
             'Rarely': $scope.Rarely, //model.Rarely,
             'Sometimes': $scope.Sometimes,//model.Sometimes ,
             'MostOften': $scope.MostOften,//model.MostOften ,
-            'Always': $scope.Always //model.Always
+            'Always': $scope.Always, //model.Always
+			'profiles' : []
         };
+
+
+		for(var i=0;i < model.profileList.length; ++i){
+			var list = {'id':"",'name':""};
+			//$scope.question.profiles.push('id':model.profileList[i]._id , 'name':model.profileList[i].name);
+			list.id = model.profileList[i]._id;
+			list.name = model.profileList[i].name;
+			$scope.question.profiles.push(list);
+		}
 
         //$scope.message = $scope.question;
         //writeLocalStorageJson("question", $scope.question,true);
@@ -383,7 +464,7 @@ rootApp.controller('ctrladminQuestions', function ($scope, $http) {
         $http.post("http://localhost:8080/questions", $scope.question)
         .then (function (res){
             $scope.question = {}; // clear the form so our user is ready to enter another
-            $scope.message = "Successfully Posted";
+            $scope.message = "Successfully posted to server:" + res.data;
         }, function (res){
             $scope.message = "Error:" + res.error;
         });
@@ -392,8 +473,8 @@ rootApp.controller('ctrladminQuestions', function ($scope, $http) {
 
 //rootApp.controller('ctrlAssesment', ['$scope', '$rootScope', function ($scope, $rootScope) {
 
-rootApp.controller('ctrlAssesment', function ($scope) {
-    $scope.message = Date();//'Hello World from Assesment Controller1';
+rootApp.controller('ctrlAssesment', function ($scope,$http) {
+    $scope.date = Date();//'Hello World from Assesment Controller1';
     $scope.qIndex = 0;
     $scope.survey = [];
     $scope.final = []; // place holder to display final assesment scores
@@ -402,25 +483,130 @@ rootApp.controller('ctrlAssesment', function ($scope) {
     $scope.implusivity = 0;
     $scope.mentalFlexibility = 0;
 
+    $scope.Student = ["CBSE", "ICSE", "State"];
+    $scope.Working = ["Professional", "Self-Employed", "Govt Employee"];
+    $scope.Retired = [];
+    $scope.Housewife = [];
+
+
+    $scope.occupationType = [
+        { type: 'Student', data: $scope.Student, displayName: 'Student' },
+         { type: 'Working', data: $scope.Working, displayName: 'Working' },
+         { type: 'Retired', data: $scope.Retired, displayName: 'Retired' },
+         { type: 'Housewife', data: $scope.Retired, displayName: 'Retired' }
+
+    ];
+
+
+
+    //retrieve all the Median profiles
+    $http.get("http://localhost:8080/profiles")
+    .then(function (res) {
+        $scope.profilesList = res.data;
+		$scope.message = "All the profiles retrieved";//res.data;
+    }, function (res) {
+        //failure callback
+        $scope.message = res.data;
+    });
+
+
+
+
+    //retrieve all the questions based on the selected profile
 
     $scope.Init = function () {
         $scope.qSlNo = "Question 1 :";
         $scope.qIndex = 1;
-        $scope.b_show = true;
+        $scope.bAssesseDetails = true;
+        $scope.bQuestions = false;
 
         
         //read all the Qs from the storage
-        $scope.assessmentQs = readLocalStorageJson("question");
-        $scope.qText = $scope.assessmentQs[0].qText;
+        //$scope.assessmentQs = readLocalStorageJson("question");
+        //$scope.qText = $scope.assessmentQs[0].qText;
 
-        $scope.survey = $scope.assessmentQs[0];
-
+        //$scope.survey = $scope.assessmentQs[0];
     }
 
     var optionKey = '';
     var score = 0;
 
-    $scope.Submit = function (res) {
+    /*
+    Assesee Model
+
+	/*example
+	{
+		"name":"Jay Mistry",
+		"email":"jaymistry@yahoo.com",
+		"ageGroup":"6to16",
+		"occupation":"Student",
+		"stream":"CBSE",
+		"cityType":"rural",
+		"profileMedian:{"name":"Student_CBSE_Rural","Id" : "434f4wfsdfsd45245fsf45","Attention":22,"WorkingMemory":10,"Implusivity":10,"MentalFlexibility":19}
+		"progress":[
+						0:{Attention:22,WorkingMemory:10,Implusivity:10,MentalFlexibility:19, plannedStartDate:"17July2016", plannedCompletionDate:"27Oct2016", actualStartDate:"",actualCompletionDate:"" } //GAP 0 or first test 
+						1:{Attention:15,WorkingMemory:8,Implusivity:9,MentalFlexibility:12, plannedStartDate:"17July2016", plannedCompletionDate:"27Oct2016", actualStartDate:"",actualCompletionDate:"" } //reduction		
+		]
+
+	}*/
+
+	//create a new Assessee as per the above model
+	//progress array will contain scores from respective Cogntive areas
+    $scope.CreateNewAssesee = function (model) {
+        model.occupation = model.occupation.type;
+        model.profileMedian = {"name":"","id":"","Attention":"","WorkingMemory":"","Implusivity":"","MentalFlexibility":""};
+		
+        for (var i = 0; i < $scope.profilesList.length; ++i) {
+            //find a matching median profile by comparing on ageGroup,occupation,stream,cityType
+            if ($scope.profilesList[i].ageGroup == model.ageGroup && $scope.profilesList[i].occupation == model.occupation && $scope.profilesList[i].stream == model.stream && $scope.profilesList[i].cityType == model.cityType) {
+                
+				//model.profileMedian = $scope.profilesList[i].name;
+				//model.profileMedianId = $scope.profilesList[i]._id;
+				model.profileMedian.name = $scope.profilesList[i].name;
+				model.profileMedian.id = $scope.profilesList[i]._id;
+				model.profileMedian.Attention = $scope.profilesList[i].Attention;
+				model.profileMedian.WorkingMemory = $scope.profilesList[i].WorkingMemory;
+				model.profileMedian.Impulsivity = $scope.profilesList[i].impulsivity;
+				model.profileMedian.MentalFlexibility = $scope.profilesList[i].MentalFlexibility;
+				
+				break;
+            } 
+			
+        }
+        $scope.message = model;
+		
+		$http.post("http://localhost:8080/assesee", model)
+        .then (function (res){
+            $scope.message = "New Assessee details successfully posted to server : " + res.data;
+        }, function (res){
+            $scope.message = "Error:" + res.error;
+        });
+		
+		//retrieve all the relevant Questions for this profile
+		///api/cars?filter[where][carClass]=fullsize
+		////GET /users?name=rob&email=rob@email.com
+		
+		
+		//Right now all the questions are retrieved and then processed on the client side...
+		//ideally write REST API to support where clause to return only the specific matching profilesMedian...
+		
+		$http.get("http://localhost:8080/questions")
+		.then(function (res) {
+			$scope.questionsList = res.data;
+			
+			//after succes retrive of questions enable the Next button and the next screen with Questions
+			$scope.message = "Questions retrieved";  //res.data
+			alert("enable the Next button and the next screen with Questions");
+		}, function (res) {
+			//failure callback
+			$scope.questionsList = null;
+			$scope.message = res.data;
+		});
+		
+		
+    }
+
+    $scope.SubmitQuestions = function (res) {
         optionKey = res.reply;
         
         score = $scope.assessmentQs[$scope.qIndex][optionKey];
