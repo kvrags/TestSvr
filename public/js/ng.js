@@ -255,6 +255,7 @@ rootApp.controller('ctrlprofilesMedian', function ($scope,$http) {
 		$http.get("http://localhost:8080/profiles")
 		.then(function (res) {
 			$scope.profilesList = res.data;
+			$scope.message = "Profiles retrieved";
 		}, function (res) {
 			//failure callback
 			$scope.message = res.data;
@@ -265,7 +266,7 @@ rootApp.controller('ctrlprofilesMedian', function ($scope,$http) {
         //$scope.profilesList = readLocalStorageJson("profile");
 
         $scope.profile = [];
-		$scope.fetchAllProfiles(); //refresh
+		$scope.fetchAllProfiles(); //refresh in case
         for (var i = 0; i < $scope.profilesList.length; ++i) {
             if ($scope.profilesList[i].occupation == model.occupation) {
                 $scope.profile.push($scope.profilesList[i]);
@@ -291,11 +292,11 @@ rootApp.controller('ctrlprofilesMedian', function ($scope,$http) {
         $scope.model.Impulsivity = 0;
         $scope.model.MentalFlexibility = 0;
 
-		
-
         for (var i = 0; i < $scope.profilesList.length; ++i) {
             if ($scope.profilesList[i].name == profileName) {
 				$scope.focusProfileId = $scope.profilesList[i]._id;
+				//store the index of the profile to update data on successful posting to server
+				$scope.model.i = i;
 				$scope.model.name = $scope.profilesList[i].name;
 				$scope.model.ageGroup = $scope.profilesList[i].ageGroup;
 				$scope.model.occupation = $scope.profilesList[i].occupation;
@@ -310,30 +311,38 @@ rootApp.controller('ctrlprofilesMedian', function ($scope,$http) {
         }
 
 		
-        //$scope.profileMedianMaster = readLocalStorageJson("PrfMedian"+profileName);
-        //$scope.profileMedian = [];
-
-        //if ($scope.profileMedianMaster)
-          //  $scope.profileMedian = $scope.profileMedianMaster[rowID];
-        //Names = sample.map(function (item) { return item.Name; });
-
-        //$scope.profileMedian = readLocalStorageJson("PrfMedian-" + profileName);
-        /*
-        if ($scope.profileMedian.length > 0) { //check if we have median array available
-            $scope.model.attention = getItemByKey("Attention",$scope.profileMedian);//$scope.profileMedian.Attention;
-            $scope.model.workingMemory = getItemByKey("WorkingMemory",$scope.profileMedian) ; 
-            $scope.model.impulsivity = getItemByKey("Impulsivity",$scope.profileMedian) ; 
-            $scope.model.mentalFlexibility = getItemByKey("MentalFlexibility", $scope.profileMedian);
-        } else {
-            $scope.model.attention = 0;
-            $scope.model.workingMemory = 0;
-            $scope.model.impulsivity = 0;
-            $scope.model.mentalFlexibility = 0;
-
-        }
-        */
     }
-    //utility
+
+	$scope.updateProfileMedian = function (model) {
+		model.occupation = model.occupation.type;
+		//format of _id:59c387e8d997c325b4b6afe0
+		$http.put('http://localhost:8080/profiles/'+ $scope.focusProfileId, model)
+		.then(function (res) {
+			var i = model.i;
+			
+			$scope.profilesList[i].name = $scope.model.name ;
+			$scope.profilesList[i].ageGroup = $scope.model.ageGroup ;
+			$scope.profilesList[i].occupation = $scope.model.occupation ;
+			$scope.profilesList[i].stream = $scope.model.stream;
+					
+			$scope.profilesList[i].Attention = $scope.model.Attention ;
+			$scope.profilesList[i].WorkingMemory = $scope.model.WorkingMemory ;
+			$scope.profilesList[i].Impulsivity = $scope.model.Impulsivity ;
+			$scope.profilesList[i].MentalFlexibility = $scope.model.MentalFlexibility;
+				
+			//$scope.message = res.data;
+			$scope.message = "New User update posted successfully.";
+		},
+		function (res) {
+			//failure callback
+			$scope.message = ("Error in updating the data, error: " + res.data);
+		});
+      
+    }
+
+});
+
+ //utility
     function getItemByKey(key, array) {
         var value;
         array.some(function (obj) {
@@ -345,37 +354,6 @@ rootApp.controller('ctrlprofilesMedian', function ($scope,$http) {
         });
         return value;
     }
-
-
-	$scope.updateProfileMedian = function (model) {
-		model.occupation = model.occupation.type;
-		//59c387e8d997c325b4b6afe0
-		$http.put('http://localhost:8080/profiles/'+ $scope.focusProfileId, model)
-		.then(function (res) {
-			$scope.message = res.data;
-		},
-		function (res) {
-			//failure callback
-			$scope.message = res.data
-		});
-
-	
-	
-/*        if ($scope.rowID >= 0) {
-            $scope.profileMedian = {};
-            $scope.profileMedian.Attention = model.attention;
-            $scope.profileMedian.WorkingMemory = model.workingMemory;
-            $scope.profileMedian.Impulsivity = model.impulsivity;
-            $scope.profileMedian.MentalFlexibility = model.mentalFlexibility;
-
-            //writeLocalStorageJson("PrfMedian-" + $scope.profileName, $scope.profileMedian,false);
-*/
-
-        
-    }
-
-});
-
 //admin adminSurvey
 rootApp.controller('ctrladminSurvey', function ($scope,$http) {
 
@@ -441,11 +419,11 @@ rootApp.controller('ctrladminQuestions', function ($scope, $http) {
 	$scope.question = {
             'domain': model.domain,
             'qText': model.qText,
-            'Never': $scope.Never, 
-            'Rarely': $scope.Rarely, //model.Rarely,
-            'Sometimes': $scope.Sometimes,//model.Sometimes ,
-            'MostOften': $scope.MostOften,//model.MostOften ,
-            'Always': $scope.Always, //model.Always
+            'Never': model.Never, 
+            'Rarely': model.Rarely,
+            'Sometimes': model.Sometimes ,
+            'MostOften': model.MostOften ,
+            'Always': model.Always,
 			'profiles' : []
         };
 
@@ -458,15 +436,12 @@ rootApp.controller('ctrladminQuestions', function ($scope, $http) {
 			$scope.question.profiles.push(list);
 		}
 
-        //$scope.message = $scope.question;
-        //writeLocalStorageJson("question", $scope.question,true);
-        
         $http.post("http://localhost:8080/questions", $scope.question)
         .then (function (res){
             $scope.question = {}; // clear the form so our user is ready to enter another
             $scope.message = "Successfully posted to server:" + res.data;
         }, function (res){
-            $scope.message = "Error:" + res.error;
+            $scope.message = "Error in posting new question, error: " + res.error;
         });
     }
 });
@@ -480,7 +455,7 @@ rootApp.controller('ctrlAssesment', function ($scope,$http) {
     $scope.final = []; // place holder to display final assesment scores
     $scope.attention = 0;
     $scope.workingMemory = 0;
-    $scope.implusivity = 0;
+    $scope.impulsivity = 0;
     $scope.mentalFlexibility = 0;
 
     $scope.Student = ["CBSE", "ICSE", "State"];
@@ -503,17 +478,13 @@ rootApp.controller('ctrlAssesment', function ($scope,$http) {
     $http.get("http://localhost:8080/profiles")
     .then(function (res) {
         $scope.profilesList = res.data;
-		$scope.message = "All the profiles retrieved";//res.data;
+		$scope.message = "Ready to start assesment process";//res.data;
     }, function (res) {
         //failure callback
-        $scope.message = res.data;
+        $scope.message = ("Error in starting Assesment process, error:" + res.data);
     });
 
-
-
-
     //retrieve all the questions based on the selected profile
-
     $scope.Init = function () {
         $scope.qSlNo = "Question 1 :";
         $scope.qIndex = 1;
@@ -554,28 +525,27 @@ rootApp.controller('ctrlAssesment', function ($scope,$http) {
 	//progress array will contain scores from respective Cogntive areas
     $scope.CreateNewAssesee = function (model) {
         model.occupation = model.occupation.type;
-        model.profileMedian = {"name":"","id":"","Attention":"","WorkingMemory":"","Implusivity":"","MentalFlexibility":""};
+        model.profileMedian = {"name":"","id":"","Attention":"","WorkingMemory":"","Impulsivity":"","MentalFlexibility":""};
 		
         for (var i = 0; i < $scope.profilesList.length; ++i) {
-            //find a matching median profile by comparing on ageGroup,occupation,stream,cityType
+            ////find a matching median profile by comparing on ageGroup,occupation,stream,cityType
+			//// stream field is optional as in case of Retired or Housewife hence
+			////not included in the if statements below - $scope.profilesList[i].stream == model.stream 
             if ($scope.profilesList[i].ageGroup == model.ageGroup && $scope.profilesList[i].occupation == model.occupation && $scope.profilesList[i].stream == model.stream && $scope.profilesList[i].cityType == model.cityType) {
-                
-				//model.profileMedian = $scope.profilesList[i].name;
-				//model.profileMedianId = $scope.profilesList[i]._id;
 				model.profileMedian.name = $scope.profilesList[i].name;
 				model.profileMedian.id = $scope.profilesList[i]._id;
 				model.profileMedian.Attention = $scope.profilesList[i].Attention;
 				model.profileMedian.WorkingMemory = $scope.profilesList[i].WorkingMemory;
-				model.profileMedian.Impulsivity = $scope.profilesList[i].impulsivity;
+				model.profileMedian.Impulsivity = $scope.profilesList[i].Impulsivity;
 				model.profileMedian.MentalFlexibility = $scope.profilesList[i].MentalFlexibility;
-				
-				break;
+				break; // break out now
             } 
-			
-        }
-        $scope.message = model;
+		}
+        //$scope.message = model;
 		
-		$http.post("http://localhost:8080/assesee", model)
+		model.progress = [];
+		
+		$http.post("http://localhost:8080/assessee", model)
         .then (function (res){
             $scope.message = "New Assessee details successfully posted to server : " + res.data;
         }, function (res){
@@ -618,8 +588,8 @@ rootApp.controller('ctrlAssesment', function ($scope,$http) {
         if ($scope.assessmentQs[$scope.qIndex].domain == "WorkingMemory") {
             $scope.workingMemory = $scope.workingMemory + score;
         }
-        if ($scope.assessmentQs[$scope.qIndex].domain == "Implusivity") {
-            $scope.implusivity = $scope.implusivity + score;
+        if ($scope.assessmentQs[$scope.qIndex].domain == "Impulsivity") {
+            $scope.impulsivity = $scope.impulsivity + score;
         }
 
         if ($scope.assessmentQs[$scope.qIndex].domain == "MentalFlexibility") {
@@ -632,9 +602,9 @@ rootApp.controller('ctrlAssesment', function ($scope,$http) {
             'created' :'',//assigned just after completing all the Qs and just before saving to storage
             'Attention': $scope.attention,
             'WorkingMemory':$scope.workingMemory,
-            'Implusivity':$scope.implusivity,
+            'Impulsivity':$scope.Impulsivity,
             'MentalFlexibility': $scope.mentalFlexibility,
-            'Total' : $scope.attention + $scope.workingMemory+$scope.implusivity+$scope.mentalFlexibility   
+            'Total' : $scope.attention + $scope.workingMemory+$scope.Impulsivity+$scope.mentalFlexibility   
         };
 
         $scope.qIndex = $scope.qIndex + 1;
