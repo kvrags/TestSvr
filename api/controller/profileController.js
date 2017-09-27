@@ -55,7 +55,7 @@ exports.update_a_profile = function (req, res) {
 	//is passed else a Query object is returned.
 	
 	
-	Profiles.findOneAndUpdate({__id: req.params.profileId }, req.body, { new: true }, function (err, profile) {
+	Profiles.findOneAndUpdate({_id: req.params.profileId }, req.body, { new: true }, function (err, profile) {
         if (err) {
             console.log("Error in updating the data for profile Id:"+ req.params.profileId + "error: " + err);
             res.send(err);
