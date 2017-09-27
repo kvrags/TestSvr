@@ -17,12 +17,13 @@ exports.list_all_questions = function (req, res) {
 
 
 exports.create_a_question = function (req, res) {
-    console.log("Calling POST ./Questions --> create_a_question from question controller .js");
+    console.log("Calling POST /Questions --> create_a_question from question controller .js");
+	console.log("Received data :" + Questions(req.body));
     var new_question = new Questions(req.body);
     new_question.save(function (err, data) {
         if (err)
             res.send(err);
-        console.log("Error: Calling POST ./Questions :" + err);
+        //console.log("Error: Calling POST ./Questions :" + err);
         res.json(data);
     });
 };
@@ -30,6 +31,7 @@ exports.create_a_question = function (req, res) {
 
 exports.read_a_question = function (req, res) {
     console.log("Calling GET ./questions --> read_a_question from question controller .js");
+	console.log("Displaying all the Params sent :" + req.params);
     console.log("Fetching Question details for questionId:" + req.params.questionId);
     Questions.findById(req.params.questionId, function (err, data) {
         if (err)
@@ -40,10 +42,10 @@ exports.read_a_question = function (req, res) {
 
 
 exports.update_a_question = function (req, res) {
-    Questions.findOneAndUpdate({ _id: req.params.questionId }, req.body, { new: true }, function (err, profile) {
+    Questions.findOneAndUpdate({ _id: req.params.questionId }, req.body, { new: true }, function (err, question) {
         if (err)
             res.send(err);
-        res.json(profile);
+        res.json(question);
     });
 };
 
