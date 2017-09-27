@@ -1,32 +1,97 @@
 ﻿    <div ng-controller="ctrlAssesment" ng-init="Init()">
-    <h2> Assessment Section</h2> {{message}}}
+    <h2> Assessment Section</h2> {{date}}
     <h4> Please answer following questions:</h4>
 
-        <div class="container">
-            <form class="form-horizontal" name="form" novalidate>
+        <div class="container" id="assessee">
+            <form class="form-horizontal" name="formUser" ng-show="bAssesseDetails" novalidate>
+                <!--Assesse profile details-->
                 <div class="form-group">
                     <div class="col-md-2">
-                        <label>Username</label>
+                        <label>Assesse Name</label>
                     </div>
                     <div class="col-md-5">
-                        <input type="text" name="userName" ng-model="model.userName" required>
-                        <div class="alert alert-danger" ng-show="(form.userName.$touched || form.$submitted) && form.userName.$error.required">
+                        <input type="text" name="userName" ng-model="model.userName" autofocus   required>
+                        <div class="alert alert-danger" ng-show="(formUser.userName.$touched || formUser.$submitted) && formUser.userName.$error.required">
                             Username is required
                         </div>
                     </div>
                 </div>
-
-                <div class="form-group">
+				<div class="form-group">
                     <div class="col-md-2">
-                        <label>Age</label>
+                        <label>e-Mail</label>
                     </div>
                     <div class="col-md-5">
-                        <input type="text" name="age" ng-model="model.age" required>
-                        <div class="alert alert-danger" ng-show="(form.age.$touched || form.$submitted) && form.age.$error.required">
-                            Age is required
+                        <input type="email" name="email" ng-model="model.email" required>
+                        <div class="alert alert-danger" ng-show="(formUser.email.$touched || formUser.$submitted) && formUser.email.$error.required">
+                            eMail is required
                         </div>
                     </div>
                 </div>
+
+                <div class="form-group">
+                    <div class="col-md-2">
+                        <label>Age Group</label>
+                    </div>
+                    <div class="col-md-2">
+                        <select name="ageGroup" class="form-control" ng-model="model.ageGroup" ng-required="true">
+                            <option value="6to16">6 to 16 years</option>
+                            <option value="16to25">16 to 25 years</option>
+                            <option value="26to35">26 to 35 years</option>
+                            <option value="36to50">36 to 50 years</option>
+                            <option value="above51">Above 50 years</option>
+                            <option value="above65">Above 65 years</option>
+                        </select>
+                        <div class="alert alert-danger" ng-show="(formUser.ageGroup.$touched || formUser.$submitted) && formUser.ageGroup.$error.required">
+                            Age Group is required
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="col-md-2">
+                        <label>Occupation</label>
+                    </div>
+                    <div class="col-md-5">
+                        <select ng-model="model.occupation" ng-options="item.type for item in occupationType" ng-required="true"></select>
+                        <div class="alert alert-danger" ng-show="(formUser.occupation.$touched || formUser.$submitted) && formUser.occupation.$error.required">
+                            Occupation is required
+                        </div>
+                    </div>
+                </div><!-- end div form-group -->
+
+                <div class="form-group">
+                    <div class="col-md-2">
+                        <label>Stream</label>
+                    </div>
+                    <div class="col-md-5">
+                        <select name="stream" ng-model="model.stream" ng-options="item for item in model.occupation.data" ></select>
+                    </div>
+                </div><!-- end div form-group -->
+
+                <div class="form-group">
+                    <div class="col-md-2">
+                        <label>City Type</label>
+                    </div>
+                    <div class="col-md-2">
+                        <select name="cityType" class="form-control" ng-model="model.cityType" ng-required="true">
+                            <option value="urban">Urban</option>
+                            <option value="rural">Rural</option>
+                        </select>
+                        <div class="alert alert-danger" ng-show="(formUser.cityType.$touched || formUser.$submitted) && formUser.cityType.$error.required">
+                            City type is required
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="col-md-offset-2 col-md-5">
+                        <!--  <input type="submit" value="Submit" class="btn btn-primary" ng-click="form.$valid && Register(model)" /> -->
+                        <input type="submit" value="Next" class="btn btn-primary" ng-click="CreateNewAssesee(model)" ng-disabled="formUser.$invalid" />
+                    </div>
+                </div>
+            </form>
+            <pre>{{message|json}}</pre>
+        </div>
+        <div class="container" id="questions">
+            <form class="form-horizontal" name="formQuestions" ng-show="bQuestions" novalidate>
                 <div class="form-group">
                     <div class="col-md-2">
                         <label>{{qSlNo}}</label>
@@ -41,25 +106,21 @@
                     </div>
                     <div class="col-md-5">
                         <label><input type="radio" name="reply" ng-model="model.reply" value="Never" ng-required="true" /> Never</label>
-                        <label><input type="radio" name="reply" ng-model="model.reply" value="Rarely" ng-required="true" /> Rarely </label>
-                        <label><input type="radio" name="reply" ng-model="model.reply" value="Sometimes" ng-required="true" /> Sometimes</label>
-                        <label><input type="radio" name="reply" ng-model="model.reply" value="Most Often" ng-required="true" /> Most Often</label>
-                        <label><input type="radio" name="reply" ng-model="model.reply" value="Always" ng-required="true" /> Always</label>
+                        <label><input type="radio" name="reply" ng-model="model.rarely" value="Rarely" ng-required="true" /> Rarely </label>
+                        <label><input type="radio" name="reply" ng-model="model.sometimes" value="Sometimes" ng-required="true" /> Sometimes</label>
+                        <label><input type="radio" name="reply" ng-model="model.mostOften" value="Most Often" ng-required="true" /> Most Often</label>
+                        <label><input type="radio" name="reply" ng-model="model.always" value="Always" ng-required="true" /> Always</label>
                         <div class="alert alert-danger" ng-show="(form.age.$touched || form.$submitted) && form.age.$error.required">
                             Please select one of the options above.
                         </div>
                     </div>
                 </div>
-                <div class="form-group">
-                    <div class="col-md-offset-2 col-md-5">
-                        <!--  <input type="submit" value="Submit" class="btn btn-primary" ng-click="form.$valid && Register(model)" /> -->
-                        <input type="submit" value="Next" class="btn btn-primary" ng-click="Submit(model)" ng-disabled="form.$invalid" ng-hide="!b_show" />
-                    </div>
-                </div>
- 
+
             </form>
-        </div>
+        </div> <!--Question details -->
+
     </div>
+
     
     <script>
         /*
