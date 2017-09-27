@@ -36,7 +36,7 @@ var ProfileSchema = new Schema({
 
     stream: {
     type: String,
-    required: 'Kindly enter the stream of the occupation'
+    //required: 'Kindly enter the stream of the occupation' //not applicable for Retired
     },
 
     cityType: {
@@ -66,7 +66,8 @@ var ProfileSchema = new Schema({
 var TaskSchema = new Schema({
   name: {
     type: String,
-    required: 'Kindly enter the name of the task'
+    required: 'Kindly enter the name of the task',
+    default:'Hello moto'
   },
   Created_date: {
     type: Date,

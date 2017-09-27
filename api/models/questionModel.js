@@ -21,17 +21,14 @@ var QuestionSchema = new Schema({
         type: String,
         required: 'Kindly enter the name of the domain this question belongs to'
     },
-
     qText: {
         type: String,
         required: 'Kindly enter the quesion text'
     },
-
     Never: {
         type: Number,
         required: 'Kindly enter the Never number'
     },
-
     Rarely: {
         type: Number,
         required: 'Kindly enter the Rarely number'
@@ -40,7 +37,6 @@ var QuestionSchema = new Schema({
         type: Number,
         required: 'Kindly enter the Sometimes number'
     },
-
     MostOften: {
         type: Number,
         required: 'Kindly enter the MostOften number'
@@ -48,7 +44,16 @@ var QuestionSchema = new Schema({
     Always: {
         type: Number,
         required: 'Kindly enter the Always number'
-    }
-
+    },
+	profiles:[]/*{
+				id:	{ 
+					type: Number,
+					required: 'Model Error: Profile Id not supplied while creating a new Question'
+				},
+				name: {
+						type : String,
+						required:'Model Error: Profile name is not supplied while creating a new Question'
+				}
+	}*/
 });
 module.exports = mongoose.model('Questions', QuestionSchema);// JavaScript source code
