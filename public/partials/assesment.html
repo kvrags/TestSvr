@@ -1,13 +1,13 @@
 ﻿    <div ng-controller="ctrlAssesment" ng-init="Init()">
     <h2> Assessment Section</h2> {{date}}
-    <h4> Please answer following questions:</h4>
+    <h4> To serve you better please provide following information:</h4>
 
         <div class="container" id="assessee">
             <form class="form-horizontal" name="formUser" ng-show="bAssesseDetails" novalidate>
                 <!--Assesse profile details-->
                 <div class="form-group">
                     <div class="col-md-2">
-                        <label>Assesse Name</label>
+                        <label>Your Name</label>
                     </div>
                     <div class="col-md-5">
                         <input type="text" name="userName" ng-model="model.userName" autofocus   required>

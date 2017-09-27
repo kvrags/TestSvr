@@ -73,7 +73,7 @@
     </div>
 
     <div id="profiles" class="tabcontent" ng-controller="ctrlProfiles">
-        <h3>Manage Profiles here</h3>
+        <h3>Create new Profile</h3>
         <div class="container">
             <form class="form-horizontal" name="form" novalidate>
                 <div class="form-group">
@@ -463,10 +463,10 @@
                     <label>'Never' Option score </label>
                 </div>
                 <div class="col-md-5">
-                    <input type="number" value="{{Never}}" name="Never" ng-model="model.Never" disabled>
-                    <!--<div class="alert alert-danger" ng-show="(form.Never.$touched || form.$submitted) && form.Never.$error.required">
+                    <input type="number" value="{{Never}}" name="Never" ng-model="model.Never" >
+                    <div class="alert alert-danger" ng-show="(form.Never.$touched || form.$submitted) && form.Never.$error.required">
                         Weightage for 'Never' option is required
-                    </div>-->
+                    </div>
                 </div>
             </div>
             <div class="form-group">
@@ -474,10 +474,10 @@
                     <label>'Rarely' Option score</label>
                 </div>
                 <div class="col-md-5">
-                    <input type="number" value="{{Rarely}}" name="Rarely" ng-model="model.Rarely" disabled>
-                    <!--<div class="alert alert-danger" ng-show="(form.Rarely.$touched || form.$submitted) && form.Rarely.$error.required">
+                    <input type="number" value="{{Rarely}}" name="Rarely" ng-model="model.Rarely" >
+                    <div class="alert alert-danger" ng-show="(form.Rarely.$touched || form.$submitted) && form.Rarely.$error.required">
                         Weightage for 'Rarely' option is required
-                    </div>-->
+                    </div>
                 </div>
             </div>
             <div class="form-group">
@@ -485,10 +485,10 @@
                     <label>'Sometimes' Option score</label>
                 </div>
                 <div class="col-md-5">
-                    <input type="number" value="{{Sometimes}}" name="Sometimes" ng-model="model.Sometimes" disabled>
-                   <!-- <div class="alert alert-danger" ng-show="(form.Rarely.$touched || form.$submitted) && form.Rarely.$error.required">
+                    <input type="number" value="{{Sometimes}}" name="Sometimes" ng-model="model.Sometimes" >
+                   <div class="alert alert-danger" ng-show="(form.Rarely.$touched || form.$submitted) && form.Rarely.$error.required">
                         Weightage for 'Sometimes' option is required
-                    </div> -->
+                    </div> 
                 </div>
             </div>
             <div class="form-group">
@@ -496,10 +496,10 @@
                     <label>'Most Often'  Option score</label>
                 </div>
                 <div class="col-md-5">
-                    <input type="number" value="{{MostOften}}" name="MostOften" ng-model="model.MostOften" disabled>
-                    <!--<div class="alert alert-danger" ng-show="(form.Mostoften.$touched || form.$submitted) && form.Mostoften.$error.required">
+                    <input type="number" value="{{MostOften}}" name="MostOften" ng-model="model.MostOften" >
+                    <div class="alert alert-danger" ng-show="(form.Mostoften.$touched || form.$submitted) && form.Mostoften.$error.required">
                         Weightage for 'Most often' option is required
-                    </div> -->
+                    </div> 
                 </div>
             </div>
             <div class="form-group">
@@ -507,10 +507,10 @@
                     <label>'Always' Option score</label>
                 </div>
                 <div class="col-md-2">
-                    <input type="number" value="{{Always}}" name="Always" ng-model="model.Always" disabled>
-                    <!--<div class="alert alert-danger" ng-show="(form.Always.$touched || form.$submitted) && form.Always.$error.required">
+                    <input type="number" value="{{Always}}" name="Always" ng-model="model.Always" >
+                    <div class="alert alert-danger" ng-show="(form.Always.$touched || form.$submitted) && form.Always.$error.required">
                         Weightage for 'Always' option is required 
-                    </div> -->
+                    </div> 
                 </div>
             </div>
            <div class="form-group">
