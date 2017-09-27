@@ -21,7 +21,7 @@ var Schema = mongoose.Schema;
 
 }*/
 
-var AssesseSchema = new Schema({
+var AssesseeSchema = new Schema({
     name: {
         type: String,
         required: 'Kindly enter the name of the User'
@@ -50,10 +50,10 @@ var AssesseSchema = new Schema({
     required: 'Kindly enter the City Type'
     },
 	
-	profileMedia : {"name":"","Id" : "","Attention":"","WorkingMemory":"","Implusivity":"","MentalFlexibility":""},
+	profileMedian : {"name":"","Id" : "","Attention":"","WorkingMemory":"","Implusivity":"","MentalFlexibility":""},
     
 	progress:[] //see the example above
 
 }{timestamps: true} );
 
-module.exports = mongoose.model('Assesse', AssesseSchema);
+module.exports = mongoose.model('Assesse', AssesseeSchema);
