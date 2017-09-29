@@ -12,7 +12,7 @@ var methodOverride = require('method-override'); // simulate DELETE and PUT (exp
 // configuration ===============================================================
 Profiles = require('./api/models/profileModel'); //created model loading here
 Questions = require('./api/models/questionModel'); //created model loading here
-
+Assessee = require('./api/models/assesseeModel'); //Assessee model definition
 
 // config files TBD
 //var db = require('./config/db');
@@ -35,14 +35,15 @@ app.use(methodOverride());
 app.use(express.static(__dirname + '../public')); // set the static files location /public/img will be /img for users
 
 /*app.use(function (err, req, res, next) {
-    console.error(err.stack);
-    res.status(500);
+    console.error(err.stack); 
+    res.status(500); 
     res.render('NeuroGym Server error', { error: err });
 });*/
-
+ 
 // REST API routes ======================================================================
 require('./api/routes/profileRoutes.js')(app);
 require('./api/routes/questionRoutes.js')(app);
+require('./api/routes/assesseeRoutes.js')(app);
 
 
 //// frontend client application routes-------------------------------------------------------------
