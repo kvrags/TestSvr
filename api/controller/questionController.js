@@ -5,6 +5,9 @@
 var mongoose = require('mongoose'),
   Questions = mongoose.model('Questions'); //get a db handle for Questions schema/Model
 
+////Pending 
+////implement a filter or a where clause with REST API to fetch relevant all questions for a selected profile(s)
+
 exports.list_all_questions = function (req, res) {
     Questions.find({}, function (err, data) {
         console.log("Calling GET ./Questions --> list_all_questions from question controller .js");
@@ -21,9 +24,11 @@ exports.create_a_question = function (req, res) {
 	console.log("Received data :" + Questions(req.body));
     var new_question = new Questions(req.body);
     new_question.save(function (err, data) {
-        if (err)
+        if (err) {
             res.send(err);
         //console.log("Error: Calling POST ./Questions :" + err);
+		}
+	    console.log("Calling POST /Questions --> saved data successfully");
         res.json(data);
     });
 };
