@@ -401,7 +401,7 @@
         <input type="radio" name="selectQ" ng-click="selectMode('create')" checked> <label>Create New</label>
         <input type="radio" name="selectQ" ng-click="selectMode('modify')"> <label>Modify</label>
     </div>
-    <div class="container" id="QCreate" ng-hide="selectQ">
+    <div class="container" id="QCreate" ng-hide="b_CreateQ">
         <h3>Create new Assessment Questions</h3>
         <form class="form-horizontal" name="form" novalidate>
             <div class="form-group">
@@ -409,7 +409,7 @@
                     <label>Select the profile applicable to this question</label>
                 </div>
                 <div class="col-md-5">																				<!--item.type for item in occupationType-->
-                    <select multiple name="profiles" class="form-control" ng-model="model.profileList"  ng-options="profile.name for profile in profileList" ng-required="true">
+                    <select multiple name="profiles" class="form-control" ng-model="model.profilesList"  ng-options="profile.name for profile in profilesList" ng-required="true">
                         <!--<option value="Attention">Attention</option>
                         <option value="WorkingMemory">Working Memory</option>
                         <option value="Implusivity">Implusivity</option>
@@ -463,7 +463,7 @@
                     <label>'Never' Option score </label>
                 </div>
                 <div class="col-md-5">
-                    <input type="number" value="{{Never}}" name="Never" ng-model="model.Never" >
+                    <input type="number" name="Never" value="{{Never}}" ng-model="model.Never" onkeypress="return event.charCode >= 48"  >
                     <div class="alert alert-danger" ng-show="(form.Never.$touched || form.$submitted) && form.Never.$error.required">
                         Weightage for 'Never' option is required
                     </div>
@@ -524,21 +524,21 @@
     </div>
 
 
-    <div class="container" id="QModify" ng-hide="!selectQ">
+    <div class="container" id="QModify" ng-hide="!b_CreateQ">
         <h4>
-            Total:{{questions.length}}
-            Attention:{{(questions| filter:domain='Attention').length}}
-            Working Memory:{{(questions| filter:domain='WorkingMemory').length}}
-            Implusivity:{{(questions| filter:domain='Implusivity').length}}
-            Mental Flexibility:{{(questions| filter:domain='MentalFlexibility').length}}
+            [Total:<b>{{questions.length}}</b>]
+            [Attention:<b>{{(questions| filter:domain='Attention').length}}</b>]
+            [Working Memory:<b>{{(questions| filter:domain='WorkingMemory').length}}</b>]
+            [Impulsivity:<b>{{(questions| filter:domain='Impulsivity').length}}</b>]
+            [Mental Flexibility:<b>{{(questions| filter:domain='MentalFlexibility').length}}</b>]
         </h4>
             <!--<p>
                 <h4>
-                    Select Cognitive Domain
+                    Select a Cognitive Domain
                     <select ng-model="searchDomain">
                         <option value="Attention" selected>Attention</option>
                         <option value="WorkingMemory">Working Memory</option>
-                        <option value="Implusivity">Implusivity</option>
+                        <option value="Impulsivity">Impulsivity</option>
                         <option value="MentalFlexibility">Mental Flexibility</option>
                         <option value="">Select All</option>
                     </select>
@@ -557,7 +557,7 @@
                 <th width="80">Always Weightage</th>
             </tr>
 
-            <!--<tr ng-repeat="question in questions | filter: question:domain:searchDomain ">-->
+            <!--<tr ng-repeat="question in questions | filter: searchDomain | orderBy: 'question.domain' track by $index">-->
             <tr ng-repeat="question in questions">
             <td>
                     {{$index +1}}
@@ -592,19 +592,19 @@
     <div id="survey" class="tabcontent" ng-controller="ctrladminSurvey"> 
         <div><h3>Listing all the {{survey.length}} Survey Responses : </h3></div>
         <table>
-            <th>Name</th><th> Age </th> <th> Attention</th> <th>Working Memory </th><th>Implusivity</th>
+            <th>Name</th><th> Age </th> <th> Attention</th> <th>Working Memory </th><th>Impulsivity</th>
             <th>Mental Flexibility</th><th>Total Score</th>
             <tr ng-repeat="user in survey track by $index" >
-                <td>{{user.username}}</td>
+                <td>{{user.name}}</td>
                 <td>{{user.age}}</td>
                 <td>{{user.Attention}}</td>
                 <td>{{user.WorkingMemory}}</td>
-                <td>{{user.Implusivity}}</td>
+                <td>{{user.Impulsivity}}</td>
                 <td>{{user.MentalFlexibility}}</td>
                 <td>{{user.Total}}</td>
             </tr>
         </table>
-        <!--<pre> {{survey | json}} </pre> -->
+        <pre> {{survey | json}} </pre> 
     </div>
 
 
