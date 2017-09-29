@@ -23,7 +23,7 @@ var QuestionSchema = new Schema({
     },
     qText: {
         type: String,
-        required: 'Kindly enter the quesion text'
+        required: 'Kindly enter the Question text'
     },
     Never: {
         type: Number,
