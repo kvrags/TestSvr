@@ -181,12 +181,28 @@ rootApp.controller('ctrlProfiles', function ($scope,$http) {
 
 
     $scope.occupationType = [
-        { type: 'Student', data: $scope.Student, displayName: 'Student' },
-         { type: 'Working', data: $scope.Working, displayName: 'Working' },
-         { type: 'Retired', data: $scope.Retired, displayName: 'Retired' },
-         { type: 'Housewife', data: $scope.Retired, displayName: 'Retired' }
+			{ type: 'Student', data: $scope.Student, displayName: 'Student' },
+			{ type: 'Working', data: $scope.Working, displayName: 'Working' },
+			{ type: 'Retired', data: $scope.Retired, displayName: 'Retired' },
+			{ type: 'Housewife', data: $scope.Retired, displayName: 'Retired'}
+	];
 
-    ];
+	$scope.profilesList = [];
+	
+	fetchProfiles();
+	
+	function fetchProfiles(){
+		 //retrieve all the profiles record
+		$http.get("http://localhost:8080/profiles")
+		.then(function (res) {
+			$scope.profilesList = res.data;
+				//alert("Profiles fetched: " + res.data);
+				}, function (res) {
+			//failure callback
+			$scope.profilesList = [];
+		});
+		
+	}
 
     //profile Model
     /*
@@ -197,6 +213,7 @@ rootApp.controller('ctrlProfiles', function ($scope,$http) {
         occupation:String,
         stream:String,
         cityType:String,
+		tasksGrid:[]
     }
     //example
     {
@@ -206,25 +223,50 @@ rootApp.controller('ctrlProfiles', function ($scope,$http) {
         "stream":"CBSE",
         "cityType":"rural",
         "ID":1505661846259
+		tasksGrid: []
     }*/
 
     $scope.createProfile = function (model) {
-        //$scope.id = model.ID = Date.now();
+		//refresh profiles
+		fetchProfiles();
+		
         model.occupation = model.occupation.type;
-        //$scope.message = model;
-        //$scope.model = {};
-        //writeLocalStorageJson("profile", $scope.model, true);
+		$scope.b_Duplicate = false;
+		
+		//check if we have a valid profileList fetched
+		
+		
+		//check for duplicates
+		for (var i=0; i < $scope.profilesList.length; ++i) {
+			
+			//Occupations of type Retired and Housewife profiles do not have stream 
+			if(($scope.profilesList[i].occupation == 'Retired') ||  ($scope.profilesList[i].occupation == 'Housewife') ){
+				if (($scope.profilesList[i].ageGroup == model.ageGroup) && ($scope.profilesList[i].occupation == model.occupation) && ($scope.profilesList[i].cityType == model.cityType)){
+					$scope.message = "New Profile creation error : Profile already exists.";
+					$scope.b_Duplicate = true;	
+				}
+				
+			}else{
+				if(($scope.profilesList[i].ageGroup == model.ageGroup) && ($scope.profilesList[i].occupation == model.occupation) && ($scope.profilesList[i].stream == model.stream) && ($scope.profilesList[i].cityType == model.cityType)){
+					$scope.message = "New Profile creation error : Profile already exists.";
+					$scope.b_Duplicate = true;	
+					}
+			}	
+		}
+		
+		if (!$scope.b_Duplicate) {
+			//if no duplicate then create new one in db
+			$http.post("http://localhost:8080/profiles", model)
+			.then(function (res) {
+				//$scope.model = {}; // clear the form so our user is ready to enter another
+				$scope.message = model.name + " profile is submitted for processing";
 
-        $http.post("http://localhost:8080/profiles", model)
-        .then(function (res) {
-            //$scope.model = {}; // clear the form so our user is ready to enter another
-            $scope.message = model.name + " profile is submitted for processing";
-
-        }, function (res) {
-            alert("Error while posting new profiles:" + res.error);
-            $scope.message = "Error:" + res.error;
-        });
-    }
+			}, function (res) {
+				alert("Error while posting new profiles:" + res.error);
+				$scope.message = "Error:" + res.error;
+			});
+		}	
+	}
 });
 
 
@@ -331,7 +373,7 @@ rootApp.controller('ctrlprofilesMedian', function ($scope,$http) {
 			$scope.profilesList[i].MentalFlexibility = $scope.model.MentalFlexibility;
 				
 			//$scope.message = res.data;
-			$scope.message = "New User update posted successfully.";
+			$scope.message = "Profile update posted successfully.";
 		},
 		function (res) {
 			//failure callback
@@ -368,7 +410,17 @@ rootApp.controller('ctrladminSurvey', function ($scope,$http) {
 
     $scope.survey = {};
         
-    $scope.survey = readLocalStorageJson("survey");
+    //$scope.survey = readLocalStorageJson("survey");
+//retrieve all the Median profiles 
+    $http.get("http://localhost:8080/assessee")
+    .then(function (res) {
+        $scope.survey = res.data;
+    }, function (res) {
+        //failure callback
+        $scope.message = res.data;
+    });
+	
+	
     
 
 });
@@ -386,36 +438,55 @@ rootApp.controller('ctrladminQuestions', function ($scope, $http) {
     //retrieve all the Median profiles 
     $http.get("http://localhost:8080/profiles")
     .then(function (res) {
-        $scope.profileList = res.data;
+        $scope.profilesList = res.data;
     }, function (res) {
         //failure callback
         $scope.message = res.data;
     });
 	
+	//initialise with all the questions
+	getAllQuestions();
 	
+	function getAllQuestions() {	
+		//retieve all the questions
+		$http.get('http://localhost:8080/questions')
+			.then(function (res) {
+				$scope.questions = res.data;
+			},
+			function (res) {
+				//failure callback
+				$scope.questions = res.data
+			});	
+	}
 	
     $scope.selectMode = function (mode){
         if (mode == "create"){
-            $scope.selectQ = false;
+            $scope.b_CreateQ = false;
         } else {
-            $scope.selectQ = true;
-            //$scope.questions = readLocalStorageJson("question");
-
-
-            $http.get('http://localhost:8080/questions')
-                .then(function (res) {
-                    $scope.questions = res.data;
-                },
-                function (res) {
-                    //failure callback
-                    $scope.questions = res.data
-                });
-
+            $scope.b_CreateQ = true;
+			
+			//referesh Questions list
+			getAllQuestions();
         }
     }
 
     $scope.createQuestion = function (model) {
 
+		if (model.Never == null)
+			model.Never = $scope.Never;
+			
+		if (model.Rarely == null)
+			model.Rarely = $scope.Rarely;
+		
+		if (model.Sometimes == null)
+			model.Sometimes = $scope.Sometimes;
+		
+		if(model.MostOften == null)
+			model.MostOften = $scope.MostOften;
+			
+		if (model.Always == null)
+			model.Always = $scope.Always;
+	
 	$scope.question = {
             'domain': model.domain,
             'qText': model.qText,
@@ -428,18 +499,18 @@ rootApp.controller('ctrladminQuestions', function ($scope, $http) {
         };
 
 
-		for(var i=0;i < model.profileList.length; ++i){
+		for(var i=0;i < model.profilesList.length; ++i){
 			var list = {'id':"",'name':""};
 			//$scope.question.profiles.push('id':model.profileList[i]._id , 'name':model.profileList[i].name);
-			list.id = model.profileList[i]._id;
-			list.name = model.profileList[i].name;
+			list.id = model.profilesList[i]._id;
+			list.name = model.profilesList[i].name;
 			$scope.question.profiles.push(list);
 		}
 
         $http.post("http://localhost:8080/questions", $scope.question)
         .then (function (res){
             $scope.question = {}; // clear the form so our user is ready to enter another
-            $scope.message = "Successfully posted to server:" + res.data;
+            $scope.message = "Successfully posted to server:" ;//+ res.data;
         }, function (res){
             $scope.message = "Error in posting new question, error: " + res.error;
         });
@@ -449,10 +520,14 @@ rootApp.controller('ctrladminQuestions', function ($scope, $http) {
 //rootApp.controller('ctrlAssesment', ['$scope', '$rootScope', function ($scope, $rootScope) {
 
 rootApp.controller('ctrlAssesment', function ($scope,$http) {
-    $scope.date = Date();//'Hello World from Assesment Controller1';
+    $scope.bEnable = true; //Next button flag
+	$scope.bAssesseDetails = true;
+    $scope.bQuestions = false;
+	
+	$scope.date = Date();//'Hello World from Assesment Controller1';
     $scope.qIndex = 0;
-    $scope.survey = [];
-    $scope.final = []; // place holder to display final assesment scores
+    //$scope.survey = [];
+    //$scope.final = []; // place holder to display final assesment scores
     $scope.attention = 0;
     $scope.workingMemory = 0;
     $scope.impulsivity = 0;
@@ -462,7 +537,6 @@ rootApp.controller('ctrlAssesment', function ($scope,$http) {
     $scope.Working = ["Professional", "Self-Employed", "Govt Employee"];
     $scope.Retired = [];
     $scope.Housewife = [];
-
 
     $scope.occupationType = [
         { type: 'Student', data: $scope.Student, displayName: 'Student' },
@@ -486,19 +560,12 @@ rootApp.controller('ctrlAssesment', function ($scope,$http) {
 
     //retrieve all the questions based on the selected profile
     $scope.Init = function () {
-        $scope.qSlNo = "Question 1 :";
-        $scope.qIndex = 1;
+    
         $scope.bAssesseDetails = true;
         $scope.bQuestions = false;
+	}
 
-        
-        //read all the Qs from the storage
-        //$scope.assessmentQs = readLocalStorageJson("question");
-        //$scope.qText = $scope.assessmentQs[0].qText;
-
-        //$scope.survey = $scope.assessmentQs[0];
-    }
-
+	
     var optionKey = '';
     var score = 0;
 
@@ -517,13 +584,17 @@ rootApp.controller('ctrlAssesment', function ($scope,$http) {
 		"progress":[
 						0:{Attention:22,WorkingMemory:10,Implusivity:10,MentalFlexibility:19, plannedStartDate:"17July2016", plannedCompletionDate:"27Oct2016", actualStartDate:"",actualCompletionDate:"" } //GAP 0 or first test 
 						1:{Attention:15,WorkingMemory:8,Implusivity:9,MentalFlexibility:12, plannedStartDate:"17July2016", plannedCompletionDate:"27Oct2016", actualStartDate:"",actualCompletionDate:"" } //reduction		
-		]
+		],
+		"tasks": []
 
 	}*/
 
 	//create a new Assessee as per the above model
 	//progress array will contain scores from respective Cogntive areas
-    $scope.CreateNewAssesee = function (model) {
+    $scope.CreateNewAssessee = function (model) {
+	
+		$scope.bEnable = false; //Next button flag keep it disable until DB post process is complete
+		
         model.occupation = model.occupation.type;
         model.profileMedian = {"name":"","id":"","Attention":"","WorkingMemory":"","Impulsivity":"","MentalFlexibility":""};
 		
@@ -544,12 +615,19 @@ rootApp.controller('ctrlAssesment', function ($scope,$http) {
         //$scope.message = model;
 		
 		model.progress = [];
+		model.tasks = [];
 		
 		$http.post("http://localhost:8080/assessee", model)
         .then (function (res){
-            $scope.message = "New Assessee details successfully posted to server : " + res.data;
+            $scope.message = "New Assessee details successfully posted to server  ";// + res.data;
+			//alert("New Assessee details successfully posted to server : " + res.data);
+			
+			//store the new assessee id to make put/update later after the questionaire
+			$scope.assesseeId = res.data._id;	
+			GetQuestions(model.profileMedian.name,model.profileMedian.id);
+			
         }, function (res){
-            $scope.message = "Error:" + res.error;
+            $scope.message = "Error while creating new user, please check your internet connection and retry." ;//+ res.error;
         });
 		
 		//retrieve all the relevant Questions for this profile
@@ -560,43 +638,59 @@ rootApp.controller('ctrlAssesment', function ($scope,$http) {
 		//Right now all the questions are retrieved and then processed on the client side...
 		//ideally write REST API to support where clause to return only the specific matching profilesMedian...
 		
-		$http.get("http://localhost:8080/questions")
-		.then(function (res) {
-			$scope.questionsList = res.data;
-			
-			//after succes retrive of questions enable the Next button and the next screen with Questions
-			$scope.message = "Questions retrieved";  //res.data
-			alert("enable the Next button and the next screen with Questions");
-		}, function (res) {
-			//failure callback
-			$scope.questionsList = null;
-			$scope.message = res.data;
-		});
+	
+	}
+	//called from Async fetch 
+	function GetQuestions(profileName,id) {
 		
-		
-    }
+			$http.get("http://localhost:8080/questions")
+			.then(function (res) {
+				$scope.questionsList = res.data;
+				$scope.InitQuestions();
+				//after succes retrive of questions enable the Next button and the next screen with Questions
+				//$scope.message = "Questions retrieved";  //res.data
+				//alert("enable the Next button and the next screen with Questions");
+				
+				//enbale the next button on UI only after an successfull post.
+				$scope.bEnable = true;
+				$scope.bAssesseDetails = false; //
+				
+			}, function (res) {
+				//failure callback
+				$scope.questionsList = null;
+				$scope.message = res.data;
+			});
+}
 
+
+	$scope.InitQuestions = function(){
+		$scope.qSlNo = "Question 1 :";
+        $scope.qIndex = 0;
+		//alert("Questions List length : " + $scope.questionsList.length);
+		$scope.qText = $scope.questionsList[$scope.qIndex].qText;
+	}
+	
     $scope.SubmitQuestions = function (res) {
         optionKey = res.reply;
         
-        score = $scope.assessmentQs[$scope.qIndex][optionKey];
+        score = $scope.questionsList[$scope.qIndex][optionKey];
 
-        if ($scope.assessmentQs[$scope.qIndex].domain == "Attention") {
+        if ($scope.questionsList[$scope.qIndex].domain == "Attention") {
             $scope.attention = $scope.attention + score;
         }
 
-        if ($scope.assessmentQs[$scope.qIndex].domain == "WorkingMemory") {
+        if ($scope.questionsList[$scope.qIndex].domain == "WorkingMemory") {
             $scope.workingMemory = $scope.workingMemory + score;
         }
-        if ($scope.assessmentQs[$scope.qIndex].domain == "Impulsivity") {
+        if ($scope.questionsList[$scope.qIndex].domain == "Impulsivity") {
             $scope.impulsivity = $scope.impulsivity + score;
         }
 
-        if ($scope.assessmentQs[$scope.qIndex].domain == "MentalFlexibility") {
+        if ($scope.questionsList[$scope.qIndex].domain == "MentalFlexibility") {
             $scope.mentalFlexibility = $scope.mentalFlexibility + score;
         }
 
-        $scope.survey = {
+        /*$scope.survey = {
             'username': '',//res.userName,
             'age': '', //res.age,
             'created' :'',//assigned just after completing all the Qs and just before saving to storage
@@ -605,27 +699,140 @@ rootApp.controller('ctrlAssesment', function ($scope,$http) {
             'Impulsivity':$scope.Impulsivity,
             'MentalFlexibility': $scope.mentalFlexibility,
             'Total' : $scope.attention + $scope.workingMemory+$scope.Impulsivity+$scope.mentalFlexibility   
-        };
-
+        };*/
+		
+		
         $scope.qIndex = $scope.qIndex + 1;
 
-        if ($scope.qIndex >= $scope.assessmentQs.length) {
+        if ($scope.qIndex >= $scope.questionsList.length) {
             $scope.qText = "Thank you for completing the assessment";
             $scope.b_show = false;
-
-            $scope.survey.username = res.userName;
-            $scope.survey.age = res.age;
-            $scope.survey.created = Date(); //now().getTime().toUTCString();
-            $scope.final = $scope.survey; //display the results to the user
-            writeLocalStorageJson("survey", $scope.survey,true);
-
+			//writeLocalStorageJson("survey", $scope.survey,true);
+		
+			//	0:{Attention:22,WorkingMemory:10,Implusivity:10,MentalFlexibility:19, plannedStartDate:"17July2016", plannedCompletionDate:"27Oct2016", actualStartDate:"",actualCompletionDate:"" } //GAP 0 or first test 
+			$scope.progress = {	
+						"Attention":$scope.attention,
+						"WorkingMemory":$scope.workingMemory,
+						"Implusivity":$scope.impulsivity,
+						"MentalFlexibility":$scope.mentalFlexibility,
+						"createdDate":Date()
+				};	
+			//res = {};	
+			res.progress.push($scope.progress);
+			
+			$scope.finalScore =  AnalayseScores($scope.attention,$scope.workingMemory,$scope.impulsivity,$scope.mentalFlexibility);
+				
+	
+			//send only progress data...clear the res body of everything else...
+			//var tempID = objectId.fromString( $scope.assesseeId );
+			$http.put("http://localhost:8080/assessee/" + $scope.assesseeId, res)
+			.then (function (res){
+				$scope.message = "Your assessement details successfully posted to server  " ;//+ res.data;
+				$Scope.score = tmp;	
+			}, function (res){
+				$scope.message = "Error while posting assessement details, please check your internet / wi-fi connection and retry." ;//+ res.error;
+			});
+	
         }
         else {
             $scope.qSlNo = "Question " + $scope.qIndex + ":";
-            $scope.qText = $scope.assessmentQs[$scope.qIndex].qText;
+            $scope.qText = $scope.questionsList[$scope.qIndex].qText;
         }
     }
 });
+
+function AnalayseScores (attention,workingMemory,impulsivity,mentalFlexibility) {
+
+	var str = "Analysis :";
+
+	/*	Attention RANGE OF SCORES	
+		NO DEFICIT	0 TO 7
+		BORDERLINE	8 TO 13
+		MILD	14 TO 30
+		MODERATE	31 TO 61
+		SEVERE	>61
+*/
+	
+	str = str + "Attention (" + attention + ")";
+
+	if (attention >= 61)
+		str = str + ": Severe";
+	if ((attention < 61) && (attention >= 31))
+		str = str +  ": Moderate";
+	if ((attention < 31) && (attention >= 14))
+		str = str +  ": Mild";
+	if ((attention < 14) && (attention >= 8))
+		str = str +  ": Borderline";
+	if ((attention < 8) && (attention >= 0))
+		str = str +  ": No Deficit";
+		
+/*Working Memory	RANGE OF SCORES	
+NO DEFICIT	0 TO 7
+BORDERLINE	8 TO 17
+MILD	18 TO 31
+MODERATE	32 TO 46
+SEVERE	>46
+*/	
+	str = str + " Working Memory(" + workingMemory + ")";
+
+	if (workingMemory >= 46)
+		str = str + ": Severe";
+	if ((workingMemory < 46) && (workingMemory >= 32))
+		str = str +  ": Moderate";
+	if ((workingMemory < 32) && (workingMemory >= 18))
+		str = str +  ": Mild";
+	if ((workingMemory < 18) && (workingMemory >= 8))
+		str = str +  ": Borderline";
+	if ((workingMemory < 8) && (workingMemory >= 0))
+		str = str +  ": No Deficit";
+		
+/*
+IMPULSIVITY RANGE OF SCORES	
+NO DEFICIT	0 TO 5
+BORDERLINE	6 TO 13
+MILD	14 TO 24
+MODERATE	25 TO 41
+SEVERE	>41
+*/		
+	str = str + " Impulsivity(" + impulsivity + ")";
+
+	if (impulsivity >= 41)
+		str = str + ": Severe";
+	if ((impulsivity < 41) && (impulsivity >= 25))
+		str = str +  ": Moderate";
+	if ((impulsivity < 25) && (impulsivity >= 14))
+		str = str +  ": Mild";
+	if ((impulsivity < 14) && (impulsivity >= 6))
+		str = str +  ": Borderline";
+	if ((impulsivity < 6) && (impulsivity >= 0))
+		str = str +  ": No Deficit";
+
+/*
+MENTAL FLEXIBILITY RANGE OF SCORES	
+NO DEFICIT	0 TO 5
+BORDERLINE	6 TO 11
+MILD	12 TO 24
+MODERATE	25 TO 44
+SEVERE	>44
+
+*/	
+
+	str = str + " Mental Flexibility (" + mentalFlexibility + ")";
+
+	if (mentalFlexibility >= 44)
+		str = str + ": Severe";
+	if ((mentalFlexibility < 44) && (mentalFlexibility >= 25))
+		str = str +  ": Moderate";
+	if ((mentalFlexibility < 25) && (mentalFlexibility >= 12))
+		str = str +  ": Mild";
+	if ((mentalFlexibility < 12) && (mentalFlexibility >= 6))
+		str = str +  ": Borderline";
+	if ((mentalFlexibility < 6) && (mentalFlexibility >= 0))
+		str = str +  ": No Deficit";
+
+	
+	return str;
+}
 
 function readLocalStorageJson(key) {
 
@@ -900,3 +1107,41 @@ rootApp.controller('ctrlSquares', function ($scope) {
             }
 
 });
+/*
+BulkWrite / update
+MongoCollection<Document> collection = db.getCollection("characters");
+List<WriteModel<Document>> writes = new ArrayList<WriteModel<Document>>();
+writes.add(
+    new InsertOneModel<Document>(
+        new Document("_id", 4)
+            .append("char", "Dithras")
+            .append("class", "barbarian")
+            .append("lvl", 3)
+    )
+);
+writes.add(
+    new InsertOneModel<Document>(
+        new Document("_id", 5)
+            .append("char", "Taeln")
+            .append("class", "fighter")
+            .append("lvl", 4)
+    )
+);
+writes.add(
+    new UpdateOneModel<Document>(
+        new Document("char", "Eldon"), // filter
+        new Document("$set", new Document("status", "Critical Injury")) // update
+    )
+);
+writes.add(new DeleteOneModel<Document>(new Document("char", "Brisbane")));
+writes.add(
+    new ReplaceOneModel<Document>(
+        new Document("char", "Meldane"), 
+        new Document("char", "Tanys")
+            .append("class", "oracle")
+            .append("lvl", 4)           
+    )
+);
+
+BulkWriteResult bulkWriteResult = collection.bulkWrite(writes);
+*/
