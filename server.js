@@ -13,6 +13,7 @@ var methodOverride = require('method-override'); // simulate DELETE and PUT (exp
 Profiles = require('./api/models/profileModel'); //created model loading here
 Questions = require('./api/models/questionModel'); //created model loading here
 Assessee = require('./api/models/assesseeModel'); //Assessee model definition
+Tasks = require('./api/models/taskModel'); //Task model definition
 
 // config files TBD
 //var db = require('./config/db');
@@ -44,7 +45,7 @@ app.use(express.static(__dirname + '../public')); // set the static files locati
 require('./api/routes/profileRoutes.js')(app);
 require('./api/routes/questionRoutes.js')(app);
 require('./api/routes/assesseeRoutes.js')(app);
-
+require('./api/routes/taskRoutes.js')(app);
 
 //// frontend client application routes-------------------------------------------------------------
 app.get('*', function (req, res) {
