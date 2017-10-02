@@ -1,8 +1,95 @@
 // build the router
 var rootApp = angular.module('neuroApp', ['ngRoute']);
 
+rootApp.directive('bars', function ($parse) {
+      return {
+         restrict: 'E',
+         replace: true,
+         scope:{data: '=data'}, //from the 	html <bars data="dataSet"></bars>
+         link: function (scope, element, attrs) {
+			 //d3js specific code goes here as bars directive is used explicity for d3js
+			//select div container using bar selector
+			var chart = d3.select(".bar");
+		   
+		   //initiate the data join by defining the selection to which we will join data.
+			var bar = chart.selectAll("div");
+		   
+			//we join the data
+			var barUpdate = bar.data(scope.data);
+		   
+			////we know the selection is empty, the returned update and exit selections 
+			////are also empty, and we need only handle the enter selection which represents new 
+			///data for which there was no existing element. We instantiate these missing elements by 
+			////appending to the enter selection.
+
+			var barEnter = barUpdate.enter().append("div");
+
+			////Now we set the width of each new bar as a 
+			////multiple of the associated data value, d.
+
+			barEnter.style("height", function(d) { return d *3+ "px"; });
+		   
+			////Because these elements were created with the data join, each bar is 
+			////already bound to data. We set the dimensions of each bar based on its 
+			/////data by passing a function to compute the width style property.
+
+			////Lastly, we use a function to set the text content of each bar, and produce a label.
+				
+			//this is making the inverted grap!
+			//barEnter.text(function(d) { return d; });
+		   
+			/* ////chain format to reduce the size of the code
+			d3.select(element[0])
+				.selectAll("div")
+					.data(scope.data)
+				.enter().append("div")
+				//.transition().ease("elastic")
+				.attr("class", "bar")
+					.style("height", function(d) {
+						var barHeight = d * 5;
+						return barHeight + "px"});
+			} */ 
+		}
+}
+   });
+	
+	
+	/* //working
+				d3.select(element[0])	
+				.selectAll("div")
+				.data(scope.data)
+				.enter()
+				.append("div")
+				.attr("class", "bar")
+				.style("height", function(d) {
+					var barHeight = d * 5;
+					return barHeight + "px";});
+
+
+rootApp.directive('bars', function ($parse) {
+      return {
+         restrict: 'E',
+         replace: true,
+         template: '<div id="chart"></div>',
+         link: function (scope, element, attrs) {
+           var data = attrs.data.split(','),
+           chart = d3.select('#chart')
+             .append("div").attr("class", "chart")
+             .selectAll('div')
+             .data(data).enter()
+             .append("div")
+             .transition().ease("elastic")
+             .style("height", function(d) { return d + "%"; })
+             .text(function(d) { return d + ""; });
+         } 
+      };
+   });
+  */ 
+rootApp.value("currentUser", "tempUser");
+
+
 rootApp.run(function ($rootScope) {
-    $rootScope.UserName = 'Test User';
+    $rootScope.currentUser = 'Test User';
 });
 
 
@@ -16,6 +103,31 @@ rootApp.config(function ($routeProvider) {
         templateUrl: './partials/home.html',
         controller: 'ctrlHome'
     })
+    .when('/attention', {
+        templateUrl: './partials/attention.html',
+        controller: 'ctrlAttention'
+    })
+	.when('/assessmentReport', {
+        templateUrl: './partials/assessmentReport.html',
+        controller: 'ctrlassessmentReport'
+    })
+
+	/*
+    .when('/impulsivity', {
+        templateUrl: './partials/impulsivity.html',
+        controller: 'ctrlImpulsivity'
+    })
+
+    .when('/mentalflex', {
+        templateUrl: './partials/mentalflex.html',
+        controller: 'ctrlmentalflexibility'
+    })
+
+    .when('/workoutMemory', {
+        templateUrl: './partials/workoutmemory.html',
+        controller: 'ctrlworkoutMemory'
+    })
+	*/
     .when('/about', {
         templateUrl: './partials/about.html',
         controller: 'ctrlAbout'
@@ -57,11 +169,16 @@ rootApp.config(function ($routeProvider) {
 });
 
 
-rootApp.controller('ctrlHome', function ($scope) {
+rootApp.controller('ctrlHome', function ($scope,$rootScope) {
     $scope.message = 'Hello from ctrlHome HomeController';
 
     $scope.status = "status message init from HomeController.. ";
-       
+	
+	//didn't work using global variable
+	//$scope.user = $rootScope.currentUser;
+	$scope.userDetails = readLocalStorageJson("currentUser");
+	$scope.userName = $scope.userDetails[0].name;
+		
     $scope.Register = function (model) {
         console.log("Inside ng.js :: Calling Register () in ctrlHome Controller");
         $scope.status = "Registration under process : please wait...";
@@ -123,6 +240,49 @@ rootApp.controller('ctrlHome', function ($scope) {
 
         //if successfull registration
     }
+});
+
+rootApp.controller('ctrlassessmentReport', function ($scope) {
+    $scope.userDetails = readLocalStorageJson("currentUser");
+	$scope.userName = $scope.userDetails[0].name;
+	$scope.score = readLocalStorageJson("score");
+	$scope.progress = $scope.userDetails[0].progress;
+	$scope.attention = $scope.score[0].attention;
+	$scope.workingMemory = $scope.score[0].workingMemory;
+	$scope.impulsivity = $scope.score[0].impulsivity;
+	$scope.mentalFlexibility = $scope.score[0].mentalFlexibility;
+	
+	$scope.createdOn = $scope.userDetails[0].progress[0].createdDate;
+	
+	$scope.profileMedian = $scope.userDetails[0].profileMedian;
+	var scaleFactor = 1;
+	
+	//datasets build in this order Attention,Working Memory,Impulsivity,MentalFlexibility
+	$scope.dataSetMedian = [
+			$scope.profileMedian.Attention*scaleFactor,
+			$scope.profileMedian.WorkingMemory*scaleFactor,
+			$scope.profileMedian.Impulsivity*scaleFactor,
+			$scope.profileMedian.MentalFlexibility*scaleFactor
+		];
+	$scope.dataSetMedianStr = $scope.dataSetMedian.toString();
+	
+	$scope.dataSet = [$scope.progress[0].Attention,$scope.progress[0].WorkingMemory,$scope.progress[0].Impulsivity,$scope.progress[0].MentalFlexibility];
+	
+	//temp for testing
+	//$scope.dataSet = [10,40,20,60];
+	$scope.dataSetStr = $scope.dataSet.toString();
+	
+	});
+
+
+
+rootApp.controller('ctrlAttention', function ($scope) {
+    $scope.userDetails = readLocalStorageJson("currentUser");
+	$scope.userName = $scope.userDetails[0].name;
+	
+	$scope.message = "Hi " + $scope.userName + ", Our analysis recommends the following tasks to improve your attention. ";
+
+	
 });
 
 rootApp.controller('ctrlAbout', function ($scope) {
@@ -471,7 +631,9 @@ rootApp.controller('ctrladminQuestions', function ($scope, $http) {
     }
 
     $scope.createQuestion = function (model) {
-
+		
+		////if not changed by the user on UI, set model 
+		////values with default values stored in $scope
 		if (model.Never == null)
 			model.Never = $scope.Never;
 			
@@ -481,7 +643,7 @@ rootApp.controller('ctrladminQuestions', function ($scope, $http) {
 		if (model.Sometimes == null)
 			model.Sometimes = $scope.Sometimes;
 		
-		if(model.MostOften == null)
+		if (model.MostOften == null)
 			model.MostOften = $scope.MostOften;
 			
 		if (model.Always == null)
@@ -498,28 +660,32 @@ rootApp.controller('ctrladminQuestions', function ($scope, $http) {
 			'profiles' : []
         };
 
-
-		for(var i=0;i < model.profilesList.length; ++i){
-			var list = {'id':"",'name':""};
-			//$scope.question.profiles.push('id':model.profileList[i]._id , 'name':model.profileList[i].name);
-			list.id = model.profilesList[i]._id;
-			list.name = model.profilesList[i].name;
-			$scope.question.profiles.push(list);
-		}
-
-        $http.post("http://localhost:8080/questions", $scope.question)
-        .then (function (res){
-            $scope.question = {}; // clear the form so our user is ready to enter another
-            $scope.message = "Successfully posted to server:" ;//+ res.data;
-        }, function (res){
-            $scope.message = "Error in posting new question, error: " + res.error;
-        });
-    }
+		////atleast one of the profiles should be assigned to question
+		if (model.profilesList.length > 0) {
+			
+			for(var i=0;i < model.profilesList.length; ++i){
+				var list = {'id':"",'name':""};
+				//$scope.question.profiles.push('id':model.profileList[i]._id , 'name':model.profileList[i].name);
+				list.id = model.profilesList[i]._id;
+				list.name = model.profilesList[i].name;
+				$scope.question.profiles.push(list);
+			}
+			
+			$http.post("http://localhost:8080/questions", $scope.question)
+			.then (function (res){
+				$scope.question = {}; // clear the form so our user is ready to enter another
+				$scope.message = "Successfully posted to server:" ;//+ res.data;
+			}, function (res){
+				$scope.message = "Error in posting new question, error: " + res.error;
+			});
+		}else
+			$scope.message = "Error in posting new Question, select atleast one of the profiles.";
+	}
 });
 
 //rootApp.controller('ctrlAssesment', ['$scope', '$rootScope', function ($scope, $rootScope) {
 
-rootApp.controller('ctrlAssesment', function ($scope,$http) {
+rootApp.controller('ctrlAssesment', function ($scope,$http,$window,$rootScope) {
     $scope.bEnable = true; //Next button flag
 	$scope.bAssesseDetails = true;
     $scope.bQuestions = false;
@@ -558,7 +724,9 @@ rootApp.controller('ctrlAssesment', function ($scope,$http) {
         $scope.message = ("Error in starting Assesment process, error:" + res.data);
     });
 
-    //retrieve all the questions based on the selected profile
+    ////retrieve all the questions based on the selected profile
+	//TBD
+	//{}
     $scope.Init = function () {
     
         $scope.bAssesseDetails = true;
@@ -713,22 +881,38 @@ rootApp.controller('ctrlAssesment', function ($scope,$http) {
 			$scope.progress = {	
 						"Attention":$scope.attention,
 						"WorkingMemory":$scope.workingMemory,
-						"Implusivity":$scope.impulsivity,
+						"Impulsivity":$scope.impulsivity,
 						"MentalFlexibility":$scope.mentalFlexibility,
 						"createdDate":Date()
 				};	
 			//res = {};	
 			res.progress.push($scope.progress);
 			
-			$scope.finalScore =  AnalayseScores($scope.attention,$scope.workingMemory,$scope.impulsivity,$scope.mentalFlexibility);
-				
+			//$scope.finalScore =  AnalyseScores($scope.attention,$scope.workingMemory,$scope.impulsivity,$scope.mentalFlexibility);
+			var finalScore = {};
+			finalScore.attention = $scope.attention;
+			finalScore.workingMemory = $scope.workingMemory;
+			finalScore.impulsivity = $scope.impulsivity;
+			finalScore.mentalFlexibility = $scope.mentalFlexibility;
+			
+			//$rootScope, rootApp global variable didn't work hence write it to local storage and get it later!
+			writeLocalStorageJson("currentUser",res);
+			writeLocalStorageJson("score", finalScore);
+			//$rootScope.currentUser = res;
+		
 	
 			//send only progress data...clear the res body of everything else...
 			//var tempID = objectId.fromString( $scope.assesseeId );
 			$http.put("http://localhost:8080/assessee/" + $scope.assesseeId, res)
 			.then (function (res){
+	
 				$scope.message = "Your assessement details successfully posted to server  " ;//+ res.data;
-				$Scope.score = tmp;	
+
+				//now navigate to home page
+				//alert("you are being directed to home page...");
+				$window.location.href = '/index.html';
+				
+				
 			}, function (res){
 				$scope.message = "Error while posting assessement details, please check your internet / wi-fi connection and retry." ;//+ res.error;
 			});
@@ -741,7 +925,7 @@ rootApp.controller('ctrlAssesment', function ($scope,$http) {
     }
 });
 
-function AnalayseScores (attention,workingMemory,impulsivity,mentalFlexibility) {
+function AnalyseScores (attention,workingMemory,impulsivity,mentalFlexibility) {
 
 	var str = "Analysis :";
 
@@ -753,18 +937,18 @@ function AnalayseScores (attention,workingMemory,impulsivity,mentalFlexibility) 
 		SEVERE	>61
 */
 	
-	str = str + "Attention (" + attention + ")";
+	str = str + "[Attention (" + attention + ")";
 
 	if (attention >= 61)
-		str = str + ": Severe";
+		str = str + ": Severe] ";
 	if ((attention < 61) && (attention >= 31))
-		str = str +  ": Moderate";
+		str = str +  ": Moderate] ";
 	if ((attention < 31) && (attention >= 14))
 		str = str +  ": Mild";
 	if ((attention < 14) && (attention >= 8))
-		str = str +  ": Borderline";
+		str = str +  ": Borderline] ";
 	if ((attention < 8) && (attention >= 0))
-		str = str +  ": No Deficit";
+		str = str +  ": No Deficit] ";
 		
 /*Working Memory	RANGE OF SCORES	
 NO DEFICIT	0 TO 7
@@ -773,18 +957,18 @@ MILD	18 TO 31
 MODERATE	32 TO 46
 SEVERE	>46
 */	
-	str = str + " Working Memory(" + workingMemory + ")";
+	str = str + " [Working Memory(" + workingMemory + ")";
 
 	if (workingMemory >= 46)
-		str = str + ": Severe";
+		str = str + ": Severe] ";
 	if ((workingMemory < 46) && (workingMemory >= 32))
-		str = str +  ": Moderate";
+		str = str +  ": Moderate] ";
 	if ((workingMemory < 32) && (workingMemory >= 18))
 		str = str +  ": Mild";
 	if ((workingMemory < 18) && (workingMemory >= 8))
-		str = str +  ": Borderline";
+		str = str +  ": Borderline ]";
 	if ((workingMemory < 8) && (workingMemory >= 0))
-		str = str +  ": No Deficit";
+		str = str +  ": No Deficit] ";
 		
 /*
 IMPULSIVITY RANGE OF SCORES	
@@ -794,18 +978,18 @@ MILD	14 TO 24
 MODERATE	25 TO 41
 SEVERE	>41
 */		
-	str = str + " Impulsivity(" + impulsivity + ")";
+	str = str + " [Impulsivity(" + impulsivity + ")";
 
 	if (impulsivity >= 41)
-		str = str + ": Severe";
+		str = str + ": Severe] ";
 	if ((impulsivity < 41) && (impulsivity >= 25))
-		str = str +  ": Moderate";
+		str = str +  ": Moderate] ";
 	if ((impulsivity < 25) && (impulsivity >= 14))
-		str = str +  ": Mild";
+		str = str +  ": Mild] ";
 	if ((impulsivity < 14) && (impulsivity >= 6))
-		str = str +  ": Borderline";
+		str = str +  ": Borderline] ";
 	if ((impulsivity < 6) && (impulsivity >= 0))
-		str = str +  ": No Deficit";
+		str = str +  ": No Deficit] ";
 
 /*
 MENTAL FLEXIBILITY RANGE OF SCORES	
@@ -817,18 +1001,18 @@ SEVERE	>44
 
 */	
 
-	str = str + " Mental Flexibility (" + mentalFlexibility + ")";
+	str = str + " [Mental Flexibility (" + mentalFlexibility + ")";
 
 	if (mentalFlexibility >= 44)
-		str = str + ": Severe";
+		str = str + ": Severe] ";
 	if ((mentalFlexibility < 44) && (mentalFlexibility >= 25))
-		str = str +  ": Moderate";
+		str = str +  ": Moderate] ";
 	if ((mentalFlexibility < 25) && (mentalFlexibility >= 12))
-		str = str +  ": Mild";
+		str = str +  ": Mild] ";
 	if ((mentalFlexibility < 12) && (mentalFlexibility >= 6))
-		str = str +  ": Borderline";
+		str = str +  ": Borderline] ";
 	if ((mentalFlexibility < 6) && (mentalFlexibility >= 0))
-		str = str +  ": No Deficit";
+		str = str +  ": No Deficit] ";
 
 	
 	return str;
@@ -854,7 +1038,7 @@ function readLocalStorageJson(key) {
 
         var arrayOfObjects = JSON.parse(arrData)
         arrayOfObjects.push(arrData)
-
+wr
         console.log(arrayOfObjects)
     })
     */
