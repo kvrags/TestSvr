@@ -5,52 +5,63 @@ rootApp.directive('bars', function ($parse) {
       return {
          restrict: 'E',
          replace: true,
-         scope:{data: '=data'}, //from the 	html <bars data="dataSet"></bars>
+         scope:{data:'=data', avg:'=avg', scale:'=scale'}, //from the html <bars data="dataSet"></bars>
          link: function (scope, element, attrs) {
 			 //d3js specific code goes here as bars directive is used explicity for d3js
-			//select div container using bar selector
-			var chart = d3.select(".bar");
-		   
-		   //initiate the data join by defining the selection to which we will join data.
-			var bar = chart.selectAll("div");
-		   
-			//we join the data
-			var barUpdate = bar.data(scope.data);
-		   
-			////we know the selection is empty, the returned update and exit selections 
-			////are also empty, and we need only handle the enter selection which represents new 
-			///data for which there was no existing element. We instantiate these missing elements by 
-			////appending to the enter selection.
+			 
+			var svg = d3.select("svg"),
+			margin = {top: 20, right: 20, bottom: 30, left: 40},
+			width = +svg.attr("width") - margin.left - margin.right,
+			height = +svg.attr("height") - margin.top - margin.bottom;
 
-			var barEnter = barUpdate.enter().append("div");
+			var x = d3.scaleBand().rangeRound([0, width]).padding(0.1),
+				y = d3.scaleLinear().rangeRound([height, 0]);
 
-			////Now we set the width of each new bar as a 
-			////multiple of the associated data value, d.
+			var g = svg.append("g")
+				.attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
-			barEnter.style("height", function(d) { return d *3+ "px"; });
-		   
-			////Because these elements were created with the data join, each bar is 
-			////already bound to data. We set the dimensions of each bar based on its 
-			/////data by passing a function to compute the width style property.
-
-			////Lastly, we use a function to set the text content of each bar, and produce a label.
+			/*d3.tsv("data.tsv", function(d) {
+			  d.frequency = +d.frequency;
+			  return d;
+			}, function(error, data) {
+			  if (error) throw error;
+			*/
+			d3.data(scope.data, function(d){
+				d.score = +d.score;
+				return d;			
+			}, function(error, data) {
+			  if (error) throw error;
 				
-			//this is making the inverted grap!
-			//barEnter.text(function(d) { return d; });
-		   
-			/* ////chain format to reduce the size of the code
-			d3.select(element[0])
-				.selectAll("div")
-					.data(scope.data)
-				.enter().append("div")
-				//.transition().ease("elastic")
-				.attr("class", "bar")
-					.style("height", function(d) {
-						var barHeight = d * 5;
-						return barHeight + "px"});
-			} */ 
+			
+			  x.domain(data.map(function(d) { return d.domainName; }));
+			  y.domain([0, d3.max(data, function(d) { return d.score; })]);
+
+			  g.append("g")
+				  .attr("class", "axis axis--x")
+				  .attr("transform", "translate(0," + height + ")")
+				  .call(d3.axisBottom(x));
+
+			  g.append("g")
+				  .attr("class", "axis axis--y")
+				  .call(d3.axisLeft(y).ticks(10, "%"))
+				.append("text")
+				  .attr("transform", "rotate(-90)")
+				  .attr("y", 6)
+				  .attr("dy", "0.71em")
+				  .attr("text-anchor", "end")
+				  .text("Frequency");
+
+			  g.selectAll(".bar")
+				.data(data)
+				.enter().append("rect")
+				  .attr("class", "bar")
+				  .attr("x", function(d) { return x(d.letter); })
+				  .attr("y", function(d) { return y(d.frequency); })
+				  .attr("width", x.bandwidth())
+				  .attr("height", function(d) { return height - y(d.frequency); });
+			});
+			}
 		}
-}
    });
 	
 	
@@ -112,22 +123,22 @@ rootApp.config(function ($routeProvider) {
         controller: 'ctrlassessmentReport'
     })
 
-	/*
+	
     .when('/impulsivity', {
         templateUrl: './partials/impulsivity.html',
         controller: 'ctrlImpulsivity'
     })
 
-    .when('/mentalflex', {
-        templateUrl: './partials/mentalflex.html',
+    .when('/mentalflexibility', {
+        templateUrl: './partials/mentalflexibility.html',
         controller: 'ctrlmentalflexibility'
     })
 
-    .when('/workoutMemory', {
-        templateUrl: './partials/workoutmemory.html',
+    .when('/workingmemory', {
+        templateUrl: './partials/workingmemory.html',
         controller: 'ctrlworkoutMemory'
     })
-	*/
+	
     .when('/about', {
         templateUrl: './partials/about.html',
         controller: 'ctrlAbout'
@@ -150,7 +161,7 @@ rootApp.config(function ($routeProvider) {
         controller: 'ctrlRetrieveUser'
     })
     .when('/squares', {
-        templateUrl: './partials/squares.html',
+        templateUrl: './tasks/attention/squares.html',
         controller: 'ctrlSquares'
     })
     .when('/squaresblack', {
@@ -255,14 +266,13 @@ rootApp.controller('ctrlassessmentReport', function ($scope) {
 	$scope.createdOn = $scope.userDetails[0].progress[0].createdDate;
 	
 	$scope.profileMedian = $scope.userDetails[0].profileMedian;
-	var scaleFactor = 1;
 	
 	//datasets build in this order Attention,Working Memory,Impulsivity,MentalFlexibility
 	$scope.dataSetMedian = [
-			$scope.profileMedian.Attention*scaleFactor,
-			$scope.profileMedian.WorkingMemory*scaleFactor,
-			$scope.profileMedian.Impulsivity*scaleFactor,
-			$scope.profileMedian.MentalFlexibility*scaleFactor
+			$scope.profileMedian.Attention,
+			$scope.profileMedian.WorkingMemory,
+			$scope.profileMedian.Impulsivity,
+			$scope.profileMedian.MentalFlexibility
 		];
 	$scope.dataSetMedianStr = $scope.dataSetMedian.toString();
 	
@@ -270,6 +280,14 @@ rootApp.controller('ctrlassessmentReport', function ($scope) {
 	
 	//temp for testing
 	//$scope.dataSet = [10,40,20,60];
+	$scope.dataSet = [
+					{"score":10,domainName:"Attention",
+					 "score":40,domainName:"Working Memory",
+					 "score":20,domainName:"Impulsivity",
+					 "score":60,domainName:"Mental Flexibility",
+						
+					}
+	];
 	$scope.dataSetStr = $scope.dataSet.toString();
 	
 	});
@@ -558,23 +576,36 @@ rootApp.controller('ctrlprofilesMedian', function ($scope,$http) {
     }
 //admin adminSurvey
 rootApp.controller('ctrladminSurvey', function ($scope,$http) {
-
-/*    //readin from file when hosted on a server
-    $http.get('./assets/survey.json')
-        .then(function (res) {
-            $scope.survey = res.data;
-        });
-  */      
-
     $scope.message = {};// = 'Hello from ctrladminSurvey';
-
-    $scope.survey = {};
+	$scope.users = [];
         
     //$scope.survey = readLocalStorageJson("survey");
 //retrieve all the Median profiles 
     $http.get("http://localhost:8080/assessee")
     .then(function (res) {
-        $scope.survey = res.data;
+        var tmp =  res.data;
+		var user = {
+				name:"",
+				ageGroup:"",
+				Attention:"",
+				WorkingMemory:"",
+				Impulsivity:"",
+				MentalFlexibility:""				
+			};
+				
+		////build an array with all the details that is required for the UI table display
+		//name,ageGroup,Attention,WorkingMemory,Impulsivity,MentalFlexibility
+		for (var i=0; i< tmp.length; ++i) {
+				user.name = tmp[i].name;
+				user.ageGroup = tmp[i].ageGroup;
+				user.Attention = tmp[i].progress[tmp[i].progress.length-1].Attention;
+				user.WorkingMemory = tmp[i].progress[tmp[i].progress.length-1].WorkingMemory;
+				user.Impulsivity = tmp[i].progress[tmp[i].progress.length-1].Impulsivity;
+				user.MentalFlexibility = tmp[i].progress[tmp[i].progress.length-1].MentalFlexibility;
+				
+				$scope.users.push(user);
+				user = {};
+		}
     }, function (res) {
         //failure callback
         $scope.message = res.data;
