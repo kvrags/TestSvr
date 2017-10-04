@@ -590,13 +590,13 @@
     </div>
     </div>
     <div id="survey" class="tabcontent" ng-controller="ctrladminSurvey"> 
-        <div><h3>Listing all the {{survey.length}} Survey Responses : </h3></div>
+        <div><h3>Listing all the {{users.length}} Survey Responses : </h3></div>
         <table>
             <th>Name</th><th> Age </th> <th> Attention</th> <th>Working Memory </th><th>Impulsivity</th>
             <th>Mental Flexibility</th><th>Total Score</th>
-            <tr ng-repeat="user in survey track by $index" >
+            <tr ng-repeat="user in users track by $index" >
                 <td>{{user.name}}</td>
-                <td>{{user.age}}</td>
+                <td>{{user.ageGroup}}</td>
                 <td>{{user.Attention}}</td>
                 <td>{{user.WorkingMemory}}</td>
                 <td>{{user.Impulsivity}}</td>
@@ -604,7 +604,7 @@
                 <td>{{user.Total}}</td>
             </tr>
         </table>
-        <pre> {{survey | json}} </pre> 
+        <pre> {{users | json}} </pre> 
     </div>
 
 
