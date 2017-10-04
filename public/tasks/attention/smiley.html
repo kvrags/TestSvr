@@ -1,0 +1,36 @@
+﻿<!DOCTYPE html>
+
+<html  lang="en" xmlns="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="utf-8" />
+    <title></title>
+</head>
+<body>
+    <div ng-controller="ctrlSmiley" >
+       <!--{{message}}
+        <p>{{status}}</p>-->
+        <p>
+            <ul>
+                <li>You will see a smiley appear on the following slides</li>
+                <li>Tap the RIGHT key if you see the smiley on the right and tap  LEFT  key if you see the smiley on the left. </li>
+                <li>Tap the LEFT key if you see the smiley on the right and tap  right  key if you see the smiley on the left. </li>
+                <li> React as quickly as you can</li>
+            </ul>
+        <table ng-keyup="KeyDownF($event.keyCode)" width="700" height="500" border="1" >
+            <tr>
+                <td align="{{h_align}}" valign="{{v_align}}"><img src="./res/{{imageName}}" width="250" height="250" /></td>
+            </tr>
+            <tr>
+                <td>
+                    <input autofocus >
+                </td>
+                Score: {{hits}} <!--Misses : {{missess}}-->
+            </tr>
+        </table>
+
+    </div>
+
+    <script src="./js/ng.js"> </script>
+
+</body>
+</html>
