@@ -1,17 +1,21 @@
 ﻿<head>
     <meta charset="utf-8">
     <title></title>
-	<link rel="stylesheet" type="text/css" href="../css/hexagon.css">
 	<link rel="stylesheet" type="text/css" href="../css/neuro.css">
 
 	</head>
-<h2><div ng-if="userName"> {{userName}}, - </h2></div>
-<div style="text-align:center"><h2>Welcome to Neuro Spa and Gym</h2></div>
+
+<div style="text-align:center">
+	<h2>
+		Welcome to Neuro Spa and Gym
+	</h2>
+</div>
 <div ng-controller="ctrlHome">
 <table>
 <tr text-align="top">
 	<td width="50%">
-	<p><h3> In today’s highly competitive world, we all find ourselves in what seems to be a never-ending rat race, each trying to come out on top. Success is dependent on a plethora of intact mental faculties such as mental flexibility, concentration, persistence, logical thinking and reasoning, judgement and decision making, goal setting, and ignoring distractions to name only a few. These mental faculties can all be broadly classified under three cognitive abilities: attention, executive control an inhibition.</h3></p>	
+	<p><h3> 	<div ng-if="userName"> Hi {{userName}},  </div>
+	In today’s highly competitive world, we all find ourselves in what seems to be a never-ending rat race, each trying to come out on top. Success is dependent on a plethora of intact mental faculties such as mental flexibility, concentration, persistence, logical thinking and reasoning, judgement and decision making, goal setting, and ignoring distractions to name only a few. These mental faculties can all be broadly classified under three cognitive abilities: attention, executive control an inhibition.</h3></p>	
 	</td>
 	<td>
 	<div class="float"> 
@@ -37,16 +41,13 @@
 			</div>
 		</a>
 		<!--display only if we know who is the user is-->
-		<div ng-if="userName">  
 			<a  class="white" href="#!assessmentReport"> 
-				<div class="float techyellow" >
-					Assessment Report
-				</div>
+					<div ng-if="userName" class="float techyellow" >
+						Assessment Report
+					</div>
 			</a>
-		</div>
 	</div>	
 	
- 
 </td>
 
 </table>

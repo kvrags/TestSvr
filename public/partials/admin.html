@@ -57,21 +57,63 @@
             }
     </style>
 
-    <p>Click on the buttons inside the tabbed menu:</p>
+    <p style="margin:1%"><h4>Click on Tasks below -</h4></p>
 
-    <div class="tab" >
+    <div style="margin:0.5%" class="tab" >
         <button class="tablinks" onclick="openTab(event, 'users')">Users</button>
         <button class="tablinks" onclick="openTab(event, 'profiles')">Profiles</button>
         <button class="tablinks" onclick="openTab(event, 'profilesMedian')">Profiles Median</button>
         <button class="tablinks" onclick="openTab(event, 'questions')">Questions</button>
         <button class="tablinks" onclick="openTab(event, 'survey')">Survey</button>
-    </div>
+        <button class="tablinks" onclick="openTab(event, 'sync')">Sync</button>
+	</div>
 
     <div id="users" class="tabcontent">
         <h3>Manage Users</h3>
         <p>Here you manage users.</p>
     </div>
 
+	<div id="sync" class="tabcontent" ng-controller="ctrlSync" ng-init="Init()">
+	
+		<div>
+			<table>
+			<tr>
+				<td>Online Connection Status:</td>
+				<td>
+					<div ng-if="bOnline">
+						<img width="20px" height="15px"  alt="Online" src="./res/greenDot.jpg">
+					</div>
+					<div ng-if="!bOnline">
+						<img width="20px" height="15px"  alt="Offline" src="./res/redDot.jpg">
+					</div>
+				</td>
+			</tr>
+			</table>
+		</div>
+		
+			<h3>Sync required data for offline working: </h3>
+				<div>
+					<p>
+						<input type="button" value="Sync for Offline" ng-click="Sync()" />
+					</p>
+					<p><input type="button" value="CreateDummyRecords" ng-click="CreateDummyRecords()" /> </p>
+					
+					<p>
+						<input type="button" value="Force Upload" ng-click="UploadLocalDB()" /> Pending records : {{localData.length}}
+					</p>
+				</div>
+			<p>Local Storage : 
+				<ul>
+					<li>Web Pages and resources</li>
+					<li>Profiles (Student) (Total:{{profilesList.length}} )</li>
+					<li>Questions (Total:{{questions.length}})</li>
+				</ul>
+			</p>
+			
+			<pre>{{message	| json}}</pre>
+    </div>
+
+	
     <div id="profiles" class="tabcontent" ng-controller="ctrlProfiles">
         <h3>Create new Profile</h3>
         <div class="container">
@@ -252,100 +294,13 @@
             </div>
             <div class="container">
 			    <form class="form-horizontal" name="form" novalidate>
-
-                <div class="form-group">
-                    <div class="col-md-2">
-                        <label>Profile Name</label>
-                    </div>
-                    <div class="col-md-2">
-                        <input type="text" name="name" ng-model="model.name" ng-required="true" autofocus/>
-                        <div class="alert alert-danger" ng-show="(form.name.$touched || form.$submitted) && form.name.$error.required">
-                            Profile name is required
-                        </div>
-                    </div>
-                </div>
-                <div class="form-group">
-                    <div class="col-md-2">
-                        <label>Age Group</label>
-                    </div>
-                    <div class="col-md-2">
-                        <select name="ageGroup" class="form-control" ng-model="model.ageGroup" ng-required="true">
-                            <option value="6to16">6 to 16 years</option>
-                            <option value="16to25">16 to 25 years</option>
-                            <option value="26to35">26 to 35 years</option>
-                            <option value="36to50">36 to 50 years</option>
-                            <option value="above51">Above 50 years</option>
-                            <option value="above65">Above 65 years</option>
-                        </select>
-
-                        <div class="alert alert-danger" ng-show="(form.ageGroup.$touched || form.$submitted) && form.ageGroup.$error.required">
-                            Age Group is required
-                        </div>
-                    </div>
-                </div>
-                <div class="form-group">
-                    <div class="col-md-2">
-                        <label>Occupation</label>
-                    </div>
-                    <div class="col-md-5">
-                        <select ng-model="model.occupation" ng-options="item.type for item in occupationType" ng-required="true"></select>
-<!--                        <select name="occupation" class="form-control" ng-model="model.occupation" ng-required="true">
-                            <option value="student">Student</option>
-                            <option value="working">Working</option>
-                            <option value="housewife">Housewife</option>
-                            <option value="retired">Retired</option>
-                        </select>
-    -->
-                        <div class="alert alert-danger" ng-show="(form.occupation.$touched || form.$submitted) && form.occupation.$error.required">
-                            Occupation is required
-                        </div>
-                    </div>
-                </div><!-- end div form-group -->
-
-                <div class="form-group">
-                    <div class="col-md-2">
-                        <label>Stream</label>
-                    </div>
-                    <div class="col-md-5">
-                        <select name="stream" ng-model="model.stream" ng-options="item for item in model.occupation.data" ></select>
-                        <!-- <select name="occupation" class="form-control" ng-model="model.occupation" ng-required="true">
-                                        <option value="student">Student</option>
-                                        <option value="working">Working</option>
-                                        <option value="housewife">Housewife</option>
-                                        <option value="retired">Retired</option>
-                             </select>
-                     <div class="alert alert-danger" ng-show="(form.stream.$touched || form.$submitted) && form.stream.$error.required">
-                            Stream is required
-                     </div>-->
-                    </div>
-                </div><!-- end div form-group -->
-
-                <div class="form-group">
-                    <div class="col-md-2">
-                        <label>City Type</label>
-                    </div>
-                    <div class="col-md-2">
-                        <select name="cityType" class="form-control" ng-model="model.cityType" ng-required="true">
-                            <option value="urban">Urban</option>
-                            <option value="rural">Rural</option>
-                        </select>
-                    <div class="alert alert-danger" ng-show="(form.cityType.$touched || form.$submitted) && form.cityType.$error.required">
-                        City type is required
-                        </div>
-                    </div>
-                </div> <!--end of form group-->
-				
                 <p> Median Values for the above profile:</p>
-            
-                    <div class="form-group">
+					<div class="form-group">
                         <div class="col-md-2">
                             <label>Attention</label>
                         </div>
                         <div class="col-md-2">
-                            <input type="number" name="attention" ng-model="model.Attention" ng-required="true" autofocus />
-                            <div class="alert alert-danger" ng-show="(form.attention.$touched || form.$submitted) && form.attention.$error.required">
-                                Attention Median value is required
-                            </div>
+                            <input type="number" name="attention" ng-model="model.Attention" ng-change="enableUpdateBtn()"/>
                         </div>
                     </div> <!--end of class="form-group"-->
                     <div class="form-group">
@@ -353,10 +308,7 @@
                             <label>Working Memory</label>
                         </div>
                         <div class="col-md-2">
-                            <input type="number" name="workingMemory" ng-model="model.WorkingMemory" ng-required="true" />
-                            <div class="alert alert-danger" ng-show="(form.workingMemory.$touched || form.$submitted) && form.workingMemory.$error.required">
-                                Working Memory Median value is required
-                            </div>
+                            <input type="number" name="workingMemory" ng-model="model.WorkingMemory" ng-change="enableUpdateBtn()"/>
                         </div>
                     </div> <!--end of class="form-group"-->
                     <div class="form-group">
@@ -364,10 +316,7 @@
                             <label>Impulsivity</label>
                         </div>
                         <div class="col-md-2">
-                            <input type="number" name="impulsivity" ng-model="model.Impulsivity" ng-required="true" autofocus />
-                            <div class="alert alert-danger" ng-show="(form.impulsivity.$touched || form.$submitted) && form.impulsivity.$error.required">
-                                Impulsivity Median value is required
-                            </div>
+                            <input type="number" name="impulsivity" ng-model="model.Impulsivity" ng-change="enableUpdateBtn()" />
                         </div>
                     </div> <!--end of class="form-group"-->
                     <div class="form-group">
@@ -375,41 +324,38 @@
                             <label>Mental Flexibility</label>
                         </div>
                         <div class="col-md-2">
-                            <input type="number" name="mentalFlexibility" ng-model="model.MentalFlexibility" ng-required="true" autofocus />
-                            <div class="alert alert-danger" ng-show="(form.mentalFlexibility.$touched || form.$submitted) && form.mentalFlexibility.$error.required">
-                                Mental Flexibility Median value is required
-                            </div>
+                            <input type="number" name="mentalFlexibility" ng-model="model.MentalFlexibility"  ng-change="enableUpdateBtn()"/>
                         </div>
                     </div> <!--end of class="form-group"-->
 
                     <div class="form-group">
                         <div class="col-md-offset-2 col-md-5">
-                            <input type="submit" value="Update" class="btn btn-primary" ng-click="updateProfileMedian(model)" ng-disabled="form.$invalid" />
+                            <input type="submit" value="Update" class="btn btn-primary" ng-click="updateProfileMedian(model)" ng-disabled="!b_UpdateBtn" />
                         </div>
                     </div>
 
-                    </form>
+                </form>
              </div>
                     <pre>{{message | json}}</pre>
             </div>
 
         </div>
 
-    <div id="questions" class="tabcontent" ng-controller="ctrladminQuestions" >
+    <div id="questions" class="tabcontent" ng-controller="ctrladminQuestions" ng-init="Init()">
 
     <div>
         <input type="radio" name="selectQ" ng-click="selectMode('create')" checked> <label>Create New</label>
         <input type="radio" name="selectQ" ng-click="selectMode('modify')"> <label>Modify</label>
     </div>
     <div class="container" id="QCreate" ng-hide="b_CreateQ">
-        <h3>Create new Assessment Questions</h3>
+        <label><h3>Create new Assessment Question:</h3></label>
         <form class="form-horizontal" name="form" novalidate>
             <div class="form-group">
                 <div class="col-md-2">
                     <label>Select the profile applicable to this question</label>
                 </div>
                 <div class="col-md-5">																				<!--item.type for item in occupationType-->
-                    <select multiple name="profiles" class="form-control" ng-model="model.profilesList"  ng-options="profile.name for profile in profilesList" ng-required="true">
+                    <select multiple name="profiles" class="form-control" ng-model="model.profilesList"  ng-options="profile.name for profile in profilesList | orderBy: 'name'" ng-required="true">
                         <!--<option value="Attention">Attention</option>
                         <option value="WorkingMemory">Working Memory</option>
                         <option value="Implusivity">Implusivity</option>
@@ -513,25 +459,23 @@
                     </div> 
                 </div>
             </div>
-           <div class="form-group">
+            <div class="form-group">
                 <div class="col-md-offset-2 col-md-5">
                     <input type="submit" value="Create" class="btn btn-primary" ng-click="createQuestion(model)" ng-disabled="form.$invalid" />
                 </div>
             </div>
         </form>
 
-            <pre>{{message | json}}</pre>
+        <pre>{{message | json}}</pre>
     </div>
-
-
-    <div class="container" id="QModify" ng-hide="!b_CreateQ">
-        <h4>
-            [Total:<b>{{questions.length}}</b>]
-            [Attention:<b>{{(questions| filter:domain='Attention').length}}</b>]
-            [Working Memory:<b>{{(questions| filter:domain='WorkingMemory').length}}</b>]
-            [Impulsivity:<b>{{(questions| filter:domain='Impulsivity').length}}</b>]
-            [Mental Flexibility:<b>{{(questions| filter:domain='MentalFlexibility').length}}</b>]
-        </h4>
+    <div id="QModify" ng-hide="!b_CreateQ">
+		<label style="margin-left:5%"><h4>
+            [<label ng-click="setFilter('')"<b>Total:{{questions.length}}</b></label>]       
+			[<label ng-click="setFilter('Attention')">Attention:<b>{{(questions| filter:domain='Attention').length}}</b></label>]
+            [<label ng-click="setFilter('WorkingMemory')">Working Memory:<b>{{(questions| filter:domain='WorkingMemory').length}}</b> </label>]
+            [<label ng-click="setFilter('Impulsivity')">Impulsivity:<b>{{(questions| filter:domain='Impulsivity').length}}</b></label>]
+            [<label ng-click="setFilter('MentalFlexibility')">Mental Flexibility:<b>{{(questions| filter:domain='MentalFlexibility').length}}</b></label>]
+        </h4></label>
             <!--<p>
                 <h4>
                     Select a Cognitive Domain
@@ -558,7 +502,7 @@
             </tr>
 
             <!--<tr ng-repeat="question in questions | filter: searchDomain | orderBy: 'question.domain' track by $index">-->
-            <tr ng-repeat="question in questions">
+            <tr ng-repeat="question in questions | filter:displayFilter">
             <td>
                     {{$index +1}}
                 </td>
@@ -590,10 +534,19 @@
     </div>
     </div>
     <div id="survey" class="tabcontent" ng-controller="ctrladminSurvey"> 
-        <div><h3>Listing all the {{users.length}} Survey Responses : </h3></div>
+        <div><h3>Survey Responses : {{users.length}}  </h3></div>
+			<div class="col-md-5">																				
+				
+				<!--<select multiple name="profiles" class="form-control" ng-model="profilesList"  ng-options="profile.name for profile in profilesList | orderBy: 'name'" ng-required="true"> </select> -->
+
+				<div class="alert alert-danger" ng-show="(form.profiles.$touched || form.$submitted) && form.profiles.$error.required">
+					Select at least one Profile required
+				</div>
+			</div>
+
         <table>
             <th>Name</th><th> Age </th> <th> Attention</th> <th>Working Memory </th><th>Impulsivity</th>
-            <th>Mental Flexibility</th><th>Total Score</th>
+            <th>Mental Flexibility</th>
             <tr ng-repeat="user in users track by $index" >
                 <td>{{user.name}}</td>
                 <td>{{user.ageGroup}}</td>
@@ -601,10 +554,10 @@
                 <td>{{user.WorkingMemory}}</td>
                 <td>{{user.Impulsivity}}</td>
                 <td>{{user.MentalFlexibility}}</td>
-                <td>{{user.Total}}</td>
+                <!--<td>{{user.Total}}</td>-->
             </tr>
         </table>
-        <pre> {{users | json}} </pre> 
+        <!--<pre> {{users | json}} </pre>-->
     </div>
 
 

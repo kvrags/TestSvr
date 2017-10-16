@@ -1,4 +1,4 @@
-﻿    <div ng-controller="ctrlAssesment" ng-init="Init()">
+﻿    <div style="margin:5%" ng-controller="ctrlAssesment" ng-init="Init()">
     <h2> Assessment Section</h2> {{date}}
     
         <div class="container" id="assessee" ng-show="bAssesseDetails">
@@ -95,23 +95,26 @@
             <form class="form-horizontal" id="formQs"  novalidate>
                 <div class="form-group">
                     <div class="col-md-2">
-                        <label>{{qSlNo}}</label>
+                        <label><h3>{{qSlNo}}</h3></label>
                     </div>
-                    <div class="col-md-5">
-                        <textarea style="border:ridge" rows="4" cols="70" style="align-content:stretch" readonly>{{qText}} </textarea>
-                    </div>
+                    <div class="col-md-7">
+						<!--<h3><textarea style="border:ridge overflow: hidden" rows="4" cols="70" style="align-content:stretch" readonly>{{qText}} </textarea></h3>-->
+						<label style="width:50% height:20% border:5px grey margin-left:5% margin-right:5%" ><h3>{{qText}}<h3></label>
+					</div>
                 </div>
                 <div class="form-group">
                     <div class="col-md-2">
-                        <label>Your Response</label>
+                        <label><h4>Your Response</h4></label>
                     </div>
-                    <div class="col-md-5">
+                    <div class="col-md-7">
+						<h3>
                         <label><input type="radio" name="reply" ng-model="model.reply" value="Never" ng-required="true" /> Never</label>
                         <label><input type="radio" name="reply" ng-model="model.reply" value="Rarely" ng-required="true" /> Rarely </label>
                         <label><input type="radio" name="reply" ng-model="model.reply" value="Sometimes" ng-required="true" /> Sometimes</label>
                         <label><input type="radio" name="reply" ng-model="model.reply" value="MostOften" ng-required="true" /> Most Often</label>
                         <label><input type="radio" name="reply" ng-model="model.reply" value="Always" ng-required="true" /> Always</label>
-                        <div class="alert alert-danger" ng-show="(formQs.reply.$touched || formQs.$submitted) && formQs.reply.$error.required">
+                        </h3>
+						<div class="alert alert-danger" ng-show="(formQs.reply.$touched || formQs.$submitted) && formQs.reply.$error.required">
                             Please select one of the options above.
                         </div>
                     </div>
@@ -119,14 +122,13 @@
 				<div class="form-group">
                     <div class="col-md-offset-2 col-md-5">
                         <!--  <input type="submit" value="Submit" class="btn btn-primary" ng-click="form.$valid && Register(model)" /> -->
-                        <input type="submit" value="Next" class="btn btn-primary" ng-click="SubmitQuestions(model)" ng-disabled="formQs.$invalid" />
+						<!--<input type="submit" value="Create New User" class="btn btn-primary" ng-click="CreateNewAssessee(model)" ng-disabled="formUser.$invalid || !bEnable" />-->
+                        <input type="submit" value="Next" class="btn btn-primary" ng-click="SubmitQuestions(model)" ng-disabled="formQs.$invalid || formQs.$submitted || !model.reply" />
                     </div>
                 </div>
 
             </form>
-			<pre>{{message | json}}</pre>
-			<pre>{{finalScore | json}}
-        </div> <!--Question details -->
+	    </div> <!--Question details -->
 
     </div>
 

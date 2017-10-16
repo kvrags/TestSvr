@@ -2,6 +2,12 @@
 <head>
  
 <style>
+
+
+.axis .domain {
+  display: none;
+}
+
 .bar div { /* if declared div.bar then display changes*/
 	display: inline-block;
 	width: 50px;
@@ -9,27 +15,52 @@
 	background-color: teal;
 	margin-right: 2px;
 	font: 10px sans-serif;
+	font-style:white;
 	padding:3px;
 	
 }
 </style>
 </head>
 <body>
-<div ng-app="neuroApp" ng-controller="ctrlassessmentReport">
+<div style="margin:5%" ng-app="neuroApp" ng-controller="ctrlassessmentReport">
 	<h1>Assessment Report for : {{userName}} <h1>
-		
+	<p>Your Scores :<!--{{dataSet}}--></p>
+
 	<div class="bar">
-		<bars data="dataSet"></bars>
+		<bars avg="dataSetMedian" data="dataSet"  scale="6" ></bars>
 	</div>
-	<h3>
+<!--	<h3>
 		<p>Median Scores: Attention: {{profileMedian.Attention}}  Working Memory : {{profileMedian.WorkingMemory}} Impulsivity: {{profileMedian.Impulsivity}} Mental Flexibility:{{profileMedian.MentalFlexibility}}</p>
 		<p>Your Score    :Attention: {{attention}}  Working Memory : {{workingMemory}} Impulsivity: {{impulsivity}} Mental Flexibility:{{mentalFlexibility}}</p>
 	</h3>
+	-->
+	<h4>
+	<table border="1px">
+	<tr style="text-align:center">
+		<th width=150></th><th width=40>Attention</th><th>Working Memory</th> <th>Impulsivity</th><th>MentalFlexibility</th>
+	</tr>	
+	<tr style="text-align:center">	
+		<td>Median Score</td> 
+		<td>{{profileMedian.Attention}} </td>
+		<td>{{profileMedian.WorkingMemory}} </td>
+		<td>{{profileMedian.Impulsivity}} </td>
+		<td>{{profileMedian.MentalFlexibility}} </td>
+	</tr>
+	<tr style="text-align:center">
+		<td>You Scored</td> 
+		<td>{{attention}} </td>
+		<td>{{workingMemory}} </td>
+		<td>{{impulsivity}} </td>
+		<td>{{mentalFlexibility}}</td>
+	</tr>
+	</table>
+	</h4>
 	<p><h4>Assessment questionaire was last taken on : {{createdOn}} </h4></p>
-</div>
 	<div>
 	<p> <h4>Note : This is not the final report which will be only available after completing all the recommended tasks.
 	</h4></p>
 	</div>
+
+</div>
 </body>
 
