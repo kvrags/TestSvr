@@ -7,49 +7,11 @@
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
 	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.js"></script>
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
-	
-    <style>
-        /* Remove the navbar's default margin-bottom and rounded borders */
-        .navbar {
-            margin-bottom: 0;
-            border-radius: 0;
-        }
+	<link rel="stylesheet" type="text/css" href="./css/neuro.css">
 
-        /* Set height of the grid so .sidenav can be 100% (adjust as needed) */
-        .row.content {
-            height: 300px; 
-        }
-
-        /* Set gray background color and 100% height */
-        .sidenav {
-            padding-top: 20px;
-            background-color: #f1f1f1;
-            height: 100%;
-        }
-
-        /* Set black background color, white text and some padding */
-        footer {
-            background-color: #555;
-            color: white;
-            padding: 15px;
-        }
-
-        /* On small screens, set height to 'auto' for sidenav and grid */
-        @media screen and (max-width: 767px) {
-            .sidenav {
-                height: auto;
-                padding: 15px;
-            }
-
-            .row.content {
-                height: auto;
-            }
-        }
-    </style>
 </head>
 <body >
-
-    <nav class="navbar navbar-inverse">
+   <nav class="navbar navbar-inverse">
         <div class="container-fluid">
             <div class="navbar-header">
                 <button type="button" class="navbar-toggle" data-toggle="collapse" data-target="#myNavbar">
@@ -69,7 +31,7 @@
                 <ul class="nav navbar-nav navbar-right">
                     <li> <a href="#!admin">Admin</a></li>
                   <li><a href="#" onclick="clearCache()"> <span class="glyphicon glyphicon-log-in"></span> Logout</a></li>
-                </ul>
+				</ul>
             </div>
         </div>
     </nav>
@@ -81,23 +43,27 @@
     </footer>
     -->
     <script>
-           /* if('serviceWorker' in navigator) {
+           if('serviceWorker' in navigator) {
               navigator.serviceWorker
-                       .register('./js/sw.js')
-                       .then(function () {
+                       .register("/sw.js")
+                       .then(function (res) {
                            console.log("Service Worker Registered");
-                       });
-            }else{
-                console.log("No Service Worker Support in the Browser!");
-            }*/
+                       }, function(res){
+							console.log("Service Worker registration attempt failed.");
+							console.log("Service Worker err: " + res);
+					   })
+			} else {
+				console.log("No Service Worker Support in the Browser!");
+			}
     </script>
     <script>
-       /* //check for indexedDB
-        if (!window.indexedDB) {
-            console.log("This client browser doesn't support IndexedDB.")
+        //check support for localStorage
+        if (!window.localStorage) {
+			alert("This device does not support offline working/localStorage.");
+            console.log("This device does not support offline working/localStorage.")
         } else {
-            console.log("This browser supports IndexedDB.")
-        }*/
+            console.log("This browser supports localstorage.")
+        }
 		
 		function clearCache(){
 			//remove specific items
@@ -108,7 +74,6 @@
 		}
     </script>
 	<script src="https://d3js.org/d3.v3.min.js" charset="utf-8"></script>
-
     <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.4/angular.js"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.6.4/angular-route.js"></script>
     <script src="./js/ng.js"> </script>      
