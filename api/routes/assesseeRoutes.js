@@ -17,14 +17,15 @@ module.exports = function (app) {
 
     // assessee Routes
     app.route('/assessee')
-      .get(assessee.list_all_profiles)
-      .post(assessee.create_a_profile);
+      .get(assessee.list_all_assessees)
+      .post(assessee.create_a_assessee)
+	  .patch(assessee.bulkInsert);
 
 
-    app.route('/assessee/:profileId')
-      .get(assessee.read_a_profile)
-      .put(assessee.update_a_profile)
-      .delete(assessee.delete_a_profile);
+    app.route('/assessee/:assesseeId')
+      .get(assessee.read_a_assessee)
+      .put(assessee.update_a_assessee)
+      .delete(assessee.delete_a_assessee);
 
         //console.error(err.stack);
         //res.status(500);
