@@ -1,0 +1,48 @@
+﻿<head>
+    <title></title>
+	<link rel="stylesheet" type="text/css" href="../css/neuro.css">
+</head>
+
+<div class="floatSmall"> 
+		<a  class="white" href="./#!attention"> 
+			<div class="floatSmall techolive" >
+				< Task Panel
+			</div>
+		</a>
+</div>	
+<div  ng-controller="ctrlSquares"  ng-init="Draw()" ng-click="Draw(model)">
+	<div align="center"><p>&nbsp</p>
+		<label><input type="radio" name="Level" ng-click="setDifficultyLevel('0')" checked /> Level 1</label>
+		<label><input type="radio" name="Level" ng-click="setDifficultyLevel('1')" /> Level 2</label>
+		<label><input type="radio" name="Level" ng-click="setDifficultyLevel('2')" /> Level 3</label>
+	</div>
+		
+	<table border="10px" style="height:300px" id="myTable" >
+		<tr ng-repeat="row in array_Table track by $index" style=background-color:{{row_clrs[$index]}}>
+			<td width="60px" ng-repeat="col in row track by $index" align="center"` ng-switch="col" >
+				<!-- if the table display is not proper, check array and low-seed and high seed settings -->
+				<span ng-switch-when="1">
+					<img align="center" src="./res/white_rect.jpg" width="60px" height="40px"/>
+				</span>
+				<span ng-switch-when="0">&nbsp;</span>
+			</td>
+		</tr>
+	</table>
+	<!--<pre>{{message |json }} </pre>-->
+
+	<div align="center">
+		Show Answer: <input type="checkbox" ng-model="checked" aria-label="Toggle ngHide"><br />
+		<div class="check-element animate-show-hide" ng-hide="!checked">
+			<h3>{{message}}</h3>
+			<input type="number" ng-model="model.usrResult" />
+			{{$scope.calsResult}}
+		</div>
+	</div>
+</div>
+   
+        <script>
+            //document.addEventListener("click", Draw());
+        </script>
+
+    <script src="./js/CountSquares-ng.js"> </script>
+	<script src="./js/ng.js"> </script>

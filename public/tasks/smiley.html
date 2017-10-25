@@ -1,0 +1,41 @@
+﻿<head>
+    <title></title>
+	<link rel="stylesheet" type="text/css" href="../css/neuro.css">
+</head>
+
+<div class="floatSmall"> 
+		<a  class="white" href="./#!attention"> 
+			<div class="floatSmall techolive" >
+				< Task Panel
+			</div>
+		</a>
+</div>	
+
+<div ng-controller="ctrlSmiley" ng-init="display()">
+       <!--{{message}}
+        <p>{{status}}</p>-->
+        <div>
+		<p> 		</div>
+        <table ng-keyup="KeyDownF($event.keyCode)" width="500" height="400" border="1" >
+			<th>
+			Instructions:
+            <ul>
+                <li>You will see a smiley appear on the following slides</li>
+                <li>Tap the RIGHT key if you see the smiley on the right and tap  LEFT  key if you see the smiley on the left. </li>
+                <li>Tap the LEFT key if you see the heart on the right and tap  right  key if you see the heart on the left. </li>
+                <li> React as quickly as you can</li>
+            </ul>
+
+			</th>
+            <tr>
+                <td align="{{h_align}}" valign="{{v_align}}"><img src="../res/{{imageName}}" width="250" height="250" /></td>
+            </tr>
+            <tr>
+                <td>
+                    <input autofocus> Hits : {{hits}} <!-- missess not working | Misses : {{missess}} -->
+                </td>
+                
+            </tr>
+        </table>
+		<pre>{{message}} </pre>
+</div>
