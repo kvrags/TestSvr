@@ -179,11 +179,11 @@ rootApp.config(function ($routeProvider) {
         controller: 'ctrlSquares'
     })
     .when('/squaresblack', {
-        templateUrl: './partials/squaresblack.html',
+        templateUrl: './tasks/attention/squaresblack.html',
         controller: 'ctrlBlackSquares'
     })
     .when('/smiley', {
-        templateUrl: './partials/smiley.html',
+        templateUrl: './tasks/attention/smiley.html',
         controller: 'ctrlSmiley'
     }) 
     .when('/cnntShapes', {
@@ -202,6 +202,7 @@ rootApp.factory('dataFactory',  function($http, $rootScope) {
 	var questions =[];
 	var assessee=[];
 	var users=[];
+	var tasks=[];
 	var bOnline = true;
 	var currentStorage = "http";
 	
@@ -287,6 +288,20 @@ rootApp.factory('dataFactory',  function($http, $rootScope) {
 					return newQuestion;
 				});
 		},
+		deleteQuestion: function(id) {
+			return $http.delete(base_url + "questions/" + id).then(function(success) {
+					newQuestion = success.data;
+					
+					//save it local storage for offline support
+					//appendToLocalStorage("newAssessee",newAssessee);
+					return newQuestion;
+				},function(error){
+					//on error attempt from localstorage
+					//save it local storage for offline support
+					//appendToLocalStorage("newAssessee",newAssessee);
+					return error;
+				});
+		},
 		getAllAssessee: function(){
 			return $http.get(base_url + "assessee").then(function(success) {
 					assessee = success.data;
@@ -348,7 +363,37 @@ rootApp.factory('dataFactory',  function($http, $rootScope) {
 				}, function (error) {
 					return (error.data);
 				});
+		},
+		
+		insertNewTask: function(newTask){
+			return $http.post(base_url + "tasks", newTask).then(function(success) {
+					tasks = success.data;
+					return tasks;
+				},function(error){
+					return error;
+				});
+		},
+		
+		getAllTasks: function(){
+			return $http.get(base_url + "tasks").then(function(success) {
+					tasks = success.data;
+					return tasks;
+				},function(error){
+					//on error attempt from localstorage
+					tasks = readLocalStorageJson("assessee");
+					return tasks[0];
+				});
+		},
+
+		getAllDomains: function(){
+			return $http.get(base_url + "domains").then(function(success) {
+					return success;
+				},function(error){
+					return error;
+				});
 		}
+
+		
 	  };	
 });
 	
@@ -371,7 +416,7 @@ rootApp.controller('ctrlSync', function ($scope,$http,$rootScope,dataFactory) {
 		if (isOnline) {
 				$scope.bOnline = true;
 				
-				//if we are connected to our server && we have localdata then upload them
+				//now that we are connected to our server && we have localdata then upload them
 				$scope.UploadLocalDB();
 		} else {
 			$scope.bOnline = false;
@@ -402,13 +447,12 @@ rootApp.controller('ctrlSync', function ($scope,$http,$rootScope,dataFactory) {
 			
 			//if there are pending items in the localstorage then upload them onto server/DB
 			$scope.localData = readLocalStorageJson("newAssessee");
-			
-			$scope.localData.forEach(function(item){ delete item._id});
-		
+	
 			if ($scope.localData.length) {
 				
 				//get rid of the temp '_id' field so that DB server will create a new one
-				
+				$scope.localData.forEach(function(item){ delete item._id});
+			
 				dataFactory.bulkInsertAssessees($scope.localData).then(function(res) {
 					$scope.message =  res.data.insertedCount + " records uploaded successfully." ;
 					
@@ -418,7 +462,7 @@ rootApp.controller('ctrlSync', function ($scope,$http,$rootScope,dataFactory) {
 					//update the UI
 					$scope.localData = readLocalStorageJson("newAssessee");
 				}, function(res){
-					$scope.message =  "Upload of records failed: error:" +  res.error;
+						$scope.message =  "Upload of records failed: error:" +  res.error;
 				});
 			}else {
 				$scope.message =  "No pending records to update!";
@@ -604,7 +648,7 @@ rootApp.controller('ctrlHome', function ($scope,$rootScope) {
 	//didn't work using global variable
 	//$scope.user = $rootScope.currentUser;
 	$scope.userDetails = readLocalStorageJson("currentUser");
-	$scope.userName = $scope.userDetails[0].name;
+	//$scope.userName = $scope.userDetails[0].name;
 	
 	
     $scope.Register = function (model) {
@@ -670,6 +714,152 @@ rootApp.controller('ctrlHome', function ($scope,$rootScope) {
     }
 });
 
+rootApp.controller('ctrlAttention', function ($scope, dataFactory) {
+    
+	$scope.Init = function (){
+	
+		$scope.userDetails = readLocalStorageJson("currentUser");
+		//$scope.userName = $scope.userDetails[0].name;
+		
+		//$scope.message = "Hi " + $scope.userName + ", Our analysis recommends the following tasks to improve your attention. ";
+
+		$scope.mode = "panel";  // a task page with back button
+		$scope.tasks={};
+		
+			dataFactory.getAllTasks().then(function (res){
+			$scope.tasks = res;
+			}, function(res){
+				//error
+				$scope.message = "Error retieving tasks. check internet/wi-fi connection and rety later.";
+		});
+	}
+	
+	$scope.goBack = function (){
+		$scope.mode = "panel";
+	}
+	
+	$scope.displayTask = function(taskId) {
+		//alert("To Display task : " + taskId);
+		$scope.mode="task";
+		
+		for(i=0;i < $scope.tasks.length; ++i) {
+			if ($scope.tasks[i]._id == taskId){ 
+				$scope.myTask = $scope.tasks[i];
+				//$scope.myTask.src = "./tasks/attention/Smiley-Hearts-L1.swf";// + $scope.myTask.file;
+				$scope.myTask.src = "./tasks/attention/squares.html";// + $scope.myTask.file;
+				break;
+			}
+		}
+		
+		
+	}
+	
+	
+});
+
+rootApp.controller('ctrlTasks', function ($scope,dataFactory) {
+	$scope.message = "Message from ctrlTasks.";
+	
+	var tasks=[];
+	var task={
+		"name": "",   		//name of the task
+		"aim":"",			//what this task want to achieve
+		"level":"", 		//level of the task 
+		"description":"", 	//brief description of the task
+		"instructions":"",	// instructions on how to execute the task
+		"file":"",			//file name of the task
+		"icon":"",		//icon of the task
+		"sequence_id":"",	//order of appearance on the web page
+		"domains":[],		//list of domains that this task should appear
+		"profilesMedian":[]		// list of profiles that this task should appear
+		};
+		
+		$scope.Init = function(){
+			//alert("Init function called");
+		}
+		
+		$scope.taskMode = function(mode){
+			switch (mode) {				
+				case 'create':
+					$scope.mode = "create";
+					break;
+				case 'modify':
+					$scope.mode = "modify";					
+					break;
+				case 'simulate':
+					$scope.mode = "simulate";
+					break;			
+			}
+			$scope.message = $scope.mode;
+		}
+		
+		$scope.InitCreateTask = function(){ 
+			//initialise domains list and profiles list
+		
+			//fetch all the domains
+			//$scope.domains = ["Attention","Working Memory","Impulsivity", "Mental Flexibility","Inhibition"];
+
+			dataFactory.getAllDomains().then(function (res){
+				$scope.domains = res.data;
+				}, function(res){
+					//error
+					$scope.message = "Error syncing Domain names. check internet/wi-fi connection and rety later.";
+					$scope.profilesList = null;
+				});
+
+			//fetch all the profilesMedian
+			dataFactory.getAllProfiles().then(function (res){
+				$scope.profiles = res;
+				}, function(res){
+					//error
+					$scope.message = "Error syncing profiles. check internet/wi-fi connection and rety later.";
+					$scope.profiles = null;
+				});
+
+				
+		}
+		
+		$scope.createTask = function(model) {
+			//alert("Create New Task called");
+			//var domainList = {"name":"","ratings":{}};
+			
+			//set right the domain list and profiles list
+			//$scope.message = model;
+			task={
+					"name":  model.name,
+					"aim":"",		
+					"level":model.level, 
+					"description":model.description, 
+					"instructions":"",
+					"file":model.file,
+					"icon":"",
+					"sequence_id":"",	
+					"domains":model.domains,	
+					"profiles":[]
+					};
+					
+			var tmpList ={};
+
+			//just store id and name of the profiles in the task...discard rest
+			for(i=0; i < model.profiles.length;++i){
+				tmpList.id = model.profiles[i]._id
+				tmpList.name = model.profiles[i].name
+				task.profiles.push(tmpList);
+			}
+ 
+			dataFactory.insertNewTask(task).then(function (res) {
+				$scope.message = "New Task details successfully posted to server  ";// + res.data;
+			}, function(res){
+				//error
+				$scope.message = "Error in creating of new Task. Error: " + res;
+				
+			});
+		}
+		$scope.showRatingsFor = function(domain){
+			$scope.message = "Show Ratings for " + domain;
+		}
+});
+
 rootApp.controller('ctrlassessmentReport', function ($scope) {
     $scope.userDetails = readLocalStorageJson("currentUser");
 	$scope.userName = $scope.userDetails[0].name;
@@ -709,14 +899,6 @@ rootApp.controller('ctrlassessmentReport', function ($scope) {
 	
 	});
 
-rootApp.controller('ctrlAttention', function ($scope) {
-    $scope.userDetails = readLocalStorageJson("currentUser");
-	$scope.userName = $scope.userDetails[0].name;
-	
-	$scope.message = "Hi " + $scope.userName + ", Our analysis recommends the following tasks to improve your attention. ";
-
-	
-});
 
 rootApp.controller('ctrlAbout', function ($scope) {
     $scope.message = 'Hello from AboutController';
@@ -767,7 +949,7 @@ rootApp.controller('ctrlConnectShapes', function ($scope) {
 rootApp.controller('ctrlProfiles', function ($scope,dataFactory) {
     $scope.message = "Please fill in the above fields";
 
-    $scope.Student = ["CBSE", "ICSE", "State"];
+    $scope.Student = ["CBSE", "ICSE", "State","NIOS","IGCSE"];
     $scope.Working = ["Professional", "Self-Employed", "Govt Employee"];
     $scope.Retired = [];
     $scope.Housewife = [];
@@ -1103,7 +1285,7 @@ rootApp.controller('ctrladminSurvey', function ($scope,dataFactory) {
 
 		////build an array with all the details that is required for the UI table display
 		//name,ageGroup,Attention,WorkingMemory,Impulsivity,MentalFlexibility
-		for (var i=0; i< tmp.length; ++i) {
+		for (var i=0; i < tmp.length; ++i) {
 				user.name = tmp[i].name;
 				user.ageGroup = tmp[i].ageGroup;
 				user.Attention = tmp[i].progress[tmp[i].progress.length-1].Attention;
@@ -1122,7 +1304,7 @@ rootApp.controller('ctrladminSurvey', function ($scope,dataFactory) {
 });
 
 //called from admin Questions
-rootApp.controller('ctrladminQuestions', function ($scope, dataFactory) {
+rootApp.controller('ctrladminQuestions', function ($scope,$window, dataFactory) {
     $scope.profilesList = [];
 	$scope.question = [];
     //set the default values for the options
@@ -1164,9 +1346,8 @@ rootApp.controller('ctrladminQuestions', function ($scope, dataFactory) {
 	}
 	
 	$scope.setFilter = function(filter){
-		//alert(filter + " : domain selected");
-		
-		//check the ng filter is NOT working!!!
+		//alert(filter);
+		//check the ng filter is NOT working as expected!!!
 		$scope.displayFilter = filter;
 	}
 	/* check and delete later
@@ -1273,6 +1454,20 @@ rootApp.controller('ctrladminQuestions', function ($scope, dataFactory) {
 			alert("Select atleast one Profile for this new Question.");
 		}
 	}
+	
+	$scope.deleteQuestion = function (id){
+		if ($window.confirm("Do you want to delete this question? " + id)) {
+			dataFactory.deleteQuestion(id).then(function (res) {
+				$scope.message = "Question deleted. Page need to be refreshed";
+			}, function(res){
+				$scope.message = "Error while deleting question : " + res.error;
+			});
+		}else {
+				$scope.message = "Question not deleted";
+		}
+		
+		
+	}
 });
 
 //rootApp.controller('ctrlAssesment', function ($scope,$http,$window,$rootScope) {
@@ -1291,7 +1486,7 @@ rootApp.controller('ctrlAssesment', function ($scope,$window,dataFactory) {
     $scope.impulsivity = 0;
     $scope.mentalFlexibility = 0;
 
-    $scope.Student = ["CBSE", "ICSE", "State"];
+    $scope.Student = ["CBSE", "ICSE", "State","NIOS","IGCSE"];
     $scope.Working = ["Professional", "Self-Employed", "Govt Employee"];
     $scope.Retired = [];
     $scope.Housewife = [];
@@ -1360,7 +1555,12 @@ rootApp.controller('ctrlAssesment', function ($scope,$window,dataFactory) {
 	//create a new Assessee as per the above model
 	//progress array will contain scores from respective Cogntive areas
     $scope.CreateNewAssessee = function (model) {
-		
+
+		if (!$scope.profilesList.length) {
+			$scope.message = "Profile creation error. Please check internet/wifi connection and try again.";			
+			return;
+		}
+	
 		//Keep Next button/flag disable until DB post process is complete
 		$scope.bEnable = false; 
 		
@@ -1676,9 +1876,7 @@ rootApp.controller('ctrlSmiley', function ($scope) {
     $scope.hits = 0;
     $scope.missess = 0;
 
-    display();
-
-    function display() {
+    $scope.display = function() {
      
         var randomImg = Math.round(Math.random());
         var randomh_align = Math.round(Math.random());
@@ -1727,7 +1925,7 @@ rootApp.controller('ctrlSmiley', function ($scope) {
             }
 
 
-                display();
+                $scope.display();
         }
         else if (keyCode == 40)
             $scope.message = "down arrow";
@@ -1740,7 +1938,7 @@ rootApp.controller('ctrlSmiley', function ($scope) {
             if (($scope.imageName == "heart.jpg") && ($scope.h_align == "right" ))
             $scope.hits = $scope.hits + 1;
 
-            display();
+            $scope.display();
 
         }
     };
@@ -1761,31 +1959,31 @@ rootApp.controller('ctrlBlackSquares', function ($scope) {
         $scope.b_ShowTable = false;
 
         $scope.message = $scope.arrInstructions[$scope.nextScreen];
-        $scope.nextScreen = $scope.nextScreen + 1;
-
-        if ($scope.nextScreen == $scope.arrInstructions.length) {
-            $scope.nextScreen = 0;
-            $scope.message = "Starting again... click to continue";
-        }
 
         if ($scope.nextScreen == 3) {
-            //alert("going into 3 screen...display table herer.")
             $scope.b_ShowTable = true;
             $scope.imageName = "table0.jpg"
-
         }
         if ($scope.nextScreen == 9) {
-            //alert("going into  screen...display table herer.")
             $scope.b_ShowTable = true;
             $scope.imageName = "table1.jpg"
-
         }
-        if ($scope.nextScreen == 13) {
-            //alert("going into  screen...display table herer.")
+       if ($scope.nextScreen == $scope.arrInstructions.length) {
+			
+			$scope.b_ShowTable = true;
+            $scope.imageName = "table2.jpg"
+       
+            $scope.nextScreen = 0;
+            $scope.message = "Did you get it right? Click to start again.";
+        }
+
+        /*if ($scope.nextScreen == 13) {
             $scope.b_ShowTable = true;
-            $scope.imageName = "table1.jpg"
+            $scope.imageName = "table2.jpg"
+        }*/
+		
+		$scope.nextScreen = $scope.nextScreen + 1;
 
-        }
     }
 });
 
@@ -1812,8 +2010,8 @@ rootApp.controller('ctrlSquares', function ($scope) {
                 $scope.taskLevel = $scope.AppData.Levels[item];
 
                 $scope.array_Table = InitArrayObject($scope.taskLevel);
-
-                $scope.current_Result = 0;
+				
+				$scope.current_Result = 0;
                 $scope.prev_Result = 0;
                 $scope.prev_prev_Result = 0;
 
@@ -1823,13 +2021,15 @@ rootApp.controller('ctrlSquares', function ($scope) {
                 $scope.clicks = 0;
 
                 $scope.trackResult($scope.array_Table);
-
-
             }
+			
             $scope.Draw = function (model) {
                 $scope.clicks = $scope.clicks + 1;
                 $scope.array_Table = InitArrayObject($scope.taskLevel); //this sets an array object with radominised 0s and 1 for the given task difficulty level
-                $scope.trackResult($scope.array_Table);
+                
+				//$scope.message = $scope.array_Table;
+				
+				$scope.trackResult($scope.array_Table);
 
                 if ($scope.clicks == $scope.ScreenTimeOut) {
                     //alert("REached maximum user clciks");
