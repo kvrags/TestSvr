@@ -44,7 +44,21 @@ exports.read_a_question = function (req, res) {
         res.json(data);
     });
 };
+exports.delete_a_question = function (req, res) {
+    console.log("Calling DELETE ./question --> delete_a_question from question controller .js");
 
+	var ObjectId = require('mongodb').ObjectId; 
+	var id = req.params.questionId;       
+	var obj_id = new ObjectId(id);
+	
+	Questions.remove({
+        _id: obj_id
+    }, function (err, data) {
+        if (err)
+            res.send(err);
+        res.json({ message: 'Question successfully deleted' });
+    });
+};
 
 exports.update_a_question = function (req, res) {
     Questions.findOneAndUpdate({ _id: req.params.questionId }, req.body, { new: true }, function (err, question) {
