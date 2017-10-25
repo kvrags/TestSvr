@@ -16,6 +16,7 @@ Profiles = require('./api/models/profileModel'); //created model loading here
 Questions = require('./api/models/questionModel'); //created model loading here
 Assessee = require('./api/models/assesseeModel'); //Assessee model definition
 Tasks = require('./api/models/taskModel'); //Task model definition
+Domains = require('./api/models/domainModel'); //Cognitive Areas/domain definition
 
 // config files TBD
 //var db = require('./config/db');
@@ -56,6 +57,7 @@ require('./api/routes/profileRoutes.js')(app);
 require('./api/routes/questionRoutes.js')(app);
 require('./api/routes/assesseeRoutes.js')(app);
 require('./api/routes/taskRoutes.js')(app);
+require('./api/routes/domainRoutes.js')(app);
 
 //// frontend client application routes-------------------------------------------------------------
 app.get('*', function (req, res) {
