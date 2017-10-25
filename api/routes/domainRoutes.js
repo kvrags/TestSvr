@@ -13,16 +13,16 @@
 module.exports = function (app) {
 //    app.use(function (err, req, res, next) { //handle next here.. pending
 
-    var profiles = require('../controllers/profileController');
+    var domains = require('../controllers/domainController');
 
-    // Profiles Routes
-    app.route('/profiles')
-      .get(profiles.list_all_profiles)
-      .post(profiles.create_a_profile);
-
-
-    app.route('/profiles/:profileId')
-      .get(profiles.read_a_profile)
-      .put(profiles.update_a_profile)
-      .delete(profiles.delete_a_profile);
+    // Domains Routes
+    app.route('/domains')
+      .get(domains.list_all_domains);
+     /* .post(domains.create_a_domain);
+ 
+    app.route('/domains/:domainId')
+      .get(domains.read_a_domain)
+      .put(domains.update_a_domain)
+      .delete(domains.delete_a_domain);
+	  */
 };

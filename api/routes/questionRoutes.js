@@ -13,11 +13,10 @@
 module.exports = function (app) {
     var questions = require('../controllers/questionController');
 
-    // Profiles Routes
+    // Questions Routes
     app.route('/questions')
       .get(questions.list_all_questions)
       .post(questions.create_a_question);
-
 
     app.route('/questions/:questionId')
       .get(questions.read_a_question)
