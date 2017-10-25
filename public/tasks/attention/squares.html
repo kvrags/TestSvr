@@ -4,28 +4,31 @@
 </head>
 
 <div class="floatSmall"> 
-		<a  class="white" href="#!attention"> dsasd
+		<a  class="white" href="./#!attention"> 
 			<div class="floatSmall techolive" >
-				< Attention 	
+				< Task Panel
 			</div>
 		</a>
 </div>	
-<div ng-controller="ctrlSquares"  ng-init="Draw()" >
+<div  ng-controller="ctrlSquares"  ng-init="Draw()" ng-click="Draw(model)">
 	<div align="center"><p>&nbsp</p>
 		<label><input type="radio" name="Level" ng-click="setDifficultyLevel('0')" checked /> Level 1</label>
 		<label><input type="radio" name="Level" ng-click="setDifficultyLevel('1')" /> Level 2</label>
 		<label><input type="radio" name="Level" ng-click="setDifficultyLevel('2')" /> Level 3</label>
 	</div>
 		
-	<table id="myTable"  ng-click="Draw(model)">
+	<table border="10px" style="height:300px" id="myTable" >
 		<tr ng-repeat="row in array_Table track by $index" style=background-color:{{row_clrs[$index]}}>
-			<td ng-repeat="col in row track by $index" align="center"` ng-switch="col" >
+			<td width="60px" ng-repeat="col in row track by $index" align="center"` ng-switch="col" >
 				<!-- if the table display is not proper, check array and low-seed and high seed settings -->
-				<span ng-switch-when="1"><img align="center" src="./res/white_rect.jpg" width="60" height="40"/></span>
+				<span ng-switch-when="1">
+					<img align="center" src="./res/white_rect.jpg" width="60px" height="40px"/>
+				</span>
 				<span ng-switch-when="0">&nbsp;</span>
 			</td>
 		</tr>
 	</table>
+	<!--<pre>{{message |json }} </pre>-->
 
 	<div align="center">
 		Show Answer: <input type="checkbox" ng-model="checked" aria-label="Toggle ngHide"><br />
@@ -41,33 +44,5 @@
             //document.addEventListener("click", Draw());
         </script>
 
-        <script>
-            /*
-                        $scope.names = [
-                    { Name: 'Jani', Country: 'Norway' },
-                    { Name: 'Hege', Country: 'Sweden' },
-                    { Name: 'Kai', Country: 'Denmark' }
-                ];
-
-                <!--- ng-class="category==16 ? 'icon-pfeil_unten' : 'icon-pfeil-oben'" 
-        ng-class="{true: 'icon-pfeil_unten', false: 'icon-pfeil-oben'}[category == 16]"-->
-    
-
-            var rootApp = angular.module('rootApp', []);
-
-            rootApp.controller('ctrlSquares', function ($scope) {
-                $scope.message = 'from Squares.HTML445646554 Controller';
-
-                $scope.Draw = function () {
-                $scope.message = 'from ctrlSquares in Draw()';
-
-                $scope.rows = [
-                      { col: [1, 2, 3, 4] },
-                      { col: [5, 6, 7] },
-                      { col: [9, 10, 11, 12] }
-                    ];
-                  }
-            });
-            */
-        </script>
     <script src="./js/CountSquares-ng.js"> </script>
+	<script src="./js/ng.js"> </script>

@@ -1,84 +1,31 @@
-﻿<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="utf-8">
-
+﻿<head>
     <title></title>
-    <meta name="description" content="array to table demo by mtf">
-    <style>
-
-        table {
-            background-color: #f1f1c1;
-            border-spacing: 10px;
-            border: 10px solid black;
-            width: 100%;
-            height: 50%;
-            position: relative;
-            left: 15%;
-            align-content: center;
-        }
-
-        tr {
-
-            height: 100px;
-            align-content: space-around;
-            border-collapse: collapse;
-        }
-
-        td {
-            align-content: inherit;
-            height: 100px;
-        }
-       </style>
+	<link rel="stylesheet" type="text/css" href="../css/neuro.css">
 </head>
 
-<body ><h1 style="background-color:aliceblue"> Follow instructions as they appear below. click on them to continue.</h1>
-        <div  ng-controller="ctrlBlackSquares"  ng-click="Next()">
+<div class="floatSmall"> 
+		<a  class="white" href="./#!attention"> 
+			<div class="floatSmall techolive" >
+				< Task Panel
+			</div>
+		</a>
+</div>	
+
+<div ng-controller="ctrlBlackSquares"  ng-click="Next()">
+<h2> <!-- style="background-color:aliceblue"-->
+	Follow instructions as they appear below. click on them to continue.
+</h2>
             <h2>   {{message}} </h2>
             <div ng-hide="!b_ShowTable">
                 <img src="./res/{{imageName}}" width="90%" height="70%"/>
             </div>
+		<!--<pre> {{nextScreen}} {{message}} </pre>-->
         </div>
    
         <script>
            //document.addEventListener("click", Next());
         </script>
 
-        <script>
-            /*
-            <tr ng-repeat="instr in arrInstructions track by $index" align="center">
-                    <td>
-                        <h2>  {{$index}} {{instr}} </h2>
-                    </td>
-                </tr>
-
-                        $scope.names = [
-                    { Name: 'Jani', Country: 'Norway' },
-                    { Name: 'Hege', Country: 'Sweden' },
-                    { Name: 'Kai', Country: 'Denmark' }
-                ];
-
-                <!--- ng-class="category==16 ? 'icon-pfeil_unten' : 'icon-pfeil-oben'" 
-        ng-class="{true: 'icon-pfeil_unten', false: 'icon-pfeil-oben'}[category == 16]"-->
-    
-
-            var rootApp = angular.module('rootApp', []);
-
-            rootApp.controller('ctrlSquares', function ($scope) {
-                $scope.message = 'from Squares.HTML445646554 Controller';
-
-                $scope.Draw = function () {
-                $scope.message = 'from ctrlSquares in Draw()';
-
-                $scope.rows = [
-                      { col: [1, 2, 3, 4] },
-                      { col: [5, 6, 7] },
-                      { col: [9, 10, 11, 12] }
-                    ];
-                  }
-            });
-            */
-        </script>
     <script src="./js/SquaresBlack.js"> </script>
 </body>
 </html>
