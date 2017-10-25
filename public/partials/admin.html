@@ -64,6 +64,7 @@
         <button class="tablinks" onclick="openTab(event, 'profiles')">Profiles</button>
         <button class="tablinks" onclick="openTab(event, 'profilesMedian')">Profiles Median</button>
         <button class="tablinks" onclick="openTab(event, 'questions')">Questions</button>
+        <button class="tablinks" onclick="openTab(event, 'tasks')">Tasks</button>
         <button class="tablinks" onclick="openTab(event, 'survey')">Survey</button>
         <button class="tablinks" onclick="openTab(event, 'sync')">Sync</button>
 	</div>
@@ -72,7 +73,157 @@
         <h3>Manage Users</h3>
         <p>Here you manage users.</p>
     </div>
+    <div style="margin-left:5%" id="tasks" class="tabcontent" ng-controller="ctrlTasks" ng-init="Init()">
+    <div>
+        <input type="radio" name="selectQ" ng-click="taskMode('create')" checked> <label>Create New</label>
+        <input type="radio" name="selectQ" ng-click="taskMode('modify')"> <label>Modify</label>
+        <input type="radio" name="selectQ" ng-click="taskMode('simulate')"> <label>Simulate</label>
+    </div>
+		<div class="container" id="tasks"  ng-if="mode == 'create'" ng-init="InitCreateTask()">
+			<p><h3>Create a Task</h3></p>
+	        <form class="form-horizontal" name="formTask"  novalidate>
+                <div class="form-group">
+                    <div class="col-md-2">
+                        <label>Task Name</label>
+                    </div>
+                    <div class="col-md-5">
+                        <input type="text" name="name" ng-model="model.name" autofocus   required>
+                        <div class="alert alert-danger" ng-show="(formTask.name.$touched || formTask.$submitted) && formTask.name.$error.required">
+                            Taskname is required
+                        </div>
+                    </div>
+                </div> <!--form-group-->
+				<div class="form-group">
+                    <div class="col-md-2">
+                        <label>Description</label>
+                    </div>
+                    <div class="col-md-5">
+                        <input type="text" name="description" ng-model="model.description" required>
+                        <div class="alert alert-danger" ng-show="(formTask.description.$touched || formTask.$submitted) && formTask.description.$error.required">
+                            Task description is required
+                        </div>
+                    </div>
+                </div> <!--form-group-->
+				<div class="form-group">
+                    <div class="col-md-2">
+                        <label>Task Level</label>
+                    </div>
+                    <div class="col-md-5">
+                        <input type="number" name="level" ng-model="model.level" required>
+                        <div class="alert alert-danger" ng-show="(formTask.level.$touched || formTask.$submitted) && formTask.level.$error.required">
+                            Task Level is required
+                        </div>
+                    </div>
+                </div> <!--form-group-->
+				<div class="form-group">
+                    <div class="col-md-2">
+                        <label>Filename</label>
+                    </div>
+                    <div class="col-md-5">
+                        <input type="text" name="file" ng-model="model.file" required>
+                        <div class="alert alert-danger" ng-show="(formTask.file.$touched || formTask.$submitted) && formTask.file.$error.required">
+                            Task File name is required
+                        </div>
+                    </div>
+				</div> <!--form-group-->
+				<div class="form-group">
+					<div class="col-md-2">
+						<label>Select the profile(s) applicable to this Task</label>
+					</div>
+					<div class="col-md-5">																				<!--item.type for item in occupationType-->
+						<select multiple name="profiles" class="form-control" ng-model="model.profiles"  ng-options="profile.name for profile in profiles | orderBy: 'name'" ng-required="true">
+						</select>
+						<div class="alert alert-danger" ng-show="(formTask.profiles.$touched || formTask.$submitted) && formTask.profiles.$error.required">
+							Select at least one Profile required
+						</div>
+					</div>
+				</div>
+			<!--class="small-12 medium-4 columns" ng-if="$index % 3 == 0" class="row"-->
+				<!--<div class="col-md-5"> 
+					<div ng-repeat="profile in profilesList">
+					<label>
+        				<input name="profile" id="profiles" type="checkbox" ng-model="model.profile.isChecked"/>
+        				<span>{{profile.name}}</span>
+    				</label>
+				</div>
+				</div>
+			</div>-->
+			<div class="form-group">
+                <div class="col-md-2">
+                    <label>Select the domain(s) applicable to this Task</label>
+                </div>
+                <div class="col-md-5">
+						<select multiple name="domains" class="form-control" ng-model="model.domains"  ng-options="domain.name for domain in domains | orderBy: 'name'" ng-required="true">
+						</select>
+				
+				<!--<table>
+					<tr ng-repeat="domain in domains">
+						<td style="text-align:left">
+							<input name="domains" id="domains" type="checkbox" ng-click="showRatingsFor('Attention')" ng-model="model.domains.name.isChecked"/>
+							{{domain.name}}						
+						</td>
+						<td style="text-align:left">
+							<div ng-repeat="rating in domain.ratings">
+								<label>
+								<input name="ratings" id="ratings" type="checkbox" ng-model="model.domains.name.rating.isChecked"/>
+								{{rating.name}}
+								</label>
+							</div>
+						</td>
+					</tr>
+				</table>-->
+                    <div class="alert alert-danger" ng-show="(formTask.domains.$touched || formTask.$submitted) && formTask.domains.$error.required">
+                        Select at least one Domain required
+                    </div>
+                </div>
+            </div>
+				<!--<div class="form-group">
+					<div class="col-md-2">
+						<label>Select the Ratings for the above Domain(s) </label>
+					</div>
+					<div class="col-md-5">																			
+						<select multiple name="domain" class="form-control" ng-model="model.domains"  ng-options="domain for domain in domains | orderBy: 'domain'" ng-required="true">
+						</select>
 
+						<div class="alert alert-danger" ng-show="(formTask.profiles.$touched || formTask.$submitted) && formTask.profiles.$error.required">
+							Select at least one Domain required
+						</div>
+					</div>
+				</div>-->
+
+                <div class="form-group">
+                    <div class="col-md-offset-2 col-md-5">
+                        <input type="submit" value="Create Task" class="btn btn-primary" ng-click="createTask(model)" ng-disabled="formTask.$invalid" />
+                    </div>
+                </div>
+		
+				</form>
+				<pre> {{message | json}} </pre>
+			</div>
+		<div> <h3>Manage Tasks</h3>
+			<p>Create / modify tasks for all the profiles / cognitive domains.</p>
+			<div>
+				<p>
+					<ui>
+					<li>Tasks should per domain</li>
+					<li>Tasks should contain a profile list to identify itself for those profiles</li>
+					<li>Tasks should contain name, Aim, Outcome, Domain being worked on/Improved, instructions to use,URL of the app, url of image/icon, Sequence ID for appearing</li>
+					</ui>
+				</p>
+			</div>
+		</div>
+		<!--<pre>Message: {{message | json}} </pre>-->
+    </div>
+
+	</div> <!--create new task-->
+	<div ng-if="mode == 'modify'">
+		<p>Task Modify Mode </p>
+		
+	</div><!--modify new task-->
+	<div ng-if="mode == 'simulate'">
+		<p>Task Simulation Mode </p>
+	</div><!--simulate new task-->
+	
 	<div id="sync" class="tabcontent" ng-controller="ctrlSync" ng-init="Init()">
 	
 		<div>
@@ -96,10 +247,10 @@
 					<p>
 						<input type="button" value="Sync for Offline" ng-click="Sync()" />
 					</p>
-					<p><input type="button" value="CreateDummyRecords" ng-click="CreateDummyRecords()" /> </p>
+					<!--<p><input type="button" value="CreateDummyRecords" ng-click="CreateDummyRecords()" /> </p>-->
 					
 					<p>
-						<input type="button" value="Force Upload" ng-click="UploadLocalDB()" /> Pending records : {{localData.length}}
+						<input type="button" value="Force Upload" ng-click="UploadLocalDB()" ng-disabled="!{{localData.length}}" /> Pending records : {{localData.length}}
 					</p>
 				</div>
 			<p>Local Storage : 
@@ -352,7 +503,7 @@
         <form class="form-horizontal" name="form" novalidate>
             <div class="form-group">
                 <div class="col-md-2">
-                    <label>Select the profile applicable to this question</label>
+                    <label>Select the profile(s) applicable to this question</label>
                 </div>
                 <div class="col-md-5">																				<!--item.type for item in occupationType-->
                     <select multiple name="profiles" class="form-control" ng-model="model.profilesList"  ng-options="profile.name for profile in profilesList | orderBy: 'name'" ng-required="true">
@@ -471,7 +622,7 @@
     <div id="QModify" ng-hide="!b_CreateQ">
 		<label style="margin-left:5%"><h4>
             [<label ng-click="setFilter('')"<b>Total:{{questions.length}}</b></label>]       
-			[<label ng-click="setFilter('Attention')">Attention:<b>{{(questions| filter:domain='Attention').length}}</b></label>]
+			[<label ng-click="setFilter('Attention')">Attention:<b>{{(questions| filter: domain='Attention').length}}</b></label>]
             [<label ng-click="setFilter('WorkingMemory')">Working Memory:<b>{{(questions| filter:domain='WorkingMemory').length}}</b> </label>]
             [<label ng-click="setFilter('Impulsivity')">Impulsivity:<b>{{(questions| filter:domain='Impulsivity').length}}</b></label>]
             [<label ng-click="setFilter('MentalFlexibility')">Mental Flexibility:<b>{{(questions| filter:domain='MentalFlexibility').length}}</b></label>]
@@ -502,7 +653,7 @@
             </tr>
 
             <!--<tr ng-repeat="question in questions | filter: searchDomain | orderBy: 'question.domain' track by $index">-->
-            <tr ng-repeat="question in questions | filter:displayFilter">
+            <tr ng-repeat="question in questions | filter: domain=displayFilter">
             <td>
                     {{$index +1}}
                 </td>
@@ -528,7 +679,7 @@
                     {{questions[$index].Always}}
                 </td>
                 <td>edit</td>
-                <td>del</td>
+                <td ng-click="deleteQuestion(questions[$index]._id)">del </td>
             </tr>
         </table>
     </div>
@@ -579,5 +730,6 @@
             }
         </script>
 
-        <script src="./js/ng.js"></script>
+        <script src="./js/ng.js"></script>	
+		
 

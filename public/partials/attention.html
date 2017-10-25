@@ -4,94 +4,35 @@
     <title></title>
 	<link rel="stylesheet" type="text/css" href="../css/hexagon.css">
    
-    <!--link href='https://fonts.googleapis.com/css?family=Raleway:300' rel='stylesheet' type='text/css'>-->
+    <link href='https://fonts.googleapis.com/css?family=Raleway:300' rel='stylesheet' type='text/css'>
+
 </head>
-  <div>
-  <div>
-  <p> <h1> Pay Attention! you are in 'Attention' Cognitive area </h1></p>
-  <p> <h3><div ng-if="message">{{message}} </div> </h3></p>
-    <ul id="hexGrid">
-      <li class="hex">
-        <div class="hexIn">
-          <a class="hexLink" href="#!squares">
-            <img src="../res/greenRect.jpg" alt="" />
-            <h1>Task 1</h1>
-            <p>...helps you improve your attention ability</p>
-          </a>
-        </div>
-      </li>
-	    <li class="hex">
-        <div class="hexIn">
-          <a class="hexLink" href="#">
-            <img src="../res/greenRect.jpg" alt="" />
-            <h1>Task 2</h1>
-            <p>Task 2 helps you improve your attention ability</p>
-          </a>
-        </div>
-      </li>
-      <li class="hex">
-        <div class="hexIn">
-          <a class="hexLink" href="#">
-            <img src="../res/greenRect.jpg" alt="" />
-            <h1>Task 3</h1>
-            <p>Some sample text about the Task3 leads to</p>
-          </a>
-        </div>
-      </li>
-      <li class="hex">
-        <div class="hexIn">
-          <a class="hexLink" href="#">
-            <img src="../res/greenRect.jpg" alt="" />
-            <h1>Task 4</h1>
-            <p>Some sample text about the Task4 leads to</p>
-          </a>
-        </div>
-      </li>
-      <li class="hex">
-        <div class="hexIn">
-          <a class="hexLink" href="#">
-            <img src="../res/greenRect.jpg" alt="" />
-            <h1>Task 5</h1>
-            <p>Some sample text about the Task5 leads to</p>
-          </a>
-        </div>
-      </li>
-    
-      <li class="hex">
-        <div class="hexIn">
-          <a class="hexLink" href="#">
-            <img src="../res/greenRect.jpg" alt="" />
-            <h1>Title</h1>
-            <p>Some sample text about the article this hexagon leads to</p>
-          </a>
-        </div>
-      </li>
-      <li class="hex">
-        <div class="hexIn">
-          <a class="hexLink" href="#">
-            <img src="../res/greenRect.jpg" alt="" />
-            <h1>Title</h1>
-            <p>Some sample text about the article this hexagon leads to</p>
-          </a>
-        </div>
-      </li>
-      <li class="hex">
-        <div class="hexIn">
-          <a class="hexLink" href="#">
-            <img src="../res/greenRect.jpg" alt="" />
-            <h1>Title</h1>
-            <p>Some sample text about the article this hexagon leads to</p>
-          </a>
-        </div>
-      </li>
-	  <li class="hex">
-        <div class="hexIn">
-          <a class="hexLink" href="#">
-            <img src="../res/greenRect.jpg" alt="" />
-            <h1>Title</h1>
-            <p>Some sample text about the article this hexagon leads to</p>
-          </a>
-        </div>
-      </li>
-    </ul>
+
+  
+  <div style="margin:2%" ng-controller="ctrlAttention" ng-init="Init()">
+ 	<div ng-repeat="task in tasks" ng-if="mode == 'panel'">
+		<p> <h1> Pay Attention! you are in 'Attention' Cognitive area </h1></p>
+		<!--<p> <h3><div ng-controller="ctrlAttention" ng-if="message">{{message}} </div> </h3></p>-->
+
+		<ul id="hexGrid">
+		  <li class="hex">
+			<div class="hexIn" >
+			  <a class="hexLink" href="#!squares"> <!--href="#!smiley" #!squares  #!squaresblack-->
+				<img src="../res/greenRect.jpg" alt=""/>
+				<h2>{{task.name}}</h2> <!--Smiley Hearts Level 1   href=#!squares-->
+			
+			  </a>
+			</div>
+		  </li>
+	</div>	
+	<!-- below div not used-->
+	<div ng-if="mode == 'task'">
+		<a ng-click="goBack()"> <h3>< Back</h3></a> {{myTask.src}}
+		<embed width="800px" height="600px" src="{{myTask.src}}"/>
+		<!--<object id="flashcontent" classid="clsid:D27CDB6E-AE6D-11cf-96B8-444553540000" width="100%" height="100%">
+		  <param name="movie" value="{{myTask.src}}" />
+		  <param name="scale" value="exactFit" />
+		</object>-->
+	</div>
+	<!--<pre>{{message | json}} <pre>-->
 </div>
