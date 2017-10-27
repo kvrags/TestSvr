@@ -42,6 +42,7 @@ var TaskSchema = new Schema({
         required: 'Kindly enter the Task Levels prescribed'
     },
 	profiles:[],
+	scores:[], //this array to contain respective(this) task scores
     domains: []
         /*type: String,
         required: 'Kindly enter the name of the domain this question belongs to'
