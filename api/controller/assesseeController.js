@@ -73,7 +73,7 @@ exports.update_a_assessee = function (req, res) {
 	//is passed else a Query object is returned.
 	
 	
-Assessee.findOneAndUpdate({_id: req.params.assesseeId }, req.body, { new: true }, function (err, profile) {
+	Assessee.findOneAndUpdate({_id: req.params.assesseeId }, req.body, { new: true, upsert: true }, function (err, profile) {
         if (err) {
             console.log("Error in updating the data for assessee Id:"+ req.params.assesseeId + "error: " + err);
             res.send(err);
