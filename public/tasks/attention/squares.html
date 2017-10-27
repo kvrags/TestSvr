@@ -4,20 +4,22 @@
 </head>
 
 <div class="floatSmall"> 
-		<a  class="white" href="./#!attention"> 
-			<div class="floatSmall techolive" >
+		<a  class="white" href="./#!workingmemory"> 
+			<div class="floatSmall laborange" >
 				< Task Panel
 			</div>
 		</a>
 </div>	
 <div  ng-controller="ctrlSquares"  ng-init="Draw()" ng-click="Draw(model)">
-	<div align="center"><p>&nbsp</p>
+	<!-- this selection of task is moved within the controller
+		<div align="center"><p>&nbsp</p>
 		<label><input type="radio" name="Level" ng-click="setDifficultyLevel('0')" checked /> Level 1</label>
 		<label><input type="radio" name="Level" ng-click="setDifficultyLevel('1')" /> Level 2</label>
 		<label><input type="radio" name="Level" ng-click="setDifficultyLevel('2')" /> Level 3</label>
 	</div>
-		
-	<table border="10px" style="height:300px" id="myTable" >
+	-->
+	<div >	
+	<table  border="10px" style="height:300px" id="myTable" >
 		<tr ng-repeat="row in array_Table track by $index" style=background-color:{{row_clrs[$index]}}>
 			<td width="60px" ng-repeat="col in row track by $index" align="center"` ng-switch="col" >
 				<!-- if the table display is not proper, check array and low-seed and high seed settings -->
@@ -29,14 +31,27 @@
 		</tr>
 	</table>
 	<!--<pre>{{message |json }} </pre>-->
-
+	
 	<div align="center">
-		Show Answer: <input type="checkbox" ng-model="checked" aria-label="Toggle ngHide"><br />
+		<form id="formResult">
+		<input type="number" name="btnResult" ng-model="model.userInput" required />
+		<div class="alert alert-danger" ng-show="(formResult.btnResult.$touched || formResult.$submitted) && formResult.btnResult.$error.required">
+            Your answer is required
+        </div>
+                  
+		<input type="button" value="Check" ng-click="checkAnswer()">
+		
+		<div id="userResult" ng-hide="!hideAnswer">
+			<h3>Calculated Answer : {{message}}</h3>
+			<!--{{$scope.calsResult}}-->
+		</div>
+		<!--Show Answer: <input type="checkbox" ng-model="checked" aria-label="Toggle ngHide"><br />
 		<div class="check-element animate-show-hide" ng-hide="!checked">
 			<h3>{{message}}</h3>
-			<input type="number" ng-model="model.usrResult" />
 			{{$scope.calsResult}}
 		</div>
+		-->
+	</form>
 	</div>
 </div>
    

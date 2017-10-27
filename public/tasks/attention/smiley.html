@@ -3,20 +3,16 @@
 	<link rel="stylesheet" type="text/css" href="../css/neuro.css">
 </head>
 
-<div class="floatSmall"> 
-		<a  class="white" href="./#!attention"> 
-			<div class="floatSmall techolive" >
-				< Task Panel
-			</div>
-		</a>
-</div>	
 
-<div ng-controller="ctrlSmiley" ng-init="display()">
-       <!--{{message}}
-        <p>{{status}}</p>-->
-        <div>
-		<p> 		</div>
-        <table ng-keyup="KeyDownF($event.keyCode)" width="500" height="400" border="1" >
+<div ng-keyup="KeyDownF($event.keyCode)"  ng-controller="ctrlSmiley" ng-init="display()">
+	<div class="floatSmall" ng-click="taskExit()"> 
+			<a  class="white" href="./#!attention"> 
+				<div class="floatSmall techolive" >
+					< Task Panel
+				</div>
+			</a>
+	</div>
+   <table style="margin:1%" width="500" height="400" border="1" >
 			<th>
 			Instructions:
             <ul>
@@ -32,7 +28,7 @@
             </tr>
             <tr>
                 <td>
-                    <input autofocus> Hits : {{hits}} <!-- missess not working | Misses : {{missess}} -->
+                    Place the cursor here <input autofocus> Hits : {{hits}}, Misses : {{misses}} <!-- missess not working | Misses : {{missess}} -->
                 </td>
                 
             </tr>
