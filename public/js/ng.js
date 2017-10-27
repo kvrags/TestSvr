@@ -190,7 +190,9 @@ rootApp.config(function ($routeProvider) {
         templateUrl: './partials/connetShapes.html',
         controller: 'ctrlConnectShapes'
     })
+	
     .otherwise({ redirectTo: '/index.html' });
+	
 });
 
 rootApp.factory('dataFactory',  function($http, $rootScope) {
@@ -339,7 +341,7 @@ rootApp.factory('dataFactory',  function($http, $rootScope) {
 				});
 		},
 
-		updateAssessee:function(id, data){
+		updateAssessee:function(id, data,str){
 			//return $http.put("http://localhost:8080/assessee/" +id, data).then(function(response) {
 			return $http.put(base_url + "assessee/" + id, data).then(function(success) {
 					assessee = success.data;
@@ -352,7 +354,13 @@ rootApp.factory('dataFactory',  function($http, $rootScope) {
 					//on error attempt from localstorage
 					//save it local storage for offline support
 					//alert("updateAssessee() writing to LocalStorage");
-					writeLocalStorageJson("newAssessee" + id,data,false);
+					
+					//str = newAssessee for new assesment
+					//str = updateAssessee when a user is already created and is running tasks
+					// to update the tasks details/scores str with updateAssessee is used.
+					// this new local record with updateAssessee key will be picked up bulkUpdateAssessee
+					
+					writeLocalStorageJson(str + id,data,false);
 					return assessee;
 				});
 		},
@@ -648,7 +656,7 @@ rootApp.controller('ctrlHome', function ($scope,$rootScope) {
 	//didn't work using global variable
 	//$scope.user = $rootScope.currentUser;
 	$scope.userDetails = readLocalStorageJson("currentUser");
-	//$scope.userName = $scope.userDetails[0].name;
+	$scope.userName = $scope.userDetails[0].name;
 	
 	
     $scope.Register = function (model) {
@@ -717,17 +725,18 @@ rootApp.controller('ctrlHome', function ($scope,$rootScope) {
 rootApp.controller('ctrlAttention', function ($scope, dataFactory) {
     
 	$scope.Init = function (){
-	
 		$scope.userDetails = readLocalStorageJson("currentUser");
-		//$scope.userName = $scope.userDetails[0].name;
-		
-		//$scope.message = "Hi " + $scope.userName + ", Our analysis recommends the following tasks to improve your attention. ";
-
+		$scope.userName = $scope.userDetails[0].name;
+		$scope.message = "Dear " + $scope.userName + ", Our analysis recommends the following tasks to improve your cognitive area of attention. ";
 		$scope.mode = "panel";  // a task page with back button
-		$scope.tasks={};
-		
+		$scope.tasks=[];
 			dataFactory.getAllTasks().then(function (res){
-			$scope.tasks = res;
+				for(i=0; i< res.length;++i) {
+					for(j=0; j<res[i].domains.length;++j) {
+						if(res[i].domains[j].name == "Attention")
+							$scope.tasks.push(res[i]);
+					}
+				}
 			}, function(res){
 				//error
 				$scope.message = "Error retieving tasks. check internet/wi-fi connection and rety later.";
@@ -737,24 +746,84 @@ rootApp.controller('ctrlAttention', function ($scope, dataFactory) {
 	$scope.goBack = function (){
 		$scope.mode = "panel";
 	}
-	
-	$scope.displayTask = function(taskId) {
-		//alert("To Display task : " + taskId);
-		$scope.mode="task";
-		
-		for(i=0;i < $scope.tasks.length; ++i) {
-			if ($scope.tasks[i]._id == taskId){ 
-				$scope.myTask = $scope.tasks[i];
-				//$scope.myTask.src = "./tasks/attention/Smiley-Hearts-L1.swf";// + $scope.myTask.file;
-				$scope.myTask.src = "./tasks/attention/squares.html";// + $scope.myTask.file;
-				break;
-			}
-		}
-		
-		
+});
+
+rootApp.controller('ctrlImpulsivity', function ($scope, dataFactory) {
+
+	$scope.Init = function (){
+		$scope.userDetails = readLocalStorageJson("currentUser");
+		$scope.userName = $scope.userDetails[0].name;
+		$scope.message = "Dear " + $scope.userName + ", Our analysis recommends the following tasks to improve your cognitive area of attention. ";
+		$scope.mode = "panel";  // a task page with back button
+		$scope.tasks=[];
+			dataFactory.getAllTasks().then(function (res){
+				for(i=0; i< res.length;++i) {
+					for(j=0; j<res[i].domains.length;++j) {
+						if(res[i].domains[j].name == "Impulsivity")
+							$scope.tasks.push(res[i]);
+					}
+				}
+				}, function(res){
+					//error
+					$scope.message = "Error retieving tasks. check internet/wi-fi connection and rety later.";
+			});
 	}
 	
+	$scope.goBack = function (){
+		$scope.mode = "panel";
+	}	
+});
+
+rootApp.controller('ctrlworkoutMemory', function ($scope, dataFactory) {
+
+	$scope.Init = function (){
+		$scope.userDetails = readLocalStorageJson("currentUser");
+		$scope.userName = $scope.userDetails[0].name;
+		$scope.message = "Dear " + $scope.userName + ", Our analysis recommends the following tasks to improve your cognitive area of attention. ";
+		$scope.mode = "panel";  // a task page with back button
+		$scope.tasks=[];
+			dataFactory.getAllTasks().then(function (res){
+				for(i=0; i< res.length;++i) {
+					for(j=0; j<res[i].domains.length;++j) {
+						if(res[i].domains[j].name == "Working Memory")
+							$scope.tasks.push(res[i]);
+					}
+				}
+				}, function(res){
+					//error
+					$scope.message = "Error retieving tasks. check internet/wi-fi connection and rety later.";
+			});
+	}
 	
+	$scope.goBack = function (){
+		$scope.mode = "panel";
+	}	
+});
+
+rootApp.controller('ctrlmentalflexibility', function ($scope, dataFactory) {
+
+	$scope.Init = function (){
+		$scope.userDetails = readLocalStorageJson("currentUser");
+		$scope.userName = $scope.userDetails[0].name;
+		$scope.message = "Dear " + $scope.userName + ", Our analysis recommends the following tasks to improve your cognitive area of attention. ";
+		$scope.mode = "panel";  // a task page with back button
+		$scope.tasks=[];
+			dataFactory.getAllTasks().then(function (res){
+				for(i=0; i< res.length;++i) {
+					for(j=0; j<res[i].domains.length;++j) {
+						if(res[i].domains[j].name == "Mental Flexibility")
+							$scope.tasks.push(res[i]);
+					}
+				}
+				}, function(res){
+					//error
+					$scope.message = "Error retieving tasks. check internet/wi-fi connection and rety later.";
+			});
+	}
+	
+	$scope.goBack = function (){
+		$scope.mode = "panel";
+	}	
 });
 
 rootApp.controller('ctrlTasks', function ($scope,dataFactory) {
@@ -842,9 +911,10 @@ rootApp.controller('ctrlTasks', function ($scope,dataFactory) {
 
 			//just store id and name of the profiles in the task...discard rest
 			for(i=0; i < model.profiles.length;++i){
-				tmpList.id = model.profiles[i]._id
-				tmpList.name = model.profiles[i].name
+				tmpList.id = model.profiles[i]._id;
+				tmpList.name = model.profiles[i].name;
 				task.profiles.push(tmpList);
+				tmpList = {};
 			}
  
 			dataFactory.insertNewTask(task).then(function (res) {
@@ -863,6 +933,7 @@ rootApp.controller('ctrlTasks', function ($scope,dataFactory) {
 rootApp.controller('ctrlassessmentReport', function ($scope) {
     $scope.userDetails = readLocalStorageJson("currentUser");
 	$scope.userName = $scope.userDetails[0].name;
+	$scope.tasks = $scope.userDetails[0].tasks;
 	$scope.score = readLocalStorageJson("score");
 	$scope.progress = $scope.userDetails[0].progress;
 	$scope.attention = $scope.score[0].attention;
@@ -1588,6 +1659,27 @@ rootApp.controller('ctrlAssesment', function ($scope,$window,dataFactory) {
 		model.progress = [];
 		model.tasks = [];
 		
+		var allTasks;
+		var allProfiles;
+		var tmp
+		//get relevant tasks for this profile
+		dataFactory.getAllTasks().then(function (res){
+			allTasks = res;
+			
+			for (var i=0; i < allTasks.length; ++i) {
+				
+				for( var j=0; j< allTasks[i].profiles.length;++j) {
+					if ( allTasks[i].profiles[j].name == model.profileMedian.name ){
+						model.tasks.push(allTasks[i]);
+					}
+				}
+			}
+			}, function(res){
+				//error
+				$scope.message = "Error retieving tasks. check internet/wi-fi connection and rety later.";
+		});
+
+		
 		dataFactory.insertNewAssessee(model).then(function (res) {
 				$scope.assesseeId = res._id; //not used currently
 				$scope.message1 = "New Assessee details successfully posted to server  ";// + res.data;
@@ -1712,38 +1804,25 @@ rootApp.controller('ctrlAssesment', function ($scope,$window,dataFactory) {
 			res.progress.push($scope.progress);
 			
 			//$scope.finalScore =  AnalyseScores($scope.attention,$scope.workingMemory,$scope.impulsivity,$scope.mentalFlexibility);
+			
+			//create a data struct to store in the localStorage
 			var finalScore = {};
 			finalScore.attention = $scope.attention;
 			finalScore.workingMemory = $scope.workingMemory;
 			finalScore.impulsivity = $scope.impulsivity;
 			finalScore.mentalFlexibility = $scope.mentalFlexibility;
+	
+			//'newAssessee' is passed on dataFactory param for local Storage indication that it is a new record
+			//also when passed as 'updateAssessee' a bulkUpdate is to be called rather than bulkInsertAssessees
 			
-			//$rootScope, rootApp global variable didn't work hence write it to local storage and get it later!
-			writeLocalStorageJson("currentUser",res);
-			writeLocalStorageJson("score", finalScore);
-			//$rootScope.currentUser = res;
+			dataFactory.updateAssessee($scope.assesseeId, res, "newAssessee").then(function (res) {
+				$scope.message = "Your assessement details successfully posted to server  " ;//+ res.data;
+
+				//$rootScope, rootApp global variable didn't work hence write it to local storage and get it later!
+				writeLocalStorageJson("currentUser",res);
+				writeLocalStorageJson("score", finalScore);
+				//$rootScope.currentUser = res;
 		
-	
-			//send only progress data...clear the res body of everything else...
-			//var tempID = objectId.fromString( $scope.assesseeId );
-			
-			/*$http.put("http://localhost:8080/assessee/" + $scope.assesseeId, res)
-			.then (function (res){
-	
-				$scope.message = "Your assessement details successfully posted to server  " ;//+ res.data;
-
-				//now navigate to home page
-				//alert("you are being directed to home page...");
-				$window.location.href = '/index.html';
-				
-				
-			}, function (res){
-				$scope.message = "Error while posting assessement details, please check your internet / wi-fi connection and retry." ;//+ res.error;
-			});*/
-			
-			dataFactory.updateAssessee($scope.assesseeId, res).then(function (res) {
-				$scope.message = "Your assessement details successfully posted to server  " ;//+ res.data;
-
 				//now navigate to home page
 				//alert("you are being directed to home page...");
 				$window.location.href = '/index.html';
@@ -1870,11 +1949,20 @@ rootApp.controller('ctrlRetrieveUser', function ($scope) {
     };
 });
 
-
-rootApp.controller('ctrlSmiley', function ($scope) {
+//task Controller
+rootApp.controller('ctrlSmiley', function ($scope,dataFactory) {
+	//var d = Date();
+	var startTime; //= Date.getTime();
+	var attempt = {
+					date: "",
+					duration:"",	
+					hits:"",
+					misses:""
+	};
+	
     $scope.message = "Hello from ctrlSmiley";
     $scope.hits = 0;
-    $scope.missess = 0;
+    $scope.misses = 0;
 
     $scope.display = function() {
      
@@ -1902,48 +1990,125 @@ rootApp.controller('ctrlSmiley', function ($scope) {
         }
         $scope.status = "Image Name : " + $scope.imageName + " hAlign : " + $scope.h_align + " vAlign : " + $scope.v_align;
     }
+	
     $scope.KeyDownF = function (keyCode) {
-        //alert("in keydown()");
-
-        if (keyCode == 38)
-            $scope.message = "up arrow pressed";
-        else if (keyCode == 39){
-            $scope.message = "right arrow";
+		startTime = Date();
+		
+		if (keyCode == 39){
+            //$scope.message = "right arrow";
             
             if (($scope.imageName == "smiley.jpg") && ($scope.h_align == "right")) {
                 $scope.hits = $scope.hits + 1;
             } else {
-                $scope.missess = $scope.missess +1;
-            }
+				if (($scope.imageName == "heart.jpg") && ($scope.h_align == "left")) {
+					$scope.hits = $scope.hits + 1;
+				} else {
+					$scope.misses = $scope.misses + 1;
+				}            
+			}
 
 
-            if (($scope.imageName == "heart.jpg") && ($scope.h_align == "left")) {
-                $scope.hits = $scope.hits + 1;
-            } else {
-                $scope.missess = $scope.missess + 1;
-
-            }
-
-
-                $scope.display();
+            
+            $scope.display();
         }
-        else if (keyCode == 40)
-            $scope.message = "down arrow";
-        else if (keyCode == 37) {
-            $scope.message = "left arrow pressed"
+      
+		if (keyCode == 37) {
+            //$scope.message = "left arrow pressed"
 
-            if (($scope.imageName == "smiley.jpg") && ($scope.h_align == "left" ))
-            $scope.hits = $scope.hits + 1;
+            if (($scope.imageName == "smiley.jpg") && ($scope.h_align == "left" )) {
+				$scope.hits = $scope.hits + 1;
+			} else {
+				if (($scope.imageName == "heart.jpg") && ($scope.h_align == "right" )){
+					$scope.hits = $scope.hits + 1;
+				} else {
+					$scope.misses = $scope.misses + 1;
+				}
+			}
 
-            if (($scope.imageName == "heart.jpg") && ($scope.h_align == "right" ))
-            $scope.hits = $scope.hits + 1;
 
             $scope.display();
 
         }
+		
     };
+	$scope.taskExit = function() {
+		//save the results 
+		var endTime = Date();
+		
+		attempt = {
+					date:startTime,
+					duration: (endTime - startTime) /1000, //store elasped time minutes 
+					hits:$scope.hits,
+					misses:$scope.misses
+				};
+	
+		updateTasksScores("Smiley Heart Level 1", attempt, dataFactory);
+	
+		/*
+		$scope.userDetails = {};
+		//didn't work using global variable
+		//$scope.user = $rootScope.currentUser;
+		$scope.userDetails = readLocalStorageJson("currentUser");
+		$scope.userName = $scope.userDetails[0].name;
+		$scope.userId = $scope.userDetails[0]._id;
+		$scope.tasks = $scope.userDetails[0].tasks;
+		
+		$scope.taskName = "Smiley Heart Level 1"; //this is hardcoded
+		
+		for (var i=0; i < $scope.tasks.length;++i) {
+			if ( $scope.tasks[i].name == $scope.taskName){
+				$scope.tasks[i].scores.push(attempt);
+				break;
+			}
+		}			
+		
+		//update the database
+		//instead of sending all the userdata, send only his _Id, tasks/task_iD, /tasks/task_score 
+		dataFactory.updateAssessee($scope.userId, $scope.userDetails[0], "updateAssessee").then(function (res) {
+			$scope.message = "Smiley Heart details of Task update successful";
+			
+			//now update the local storage
+			writeLocalStorageJson("currentUser",res);
+		}, function(res){
+			
+		});
+
+		*/
+
+				
+	}	
 });
 
+function updateTasksScores(taskName,score, dataFactory){
+		//task details
+		//find out who the user is? 
+		//find out all the particular task being performed by this user
+		// at the end of this task, determine the score and store it 
+		
+		var userDetails = {};
+		userDetails = readLocalStorageJson("currentUser");
+		var userId = userDetails[0]._id;
+		var tasks = userDetails[0].tasks;
+		
+		
+		for (var i=0; i < tasks.length;++i) {
+			if ( tasks[i].name == taskName){
+				tasks[i].scores.push(score);
+				break;
+			}
+		}			
+		
+		//update the database
+		//instead of sending all the userdata, send only his _Id, tasks/task_iD, /tasks/task_score 
+		dataFactory.updateAssessee(userId, userDetails[0], "updateAssessee").then(function (res) {
+			
+			//now update the local storage
+			writeLocalStorageJson("currentUser",res);
+		}, function(res){
+			
+		});
+
+}
 
 //ctrlBlackSquares
 rootApp.controller('ctrlBlackSquares', function ($scope) {
@@ -1998,9 +2163,25 @@ rootApp.controller('ctrlSquares', function ($scope) {
             $scope.prev_prev_Result = 0;
             $scope.calcResult = 0;
             $scope.ScreenTimeOut = 20;
-
+			$scope.right = 0;
+			$scope.wrong = 0;
+			
             console.log("Inside ng.js :: in ctrlSquares Controller");
-             
+		
+			$scope.userDetails = {};
+			//didn't work using global variable
+			//$scope.user = $rootScope.currentUser;
+			$scope.userDetails = readLocalStorageJson("currentUser");
+			$scope.userName = $scope.userDetails[0].name;
+			$scope.userId = $scope.userDetails[0]._id;
+			$scope.tasks = $scope.userDetails[0].tasks;
+			
+			for (var i=0;i<$scope.tasks; ++i) {
+				if ($scope.tasks[i].name == $scope.name){
+					$scope.setDifficultyLevel($scope.tasks[i].level);
+				}
+			}
+			
             $scope.setDifficultyLevel = function (item) {
 
                 if (item > $scope.AppData.Levels) {
@@ -2024,6 +2205,9 @@ rootApp.controller('ctrlSquares', function ($scope) {
             }
 			
             $scope.Draw = function (model) {
+				//hide the answer
+				$scope.hideAnswer = true;
+
                 $scope.clicks = $scope.clicks + 1;
                 $scope.array_Table = InitArrayObject($scope.taskLevel); //this sets an array object with radominised 0s and 1 for the given task difficulty level
                 
@@ -2083,307 +2267,32 @@ rootApp.controller('ctrlSquares', function ($scope) {
                     $scope.message = ("Sum : " + $scope.calcResult + " Current Number = " + $scope.current_Result + "," + " Previous Number = " + $scope.prev_Result + " Screens = " + $scope.clicks);
                 }
             }
-
-});
-/*
-test data for bulk update		$scope.localDB = [
-			{	
-				"name":"Jay11 Mason",
-				"email":"jaymistry@yahoo.com",
-				"ageGroup":"6to16",
-				"occupation":"Student",
-				"stream":"CBSE",
-				"cityType":"rural",
-				"profileMedian":{
-						"name":"Student_CBSE_Rural","Id" : "434f4wfsdfsd45245fsf45","Attention":"22","WorkingMemory":"10","Implusivity":"10","MentalFlexibility":"19"
-					},
-				"progress":[
-								{"Attention":22,"WorkingMemory":10,"Implusivity":10,"MentalFlexibility":19, "asessmentDate":"27Oct2017" }, //GAP 0 or first test 
-								{Attention:15,WorkingMemory:8,Implusivity:9,MentalFlexibility:12, } //reduction		
-							],
-				"tasks":[
-							{"name":"Task1forAttention", "plannedStartDate":"17July2016", "plannedCompletionDate":"27Oct2016", "actualStartDate":"","actualCompletionDate":""}
-						]
-			},
-			{	
-				"name":"Jay Mike",
-				"email":"jay11mistry@yahoo.com",
-				"ageGroup":"6to16",
-				"occupation":"Student",
-				"stream":"CBSE",
-				"cityType":"rural",
-				"profileMedian":{
-						"name":"Student_CBSE_Rural","Id" : "434f4wfsdfsd45245fsf45","Attention":"22","WorkingMemory":"10","Implusivity":"10","MentalFlexibility":"19"
-					},
-				"progress":[
-								{"Attention":22,"WorkingMemory":10,"Implusivity":10,"MentalFlexibility":19, "asessmentDate":"27Oct2017" }, //GAP 0 or first test 
-								{Attention:15,WorkingMemory:8,Implusivity:9,MentalFlexibility:12, } //reduction		
-							],
-				"tasks":[
-							{"name":"Task1forAttention", "plannedStartDate":"17July2016", "plannedCompletionDate":"27Oct2016", "actualStartDate":"","actualCompletionDate":""}
-						]
-			},
-			{	
-				"name":"Killi Manju",
-				"email":"killmanju@yahoo.com",
-				"ageGroup":"6to16",
-				"occupation":"Student",
-				"stream":"CBSE",
-				"cityType":"rural",
-				"profileMedian":{
-						"name":"Student_CBSE_Rural","Id" : "434f4wfsdfsd45245fsf45","Attention":"22","WorkingMemory":"10","Implusivity":"10","MentalFlexibility":"19"
-					},
-				"progress":[
-								{"Attention":22,"WorkingMemory":10,"Implusivity":10,"MentalFlexibility":19, "asessmentDate":"27Oct2017" }, //GAP 0 or first test 
-								{Attention:15,WorkingMemory:8,Implusivity:9,MentalFlexibility:12, } //reduction		
-							],
-				"tasks":[
-							{"name":"Task1forAttention", "plannedStartDate":"17July2016", "plannedCompletionDate":"27Oct2016", "actualStartDate":"","actualCompletionDate":""}
-						]
-			},
-
-			{	
-				"name":"Laul Paul",
-				"email":"laulpaul@yahoo.com",
-				"ageGroup":"6to16",
-				"occupation":"Student",
-				"stream":"CBSE",
-				"cityType":"rural",
-				"profileMedian":{
-						"name":"Student_CBSE_Rural","Id" : "434f4wfsdfsd45245fsf45","Attention":"22","WorkingMemory":"10","Implusivity":"10","MentalFlexibility":"19"
-					},
-				"progress":[
-								{"Attention":22,"WorkingMemory":10,"Implusivity":10,"MentalFlexibility":19, "asessmentDate":"27Oct2017" }, //GAP 0 or first test 
-								{Attention:15,WorkingMemory:8,Implusivity:9,MentalFlexibility:12, } //reduction		
-							],
-				"tasks":[
-							{"name":"Task1forAttention", "plannedStartDate":"17July2016", "plannedCompletionDate":"27Oct2016", "actualStartDate":"","actualCompletionDate":""}
-						]
-			},
-			{	
-				"name":"Srinidi RaoMason",
-				"email":"srao@yahoo.com",
-				"ageGroup":"6to16",
-				"occupation":"Student",
-				"stream":"CBSE",
-				"cityType":"rural",
-				"profileMedian":{
-						"name":"Student_CBSE_Rural","Id" : "434f4wfsdfsd45245fsf45","Attention":"22","WorkingMemory":"10","Implusivity":"10","MentalFlexibility":"19"
-					},
-				"progress":[
-								{"Attention":22,"WorkingMemory":10,"Implusivity":10,"MentalFlexibility":19, "asessmentDate":"27Oct2017" }, //GAP 0 or first test 
-								{Attention:15,WorkingMemory:8,Implusivity:9,MentalFlexibility:12, } //reduction		
-							],
-				"tasks":[
-							{"name":"Task1forAttention", "plannedStartDate":"17July2016", "plannedCompletionDate":"27Oct2016", "actualStartDate":"","actualCompletionDate":""}
-						]
+			
+			$scope.checkAnswer =  function() {
+				//hide not working properly
+				//also the clicking the button is triggering Draw()/ng-click()!
+				
+				$scope.hideAnswer = false;
+				
+				//store these result in localStorage as when user refreshes the page result will be destroyed
+				if ($scope.calcResult == $scope.model.userInput) {
+					$scope.right += 1;
+				}else {
+					$scope.wrong += 1;
+				}
 			}
 			
-		];
-
-BulkWrite / update
-MongoCollection<Document> collection = db.getCollection("characters");
-List<WriteModel<Document>> writes = new ArrayList<WriteModel<Document>>();
-writes.add(
-    new InsertOneModel<Document>(
-        new Document("_id", 4)
-            .append("char", "Dithras")
-            .append("class", "barbarian")
-            .append("lvl", 3)
-    )
-);
-writes.add(
-    new InsertOneModel<Document>(
-        new Document("_id", 5)
-            .append("char", "Taeln")
-            .append("class", "fighter")
-            .append("lvl", 4)
-    )
-);
-writes.add(
-    new UpdateOneModel<Document>(
-        new Document("char", "Eldon"), // filter
-        new Document("$set", new Document("status", "Critical Injury")) // update
-    )
-);
-writes.add(new DeleteOneModel<Document>(new Document("char", "Brisbane")));
-writes.add(
-    new ReplaceOneModel<Document>(
-        new Document("char", "Meldane"), 
-        new Document("char", "Tanys")
-            .append("class", "oracle")
-            .append("lvl", 4)           
-    )
-);
-
-BulkWriteResult bulkWriteResult = collection.bulkWrite(writes);
-*/
-
-/*
-// RFC 5789 HTTP PATCH with json RFC 6902 object notation
-//
-[
-			{ 
-				"op": "add",
-				"path": "/assessee", 
-				"value":{
-							"name":"Jay Mistry123",
-							"email":"jaymistry@yahoo.com",
-							"ageGroup":"6to16",
-							"occupation":"Student",
-							"stream":"CBSE",
-							"cityType":"rural",
-							"profileMedian":{
-									"name":"Student_CBSE_Rural","Id" : "434f4wfsdfsd45245fsf45","Attention":"22","WorkingMemory":"10","Implusivity":"10","MentalFlexibility":"19"
-								},
-							"progress":[
-											{"Attention":22,"WorkingMemory":10,"Implusivity":10,"MentalFlexibility":19, "asessmentDate":"27Oct2017" }, //GAP 0 or first test 
-											{Attention:15,WorkingMemory:8,Implusivity:9,MentalFlexibility:12, } //reduction		
-										],
-							"tasks":[
-										{"name":"Task1forAttention", "plannedStartDate":"17July2016", "plannedCompletionDate":"27Oct2016", "actualStartDate":"","actualCompletionDate":""}
-									]
-						}
-			},
-			{ 
-				"op": "add",
-				"path": "/assessee", 
-				"value":{
-							"name":"Ray Murthy",
-							"email":"Raymurthy@yahoo.com",
-							"ageGroup":"6to16",
-							"occupation":"Student",
-							"stream":"CBSE",
-							"cityType":"rural",
-							"profileMedian":{
-									"name":"Student_CBSE_Rural","Id" : "434f4wfsdfsd45245fsf45","Attention":"22","WorkingMemory":"10","Implusivity":"10","MentalFlexibility":"19"
-								},
-							"progress":[
-											{"Attention":22,"WorkingMemory":10,"Implusivity":10,"MentalFlexibility":19, "asessmentDate":"27Oct2017" }, //GAP 0 or first test 
-											{Attention:15,WorkingMemory:8,Implusivity:9,MentalFlexibility:12, } //reduction		
-										],
-							"tasks":[
-										{"name":"Task1forAttention", "plannedStartDate":"17July2016", "plannedCompletionDate":"27Oct2016", "actualStartDate":"","actualCompletionDate":""}
-									]
-						}
-			},
-			
-			{ 
-				"op": "add",
-				"path": "/assessee", 
-				"value":{
-							"name":"Paul Mino",
-							"email":"paulmint@yahoo.com",
-							"ageGroup":"6to16",
-							"occupation":"Student",
-							"stream":"CBSE",
-							"cityType":"rural",
-							"profileMedian":{
-									"name":"Student_CBSE_Rural","Id" : "434f4wfsdfsd45245fsf45","Attention":"22","WorkingMemory":"10","Implusivity":"10","MentalFlexibility":"19"
-								},
-							"progress":[
-											{"Attention":22,"WorkingMemory":10,"Implusivity":10,"MentalFlexibility":19, "asessmentDate":"27Oct2017" }, //GAP 0 or first test 
-											{Attention:15,WorkingMemory:8,Implusivity:9,MentalFlexibility:12, } //reduction		
-										],
-							"tasks":[
-										{"name":"Task1forAttention", "plannedStartDate":"17July2016", "plannedCompletionDate":"27Oct2016", "actualStartDate":"","actualCompletionDate":""}
-									]
-						}
-			}
-		],
-
+			$scope.taskExit = function() {
+				var endTime = Date();
 		
-//2 attempt with mongoose colleciton insert 
-$scope.localDB = [
-			{ 
-				insertone : {
-				document: {	
-							"name":"Jay11 Mason",
-							"email":"jaymistry@yahoo.com",
-							"ageGroup":"6to16",
-							"occupation":"Student",
-							"stream":"CBSE",
-							"cityType":"rural",
-							"profileMedian":{
-									"name":"Student_CBSE_Rural","Id" : "434f4wfsdfsd45245fsf45","Attention":"22","WorkingMemory":"10","Implusivity":"10","MentalFlexibility":"19"
-								},
-							"progress":[
-											{"Attention":22,"WorkingMemory":10,"Implusivity":10,"MentalFlexibility":19, "asessmentDate":"27Oct2017" }, //GAP 0 or first test 
-											{Attention:15,WorkingMemory:8,Implusivity:9,MentalFlexibility:12, } //reduction		
-										],
-							"tasks":[
-										{"name":"Task1forAttention", "plannedStartDate":"17July2016", "plannedCompletionDate":"27Oct2016", "actualStartDate":"","actualCompletionDate":""}
-									]
-						}
-				}
-			},
-			{ 
-				insertone : {
-				document: {	
-							"name":"Paul11 Minto",
-							"email":"jaymistry@yahoo.com",
-							"ageGroup":"6to16",
-							"occupation":"Student",
-							"stream":"CBSE",
-							"cityType":"rural",
-							"profileMedian":{
-									"name":"Student_CBSE_Rural","Id" : "434f4wfsdfsd45245fsf45","Attention":"22","WorkingMemory":"10","Implusivity":"10","MentalFlexibility":"19"
-								},
-							"progress":[
-											{"Attention":22,"WorkingMemory":10,"Implusivity":10,"MentalFlexibility":19, "asessmentDate":"27Oct2017" }, //GAP 0 or first test 
-											{Attention:15,WorkingMemory:8,Implusivity:9,MentalFlexibility:12, } //reduction		
-										],
-							"tasks":[
-										{"name":"Task1forAttention", "plannedStartDate":"17July2016", "plannedCompletionDate":"27Oct2016", "actualStartDate":"","actualCompletionDate":""}
-									]
-						}
-				}
-			},
+				attempt = {
+							date:startTime,
+							duration: (endTime - startTime) /1000, //store elasped time minutes 
+							right:$scope.right,
+							wrong:$scope.wrong,
+							screens : $scope.clicks //no of screens a user has seen
+						};
 			
-			{ 
-				insertone : {
-				document: {	
-							"name":"Ray222 Richmond",
-							"email":"jaymistry@yahoo.com",
-							"ageGroup":"6to16",
-							"occupation":"Student",
-							"stream":"CBSE",
-							"cityType":"rural",
-							"profileMedian":{
-									"name":"Student_CBSE_Rural","Id" : "434f4wfsdfsd45245fsf45","Attention":"22","WorkingMemory":"10","Implusivity":"10","MentalFlexibility":"19"
-								},
-							"progress":[
-											{"Attention":22,"WorkingMemory":10,"Implusivity":10,"MentalFlexibility":19, "asessmentDate":"27Oct2017" }, //GAP 0 or first test 
-											{Attention:15,WorkingMemory:8,Implusivity:9,MentalFlexibility:12, } //reduction		
-										],
-							"tasks":[
-										{"name":"Task1forAttention", "plannedStartDate":"17July2016", "plannedCompletionDate":"27Oct2016", "actualStartDate":"","actualCompletionDate":""}
-									]
-						}
-				}
-			},
-			{ 
-				insertone : {
-				document: {	
-							"name":"Jackson222 Mash",
-							"email":"jaymistry@yahoo.com",
-							"ageGroup":"6to16",
-							"occupation":"Student",
-							"stream":"CBSE",
-							"cityType":"rural",
-							"profileMedian":{
-									"name":"Student_CBSE_Rural","Id" : "434f4wfsdfsd45245fsf45","Attention":"22","WorkingMemory":"10","Implusivity":"10","MentalFlexibility":"19"
-								},
-							"progress":[
-											{"Attention":22,"WorkingMemory":10,"Implusivity":10,"MentalFlexibility":19, "asessmentDate":"27Oct2017" }, //GAP 0 or first test 
-											{Attention:15,WorkingMemory:8,Implusivity:9,MentalFlexibility:12, } //reduction		
-										],
-							"tasks":[
-										{"name":"Task1forAttention", "plannedStartDate":"17July2016", "plannedCompletionDate":"27Oct2016", "actualStartDate":"","actualCompletionDate":""}
-									]
-						}
-				}
-			},
-			
-		],
-*/
+				updateTasksScores("Smiley Heart Level 1", attempt, dataFactory);
+			}
+});
