@@ -36,8 +36,8 @@
 	-->
 	<h4>
 	<table border="1px">
-	<tr style="text-align:center">
-		<th width=150></th><th width=40>Attention</th><th>Working Memory</th> <th>Impulsivity</th><th>MentalFlexibility</th>
+	<tr >
+		<th style="text-align:center" width="150px"></th><th style="text-align:center" width="150px">Attention</th><th style="text-align:center" width="150px">Working Memory</th> <th style="text-align:center" width="150px">Impulsivity</th><th style="text-align:center" width="150px">Mental Flexibility</th>
 	</tr>	
 	<tr style="text-align:center">	
 		<td>Median Score</td> 
@@ -59,6 +59,24 @@
 	<div>
 	<p> <h4>Note : This is not the final report which will be only available after completing all the recommended tasks.
 	</h4></p>
+
+	<p>Show Tasks progress:<input type="checkbox" ng-model="checked"></p>
+	<div ng-repeat="task in tasks" ng-show="checked"> 
+	<table border="10px" style="width:350px">
+		<tr>
+			<td>{{task.name}}</td>
+			<td  width="200px">
+				<span ng-if="task.name == 'Smiley Heart Level 1' ">
+					<span><b>Hits / Misses</b></span>
+					<div ng-repeat="score in task.scores track by $index">
+						<span>Attempt {{$index+1}} : {{score.hits}} / {{score.misses}}</span>
+					</div>
+				</span>	
+			</td>
+		</tr>
+	</table>
+	
+	</div>
 	</div>
 
 </div>
