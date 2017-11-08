@@ -25,13 +25,20 @@ var Schema = mongoose.Schema;
 }*/
 
 var AssesseeSchema = new Schema({
-    name: {
+    fname: {
         type: String,
-        required: 'Kindly enter the name of the User'
+        required: 'Kindly enter the First name of the User'
     },
+	lname: {
+        type: String,
+        required: 'Kindly enter the Last name of the User'
+    },
+
 	email: {
         type: String,
-        required: 'Kindly enter the email of the  User'
+        required: true,//'Kindly enter the email of the  User',
+		unique: true,
+		dropDups: true // drop duplicates!
     },
     ageGroup: {
         type: String,
@@ -52,7 +59,27 @@ var AssesseeSchema = new Schema({
     type: String,
     required: 'Kindly enter the City Type'
     },
+/*
+    institute: {
+    type: String,
+    required: 'Kindly enter the institute Type'
+    },
+
+    city: {
+    type: String,
+    required: 'Kindly enter the city Type'
+    },
+
+    state: {
+    type: String,
+    required: 'Kindly enter the state Type'
+    },
 	
+	country: {
+    type: String,
+    required: 'Kindly enter the country Type'
+    },
+	*/
 	profileMedian : {"name":"","Id" : "","Attention":"","WorkingMemory":"","Impulsivity":"","MentalFlexibility":""},
 		
 	tasks: [], // list of task assigned
@@ -60,5 +87,7 @@ var AssesseeSchema = new Schema({
 	progress:[] //see the example above
 
 }); {timestamps: true} 
+
+AssesseeSchema.index({email: 1},{name: 'profileIndex'});
 
 module.exports = mongoose.model('Assessee', AssesseeSchema);
