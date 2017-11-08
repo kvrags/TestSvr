@@ -150,7 +150,7 @@ rootApp.config(function ($routeProvider) {
 
     .when('/workingmemory', {
         templateUrl: './partials/workingmemory.html',
-        controller: 'ctrlworkoutMemory'
+        controller: 'ctrlWorkingMemory'
     })
 	
     .when('/about', {
@@ -174,7 +174,7 @@ rootApp.config(function ($routeProvider) {
         templateUrl: './partials/retrieveuserdetails.html',
         controller: 'ctrlRetrieveUser'
     })
-    .when('/squares', {
+    .when('/squares/:taskname/:level', {
         templateUrl: './tasks/attention/squares.html',
         controller: 'ctrlSquares'
     })
@@ -318,10 +318,17 @@ rootApp.factory('dataFactory',  function($http, $rootScope) {
 					return assessee[0];
 				});
 		},
+		
+		searchAssessee: function(email){ 
+		return $http.get(base_url + "assessee/" + email ).then(function(success) {
+					assessee = success.data;
+					return assessee;
+				},function(error){
+					return error;
+				});
+		},
 
 		insertNewAssessee: function(newAssessee){
-			//return $http.post("http://localhost:8080/assessee", newAssessee).then(function(response) {
-			//return $http.post(base_url + "assessee", newAssessee).then(function(response) {
 			return $http.post(base_url + "assessee", newAssessee).then(function(success) {
 					assessee = success.data;
 					
@@ -341,14 +348,16 @@ rootApp.factory('dataFactory',  function($http, $rootScope) {
 				});
 		},
 
-		updateAssessee:function(id, data,str){
-			//return $http.put("http://localhost:8080/assessee/" +id, data).then(function(response) {
-			return $http.put(base_url + "assessee/" + id, data).then(function(success) {
+		updateAssessee:function(email, data,str){
+			return $http.put(base_url + "assessee/" + email, data).then(function(success) {
 					assessee = success.data;
 					//$rootScope.$broadcast('questions',quesions);
 					
 					//save it local storage for offline support
 					//writeLocalStorageJson("newAssessee" + id,data,false);
+					writeLocalStorageJson("currentUser",data);
+					writeLocalStorageJson("scores",data.progress,false);
+					
 					return assessee;
 				},function(error){
 					//on error attempt from localstorage
@@ -360,16 +369,20 @@ rootApp.factory('dataFactory',  function($http, $rootScope) {
 					// to update the tasks details/scores str with updateAssessee is used.
 					// this new local record with updateAssessee key will be picked up bulkUpdateAssessee
 					
-					writeLocalStorageJson(str + id,data,false);
-					return assessee;
+					writeLocalStorageJson(str + email,data,false);
+					
+					writeLocalStorageJson("currentUser",data);
+					writeLocalStorageJson("scores",data.progress,false);
+	
+					return error.status;
 				});
 		},
 		
-		bulkInsertAssessees:function(data){ //: JSON.stringify(data)
-			return $http({method: 'PATCH',url: base_url + "assessee/",data}).then(function (success) {
+		bulkInsertAssessees:function(data,strOp){ //: JSON.stringify(data)
+			return $http({method: 'PATCH',url: base_url + "assessee/"+ strOp,data}).then(function (success) {
 					return(success);
 				}, function (error) {
-					return (error.data);
+					return (error.status);
 				});
 		},
 		
@@ -384,14 +397,18 @@ rootApp.factory('dataFactory',  function($http, $rootScope) {
 		
 		getAllTasks: function(){
 			return $http.get(base_url + "tasks").then(function(success) {
-					tasks = success.data;
-					return tasks;
-				},function(error){
-					//on error attempt from localstorage
-					tasks = readLocalStorageJson("assessee");
-					return tasks[0];
-				});
-		},
+			tasks = success.data;
+
+			//save it local storage for offline support
+			writeLocalStorageJson("tasks", tasks);
+
+			return tasks;
+		},function(error){
+			//on error attempt from localstorage
+			tasks = readLocalStorageJson("tasks");
+			return tasks[0];
+		});
+},
 
 		getAllDomains: function(){
 			return $http.get(base_url + "domains").then(function(success) {
@@ -416,7 +433,11 @@ rootApp.controller('ctrlSync', function ($scope,$http,$rootScope,dataFactory) {
 	$scope.message = "This page helps you to load required data for offline working. Also, after offline/field work one must connect to server for automatic upload.";
 	
 	$scope.Init = function() {
-		$scope.localData = readLocalStorageJson("newAssessee");
+		$scope.localDataNew = readLocalStorageJson("newAssessee");
+		$scope.localDataUpdate = readLocalStorageJson("updateAssessee");
+		
+		$scope.Sync();
+		
 	};
 	
 	//check internet connection
@@ -448,27 +469,94 @@ rootApp.controller('ctrlSync', function ($scope,$http,$rootScope,dataFactory) {
 				//$scope.questions=res;
 				$scope.message = "Error syncing questions. check internet/wi-fi connection and rety later.";
 			});
+		dataFactory.getAllTasks().then(function (res){
+				$scope.tasks = res;
+			}, function(res){
+				//error
+				//$scope.questions=res;
+				$scope.message = "Error syncing tasks. check internet/wi-fi connection and rety later.";
+			});
 	}
 	
 	//give the user an option to manually perform upload from localStorage if not done automatically with bOnline flag as above
 	$scope.UploadLocalDB = function() {
+		$scope.lsNewRecords = readLocalStorageJson("newAssessee");
+		$scope.lsUpdateRecords = readLocalStorageJson("updateAssessee");
+		$scope.localDataDuplicates = readLocalStorageJson("duplicateAssessee");
+				
+		MergeLocalStorageData();
+		
+		bulkOperation("new");
+		bulkOperation("update");
 			
+		}
+		
+		function MergeLocalStorageData(){
+			// condition
+			//new user created -- gets stored under newAssessee
+			//after running thru tasks, -- gets stored under updateAssessee
+			//when bulkOperation, first newAssessee records get new id
+			//while coming to updation, the updateAssessee record for the newAssessee will not match
+		
+			//length of the temp Id created is 13 and that of Mongo DB is lengthier
+			//if newAssessee and updateAssessee records have _id length of 13 and are same then merge 
+			//both the records into a single newAssessee record
+			//
+			if ($scope.lsUpdateRecords.length > 0) {
+				
+				for (var i=0;i<$scope.lsUpdateRecords.length;++i) {
+					var updateID = $scope.lsUpdateRecords[i]._id.toString();
+					
+					if (updateID.length < 14 ){
+						if($scope.lsNewRecords.length > 0) {
+							for(var j=0;j<$scope.lsNewRecords.length ;++j) {
+								if(($scope.lsUpdateRecords[i]._id == $scope.lsNewRecords[j]._id)){
+									//now our is record found
+									//update cache data for newAssessee then
+									//delete cache data for updateAssessee
+									$scope.lsNewRecords[j] = $scope.lsUpdateRecords[i];
+									//lsUpdateRecords[i].delete();
+									//alert("Deleting UpdateAssessee : " + $scope.lsUpdateRecords[i]._id);
+									localStorage.removeItem("updateAssessee" + $scope.lsUpdateRecords[i]._id);
+								}
+							}
+						}
+					}
+				
+				}
+				
+			}
+		}
+		
+		function bulkOperation(opStr) {
 			//if there are pending items in the localstorage then upload them onto server/DB
-			$scope.localData = readLocalStorageJson("newAssessee");
+			$scope.localData = readLocalStorageJson(opStr);
 	
 			if ($scope.localData.length) {
 				
-				//get rid of the temp '_id' field so that DB server will create a new one
-				$scope.localData.forEach(function(item){ delete item._id});
+				if (opStr == "new") 
+					//get rid of the temp '_id' field so that DB server will create a new one
+					$scope.localData.forEach(function(item){ delete item._id});
 			
-				dataFactory.bulkInsertAssessees($scope.localData).then(function(res) {
-					$scope.message =  res.data.insertedCount + " records uploaded successfully." ;
+				dataFactory.bulkInsertAssessees($scope.localData, opStr ).then(function(res) {
+					//$scope.message =  res.data.insertedCount + " records uploaded successfully." ;
 					
-					//after successful upload now clear the data from cache
-					clearLocalStorageJson("newAssessee");
+					//check the status of the 'res' to know if we were successful
+					//if status = 200 then we could successfully connect to server/db 
+					//if status !=200 preserve the localdata newAssessee data for next attempt
 					
-					//update the UI
-					$scope.localData = readLocalStorageJson("newAssessee");
+					//if there are duplicates the we get res.data.code=11000
+					if (res.data.code == 11000){
+						writeLocalStorageJson("duplicateAssessee", res.data.op);
+					}else if (res.status == 200){
+						clearLocalStorageJson(opStr);
+					}
+					
+					//update the data members for UI
+					$scope.localDataNew = readLocalStorageJson("newAssessee");
+					$scope.localDataUpdate = readLocalStorageJson("updateAssessee");
+					$scope.localDataDuplicates = readLocalStorageJson("duplicateAssessee");
+					
 				}, function(res){
 						$scope.message =  "Upload of records failed: error:" +  res.error;
 				});
@@ -477,6 +565,7 @@ rootApp.controller('ctrlSync', function ($scope,$http,$rootScope,dataFactory) {
 			}
 			
 		}
+		
 		$scope.CreateDummyRecords = function(){
 			var tmpData=[
 				{	
@@ -656,7 +745,8 @@ rootApp.controller('ctrlHome', function ($scope,$rootScope) {
 	//didn't work using global variable
 	//$scope.user = $rootScope.currentUser;
 	$scope.userDetails = readLocalStorageJson("currentUser");
-	$scope.userName = $scope.userDetails[0].name;
+	if ($scope.userDetails.length == 1 )
+		$scope.userName = $scope.userDetails[0].fname;
 	
 	
     $scope.Register = function (model) {
@@ -722,24 +812,26 @@ rootApp.controller('ctrlHome', function ($scope,$rootScope) {
     }
 });
 
+
 rootApp.controller('ctrlAttention', function ($scope, dataFactory) {
     
 	$scope.Init = function (){
 		$scope.userDetails = readLocalStorageJson("currentUser");
-		$scope.userName = $scope.userDetails[0].name;
+		$scope.userName = $scope.userDetails[0].fname;
 		$scope.message = "Dear " + $scope.userName + ", Our analysis recommends the following tasks to improve your cognitive area of attention. ";
 		$scope.mode = "panel";  // a task page with back button
 		$scope.tasks=[];
-			dataFactory.getAllTasks().then(function (res){
-				for(i=0; i< res.length;++i) {
-					for(j=0; j<res[i].domains.length;++j) {
-						if(res[i].domains[j].name == "Attention")
-							$scope.tasks.push(res[i]);
-					}
+		
+		dataFactory.getAllTasks().then(function (res){
+			for(i=0; i< res.length;++i) {
+				for(j=0; j<res[i].domains.length;++j) {
+					if(res[i].domains[j].name == "Attention")
+						$scope.tasks.push(res[i]);
 				}
-			}, function(res){
-				//error
-				$scope.message = "Error retieving tasks. check internet/wi-fi connection and rety later.";
+			}
+		}, function(res){
+			//error
+			$scope.message = "Error retieving tasks. check internet/wi-fi connection and rety later.";
 		});
 	}
 	
@@ -752,7 +844,7 @@ rootApp.controller('ctrlImpulsivity', function ($scope, dataFactory) {
 
 	$scope.Init = function (){
 		$scope.userDetails = readLocalStorageJson("currentUser");
-		$scope.userName = $scope.userDetails[0].name;
+		$scope.userName = $scope.userDetails[0].fname;
 		$scope.message = "Dear " + $scope.userName + ", Our analysis recommends the following tasks to improve your cognitive area of attention. ";
 		$scope.mode = "panel";  // a task page with back button
 		$scope.tasks=[];
@@ -774,12 +866,12 @@ rootApp.controller('ctrlImpulsivity', function ($scope, dataFactory) {
 	}	
 });
 
-rootApp.controller('ctrlworkoutMemory', function ($scope, dataFactory) {
+rootApp.controller('ctrlWorkingMemory', function ($scope, dataFactory) {
 
 	$scope.Init = function (){
 		$scope.userDetails = readLocalStorageJson("currentUser");
-		$scope.userName = $scope.userDetails[0].name;
-		$scope.message = "Dear " + $scope.userName + ", Our analysis recommends the following tasks to improve your cognitive area of attention. ";
+		$scope.userName = $scope.userDetails[0].fname;
+		$scope.message = "Dear " + $scope.userName + ", our analysis recommends the following tasks to improve your cognitive area of working memory. ";
 		$scope.mode = "panel";  // a task page with back button
 		$scope.tasks=[];
 			dataFactory.getAllTasks().then(function (res){
@@ -795,16 +887,13 @@ rootApp.controller('ctrlworkoutMemory', function ($scope, dataFactory) {
 			});
 	}
 	
-	$scope.goBack = function (){
-		$scope.mode = "panel";
-	}	
 });
 
 rootApp.controller('ctrlmentalflexibility', function ($scope, dataFactory) {
 
 	$scope.Init = function (){
 		$scope.userDetails = readLocalStorageJson("currentUser");
-		$scope.userName = $scope.userDetails[0].name;
+		$scope.userName = $scope.userDetails[0].fname;
 		$scope.message = "Dear " + $scope.userName + ", Our analysis recommends the following tasks to improve your cognitive area of attention. ";
 		$scope.mode = "panel";  // a task page with back button
 		$scope.tasks=[];
@@ -932,9 +1021,15 @@ rootApp.controller('ctrlTasks', function ($scope,dataFactory) {
 
 rootApp.controller('ctrlassessmentReport', function ($scope) {
     $scope.userDetails = readLocalStorageJson("currentUser");
-	$scope.userName = $scope.userDetails[0].name;
-	$scope.tasks = $scope.userDetails[0].tasks;
-	$scope.score = readLocalStorageJson("score");
+
+	if ($scope.userDetails.length == 1) {
+		$scope.fname = $scope.userDetails[0].fname;
+		$scope.lname = $scope.userDetails[0].lname;
+		$scope.tasks = $scope.userDetails[0].tasks;
+		$scope.scores = $scope.userDetails[0].progress;
+		$scope.profileMedian = $scope.userDetails[0].profileMedian;
+	}
+	/*$scope.scores = readLocalStorageJson("scores");
 	$scope.progress = $scope.userDetails[0].progress;
 	$scope.attention = $scope.score[0].attention;
 	$scope.workingMemory = $scope.score[0].workingMemory;
@@ -942,10 +1037,9 @@ rootApp.controller('ctrlassessmentReport', function ($scope) {
 	$scope.mentalFlexibility = $scope.score[0].mentalFlexibility;
 	
 	$scope.createdOn = $scope.userDetails[0].progress[0].createdDate;
+	*/
 	
-	$scope.profileMedian = $scope.userDetails[0].profileMedian;
-	
-	//datasets build in this order Attention,Working Memory,Impulsivity,MentalFlexibility
+	/*//datasets build in this order Attention,Working Memory,Impulsivity,MentalFlexibility
 	$scope.dataSetMedian = [
 			$scope.profileMedian.Attention,
 			$scope.profileMedian.WorkingMemory,
@@ -967,8 +1061,8 @@ rootApp.controller('ctrlassessmentReport', function ($scope) {
 					}
 	];
 	$scope.dataSetStr = $scope.dataSet.toString();
-	
-	});
+	*/
+});
 
 
 rootApp.controller('ctrlAbout', function ($scope) {
@@ -1317,22 +1411,7 @@ rootApp.controller('ctrladminSurvey', function ($scope,dataFactory) {
 
 	$scope.users = [];
         
-    //$scope.survey = readLocalStorageJson("survey");
-	//retrieve all the Assessees
-	/*	
-    $http.get("http://localhost:8080/assessees")
-    .then(function (res) {
-        var tmp =  res.data;
-		var user = {
-				name:"",
-				ageGroup:"",
-				Attention:"",
-				WorkingMemory:"",
-				Impulsivity:"",
-				MentalFlexibility:""				
-			};
-	*/
-	//this functionality is not yet fully implemented*********
+   //this functionality is not yet fully implemented*********
 	//fetch all the profiles to give user the option to look at Assessees for a particular profile
 	//
 	$scope.profilesList=[];
@@ -1346,7 +1425,8 @@ rootApp.controller('ctrladminSurvey', function ($scope,dataFactory) {
 	dataFactory.getAllAssessee().then(function (res){
 		var tmp =  res;
 		var user = {
-				name:"",
+				fname:"",
+				lname:"",
 				ageGroup:"",
 				Attention:"",
 				WorkingMemory:"",
@@ -1357,7 +1437,8 @@ rootApp.controller('ctrladminSurvey', function ($scope,dataFactory) {
 		////build an array with all the details that is required for the UI table display
 		//name,ageGroup,Attention,WorkingMemory,Impulsivity,MentalFlexibility
 		for (var i=0; i < tmp.length; ++i) {
-				user.name = tmp[i].name;
+				user.fname = tmp[i].fname;
+				user.lname = tmp[i].lname;
 				user.ageGroup = tmp[i].ageGroup;
 				user.Attention = tmp[i].progress[tmp[i].progress.length-1].Attention;
 				user.WorkingMemory = tmp[i].progress[tmp[i].progress.length-1].WorkingMemory;
@@ -1541,12 +1622,69 @@ rootApp.controller('ctrladminQuestions', function ($scope,$window, dataFactory) 
 	}
 });
 
-//rootApp.controller('ctrlAssesment', function ($scope,$http,$window,$rootScope) {
+//called from Admin page to find existing assessees
+rootApp.controller('ctrlAssessees', function ($scope, $window, dataFactory) {
+	//right now only find option
+	$scope.mode = "find";
+	$scope.display = false;
+	
+   	$scope.taskMode = function(mode){
+			switch (mode) {				
+				case 'create':
+					$scope.mode = "create";
+					break;
+				case 'modify':
+					$scope.mode = "modify";					
+					break;
+				case 'find':
+					$scope.mode = "find";
+					break;			
+			}
+			$scope.message = $scope.mode;
+		}
+		
+	$scope.InitFindAssessee = function() {
+		$scope.message = "in ctrlAssessees()";
+	}
+	
+	$scope.clearDisplay = function() {
+			$scope.display = false;
+	}
+	
+	$scope.findAssessee = function (model) {
+		
+		dataFactory.searchAssessee(model.email).then(function (res){
+			if (res.length == 1){
+				$scope.display = true;
+				$scope.user = res[0];
+				$scope.message = res[0];
+			}else {
+				alert ("No Assessee details found!");
+			}
+			
+			
+		}, function(err){
+			$scope.message = err;  
+		});
+		
+	}
+   
+   $scope.selectAssessee =  function(){
+	   writeLocalStorageJson("currentUser",$scope.user);
+	   writeLocalStorageJson("scores",$scope.progress);
+	   alert("New Assessee details loaded");
+	   $window.location.href = '/index.html';
+   }
+});
 
 rootApp.controller('ctrlAssesment', function ($scope,$window,dataFactory) {
-    $scope.bEnable = true; //Next button flag
-	$scope.bAssesseDetails = true;
-    $scope.bQuestions = false;
+	
+		
+    $scope.newRecord;
+	
+	$scope.bEnable = true; //Next button flag
+	$scope.bAssesseDetails = "new";
+    //$scope.bQuestions = false;
 	
 	$scope.date = Date();//'Hello World from Assesment Controller1';
     $scope.qIndex = 0;
@@ -1570,18 +1708,6 @@ rootApp.controller('ctrlAssesment', function ($scope,$window,dataFactory) {
 
     ];
 
-
-	/* remove once dataFactory works well
-	//retrieve all the Median profiles
-    $http.get("http://localhost:8080/profiles")
-    .then(function (res) {
-        $scope.profilesList = res.data;
-		$scope.message = "Ready to start assesment process";//res.data;
-    }, function (res) {
-        //failure callback
-        $scope.message = ("Error in starting Assesment process, error:" + res.data);
-    });
-	*/
 	dataFactory.getAllProfiles().then(function (res){
 		$scope.profilesList = res;
 		$scope.message = "Ready to start assesment process";//res.data; //res;
@@ -1589,16 +1715,42 @@ rootApp.controller('ctrlAssesment', function ($scope,$window,dataFactory) {
 		//Online fetch unsuccessful hence reading from localstorage
 		$scope.profilesList=res;
 	});
-
+1
     ////retrieve all the questions based on the selected profile
 	//TBD
 	//{}
     $scope.Init = function () {
     
-        $scope.bAssesseDetails = true;
-        $scope.bQuestions = false;
+	    //if bAssesseDetails = new then show new form to capture assessee details
+	    //if bAssesseDetails = update then show existing assessee details
+		//if bAssesseDetails = questions then show Questions screen
+
+		//if we already have a current user then update the model fields in the UI
+		$scope.userDetails = readLocalStorageJson("currentUser");
+		
+		if ($scope.userDetails.length == 1) {
+			//there is a user identified
+			$scope.bAssesseDetails = "update";
+			$scope.strOperation = "updateAssessee";
+			
+			$scope.userDetails = $scope.userDetails[0];
+			$scope.fname = $scope.userDetails.fname;
+			$scope.lname = $scope.userDetails.lname;
+			$scope.progress = $scope.userDetails.progress;
+			$scope.progressCount = $scope.progress.length;
+		}else{
+			//new 
+			$scope.bAssesseDetails = "new";
+			$scope.strOperation = "newAssessee";
+
+		}
 	}
 
+	$scope.assessAgain = function(){
+		$scope.bAssesseDetails = "questions";
+		GetQuestions("","");
+		$scope.InitQuestions();
+	}
 	
     var optionKey = '';
     var score = 0;
@@ -1623,9 +1775,23 @@ rootApp.controller('ctrlAssesment', function ($scope,$window,dataFactory) {
 
 	}*/
 
+	/*$scope.Submit = function(model) {
+		
+		if ($scope.bAssesseDetails == "update"){ 
+			updateAssessee(model);
+		}
+		
+		if ($scope.bAssesseDetails == "new"){ 
+			CreateNewAssessee(model);
+		}
+	}
+	
+	function updateAssessee(model) {
+		alert("in updateAssessee()");
+	}*/
 	//create a new Assessee as per the above model
 	//progress array will contain scores from respective Cogntive areas
-    $scope.CreateNewAssessee = function (model) {
+    $scope.CreateNewAssessee = function(model) {
 
 		if (!$scope.profilesList.length) {
 			$scope.message = "Profile creation error. Please check internet/wifi connection and try again.";			
@@ -1667,40 +1833,37 @@ rootApp.controller('ctrlAssesment', function ($scope,$window,dataFactory) {
 			allTasks = res;
 			
 			for (var i=0; i < allTasks.length; ++i) {
-				
 				for( var j=0; j< allTasks[i].profiles.length;++j) {
 					if ( allTasks[i].profiles[j].name == model.profileMedian.name ){
 						model.tasks.push(allTasks[i]);
 					}
 				}
 			}
-			}, function(res){
-				//error
-				$scope.message = "Error retieving tasks. check internet/wi-fi connection and rety later.";
-		});
-
-		
-		dataFactory.insertNewAssessee(model).then(function (res) {
-				$scope.assesseeId = res._id; //not used currently
-				$scope.message1 = "New Assessee details successfully posted to server  ";// + res.data;
-				GetQuestions(model.profileMedian.name,model.profileMedian.id);
+			
+			dataFactory.insertNewAssessee(model).then(function (res) {
+				
+				//check if we have a duplicate mail-id
+				if (res.code == "11000") {
+					alert("Error: This email/record already exists. Choose another one.");
+					$window.location.href = '/index.html';
+				}else {
+					$scope.userDetails = res;
+					$scope.fname = res.fname;
+					$scope.assesseeId = res._id; //not used currently
+					$scope.message1 = "New Assessee details successfully posted to server  ";// + res.data;
+					GetQuestions(model.profileMedian.name,model.profileMedian.id);
+					}
 			}, function(res){
 				//error
 				$scope.questions = res;
 			});
-		/*$http.post("http://localhost:8080/assessee", model)
-        .then (function (res){
-            $scope.message = "New Assessee details successfully posted to server  ";// + res.data;
-			//alert("New Assessee details successfully posted to server : " + res.data);
-			
-			//store the new assessee id to make put/update later after the questionaire
-			$scope.assesseeId = res.data._id;	
-			GetQuestions(model.profileMedian.name,model.profileMedian.id);
-			
-        }, function (res){
-            $scope.message = "Error while creating new user, please check your internet connection and retry." ;//+ res.error;
-        });*/
 		
+			
+			}, function(res){
+				//error
+				$scope.message = "Error retieving tasks. check internet/wi-fi connection and rety later.";
+		});
+	
 		//retrieve all the relevant Questions for this profile
 		///api/cars?filter[where][carClass]=fullsize
 		////GET /users?name=rob&email=rob@email.com
@@ -1713,37 +1876,19 @@ rootApp.controller('ctrlAssesment', function ($scope,$window,dataFactory) {
 	}
 	//called from Async dataFactory.insertNewAssessee
 	function GetQuestions(profileName,id) {
-		
-			/*$http.get("http://localhost:8080/questions")
-			.then(function (res) {
-				$scope.questionsList = res.data;
-				$scope.InitQuestions();
-				//after succes retrive of questions enable the Next button and the next screen with Questions
-				//$scope.message = "Questions retrieved";  //res.data
-				//alert("enable the Next button and the next screen with Questions");
-				
-				//enbale the next button on UI only after an successfull post.
-				$scope.bEnable = true;
-				$scope.bAssesseDetails = false; //
-				
-			}, function (res) {
-				//failure callback
-				$scope.questionsList = null;
-				$scope.message = res.data;
-			});*/
-			
-			
-			dataFactory.getAllQuestions().then(function (res){
-				$scope.questionsList = res;
-				$scope.InitQuestions();
-				//after succes retrive of questions enable the Next button and the next screen with Questions
-				//enbale the next button on UI only after an successfull post.
-				$scope.bEnable = true;
-				$scope.bAssesseDetails = false;
-			}, function(res){
-				//error
-				$scope.questionsList = res;
-			});
+
+		dataFactory.getAllQuestions().then(function (res){
+			$scope.questionsList = res;
+			$scope.InitQuestions();
+			//after succes retrive of questions enable the Next button and the next screen with Questions
+			//enbale the next button on UI only after an successfull post.
+			$scope.bEnable = true;
+			$scope.bAssesseDetails = "questions";
+			//$scope.bQuestions = true;
+		}, function(res){
+			//error
+			$scope.questionsList = res;
+		});
 }
 
 
@@ -1754,8 +1899,8 @@ rootApp.controller('ctrlAssesment', function ($scope,$window,dataFactory) {
 		$scope.qText = $scope.questionsList[$scope.qIndex].qText;
 	}
 	
-    $scope.SubmitQuestions = function (res) {
-        optionKey = res.reply;
+    $scope.SubmitQuestions = function (qResponse) {
+        optionKey = qResponse.reply;
         
         score = $scope.questionsList[$scope.qIndex][optionKey];
 
@@ -1792,45 +1937,40 @@ rootApp.controller('ctrlAssesment', function ($scope,$window,dataFactory) {
             $scope.qText = "Thank you for completing the assessment";
             $scope.b_show = false;
 		
-			//	0:{Attention:22,WorkingMemory:10,Implusivity:10,MentalFlexibility:19, plannedStartDate:"17July2016", plannedCompletionDate:"27Oct2016", actualStartDate:"",actualCompletionDate:"" } //GAP 0 or first test 
+			var strDate = Date();
+			/*var day = strDate.getDay();
+			var month = strDate.getMonth();
+			var year = strDate.getYear();
+			
+			strDate = day + "/" + month + "/" + year;
+			*/
+				//	0:{Attention:22,WorkingMemory:10,Implusivity:10,MentalFlexibility:19, date:"" }
 			$scope.progress = {	
 						"Attention":$scope.attention,
 						"WorkingMemory":$scope.workingMemory,
 						"Impulsivity":$scope.impulsivity,
 						"MentalFlexibility":$scope.mentalFlexibility,
-						"createdDate":Date()
+						"Date":strDate
 				};	
-			//res = {};	
-			res.progress.push($scope.progress);
+			$scope.userDetails.progress.push($scope.progress);
 			
-			//$scope.finalScore =  AnalyseScores($scope.attention,$scope.workingMemory,$scope.impulsivity,$scope.mentalFlexibility);
 			
-			//create a data struct to store in the localStorage
-			var finalScore = {};
-			finalScore.attention = $scope.attention;
-			finalScore.workingMemory = $scope.workingMemory;
-			finalScore.impulsivity = $scope.impulsivity;
-			finalScore.mentalFlexibility = $scope.mentalFlexibility;
-	
-			//'newAssessee' is passed on dataFactory param for local Storage indication that it is a new record
-			//also when passed as 'updateAssessee' a bulkUpdate is to be called rather than bulkInsertAssessees
-			
-			dataFactory.updateAssessee($scope.assesseeId, res, "newAssessee").then(function (res) {
+			//'newAssessee' is passed on dataFactory param for local Storage indication 
+			//that it is a new record
+			//also when passed as 'updateAssessee' a bulkUpdate is to be called rather 
+			//than bulkInsertAssessees
+			//"newAssessee";
+			dataFactory.updateAssessee($scope.userDetails.email, $scope.userDetails, $scope.strOperation).then(function (res) {
 				$scope.message = "Your assessement details successfully posted to server  " ;//+ res.data;
-
-				//$rootScope, rootApp global variable didn't work hence write it to local storage and get it later!
-				writeLocalStorageJson("currentUser",res);
-				writeLocalStorageJson("score", finalScore);
-				//$rootScope.currentUser = res;
+				//writeLocalStorageJson("currentUser",res);
+				//writeLocalStorageJson("scores", res.progress);
 		
 				//now navigate to home page
-				//alert("you are being directed to home page...");
 				$window.location.href = '/index.html';
-			}, function(res){
+			}, function(err){
 				//error
-				$scope.questions = res;
-				$scope.message = "Error while posting assessement details, please check your internet / wi-fi connection and retry." ;//+ res.error;
-
+				$scope.questions = err;
+				$scope.message = "Error while posting assessement details, please check your internet / wi-fi connection and retry." ;//+ err.error;
 			});
 	
 	
@@ -1950,7 +2090,7 @@ rootApp.controller('ctrlRetrieveUser', function ($scope) {
 });
 
 //task Controller
-rootApp.controller('ctrlSmiley', function ($scope,dataFactory) {
+rootApp.controller('ctrlSmiley', function ($scope,$routeParams,dataFactory) {
 	//var d = Date();
 	var startTime; //= Date.getTime();
 	var attempt = {
@@ -2042,7 +2182,7 @@ rootApp.controller('ctrlSmiley', function ($scope,dataFactory) {
 					misses:$scope.misses
 				};
 	
-		updateTasksScores("Smiley Heart Level 1", attempt, dataFactory);
+		updateTasksScores($routeParams.taskname, attempt, dataFactory);
 	
 		/*
 		$scope.userDetails = {};
@@ -2079,36 +2219,6 @@ rootApp.controller('ctrlSmiley', function ($scope,dataFactory) {
 	}	
 });
 
-function updateTasksScores(taskName,score, dataFactory){
-		//task details
-		//find out who the user is? 
-		//find out all the particular task being performed by this user
-		// at the end of this task, determine the score and store it 
-		
-		var userDetails = {};
-		userDetails = readLocalStorageJson("currentUser");
-		var userId = userDetails[0]._id;
-		var tasks = userDetails[0].tasks;
-		
-		
-		for (var i=0; i < tasks.length;++i) {
-			if ( tasks[i].name == taskName){
-				tasks[i].scores.push(score);
-				break;
-			}
-		}			
-		
-		//update the database
-		//instead of sending all the userdata, send only his _Id, tasks/task_iD, /tasks/task_score 
-		dataFactory.updateAssessee(userId, userDetails[0], "updateAssessee").then(function (res) {
-			
-			//now update the local storage
-			writeLocalStorageJson("currentUser",res);
-		}, function(res){
-			
-		});
-
-}
 
 //ctrlBlackSquares
 rootApp.controller('ctrlBlackSquares', function ($scope) {
@@ -2152,147 +2262,300 @@ rootApp.controller('ctrlBlackSquares', function ($scope) {
     }
 });
 
-rootApp.controller('ctrlSquares', function ($scope) {
-            $scope.message = "";
-            $scope.clicks = -1;
-            $scope.AppData = InitAppData();
-            $scope.taskLevel = $scope.AppData.Levels[0]; //initial level when first time draw//set g_taskLevel ...use a switch in the UI to set a Task Difficulty Level
-            $scope.row_clrs = $scope.taskLevel.Table["row_clr"];
-            $scope.current_Result = 0;
-            $scope.prev_Result = 0;
-            $scope.prev_prev_Result = 0;
-            $scope.calcResult = 0;
-            $scope.ScreenTimeOut = 20;
-			$scope.right = 0;
-			$scope.wrong = 0;
+rootApp.controller('ctrlSquares', function ($scope, $routeParams,dataFactory) {
+
+	//
+	//read the squares app parameters LoadSquaresAppData() --> InitAppData
+	//read the tasks allocated to the users
+	//determine the task level invoked and match the corresponding Sq app data level
+	//Initialise the Array object to represent 1s and 0s for the table to be displayed
+	//track the result relevant to the task level and store it in users data struct
+	//
+
+//task level functionality 
+//	I	Report the number of white squares on previous slide - number of squares =3 max
+//	II	Report the number of white squares on previous slide (increase the number of squares) 5 max 
+//	III	Add number of white squares of present slide with previous slide -- number of squares = 3 max
+//	IV	Add number of white squares of present slide with previous slide ((increase the number of squares)
+//	V	Add all white squares on first slide and subtract it from total of slides form next slide
+
+	$scope.message = "";
+	$scope.clicks = 0;
+	$scope.current_Result = 0;
+	$scope.prev_Result = 0;
+	$scope.prev_prev_Result = 0;
+	$scope.calcResult = 0;
+	$scope.ScreenTimeOut = 20;
+	$scope.right = 0;
+	$scope.wrong = 0;
+	$scope.startTime = 0;
+ 	$scope.startTime = Date();
+	$scope.right = 0;
+	$scope.wrong = 0;
+	var attempt = {
+					date: "",
+					duration:"",	
+					right:"",
+					wrong:"",
+					screens:""
+				};
+	
+	
+	$scope.Init = function() {
+		//capture when this was activated
+		$scope.startTime = Date();
+	
+		$scope.hideAnswer = true;
+		$scope.disableBtn = false;
+		$scope.userInput = "";
 			
-            console.log("Inside ng.js :: in ctrlSquares Controller");
+		$scope.current_Result = 0;
+		$scope.prev_Result = 0;
+		$scope.prev_prev_Result = 0;
+
+		//set how many times a square screen must be presented before user input is accepted for validation
+		//$scope.ScreenTimeOut = $scope.taskLevel.ScreenTimeOut;
+		//reset the screen count
+		$scope.clicks = 0;
+
+		$scope.SquareAppData = LoadSquaresAppData();
+
+		//check if the task desired is supported well within the Square App
+		//else set to maximum level
+		//routeParams.level is reduced by 1 to arrive at Array based '0' index 
+		if (( $routeParams.level - 1) < $scope.SquareAppData.Levels.length) 
+			//initial level when first time draw//set g_taskLevel 
+			$scope.taskLevel = $scope.SquareAppData.Levels[$routeParams.level - 1];
+		else
+			$scope.taskLevel = $scope.SquareAppData.Levels[$scope.SquareAppData.Levels.length -1];
 		
-			$scope.userDetails = {};
-			//didn't work using global variable
-			//$scope.user = $rootScope.currentUser;
-			$scope.userDetails = readLocalStorageJson("currentUser");
-			$scope.userName = $scope.userDetails[0].name;
-			$scope.userId = $scope.userDetails[0]._id;
-			$scope.tasks = $scope.userDetails[0].tasks;
+		$scope.row_clrs = $scope.taskLevel.Table["row_clr"];
+		$scope.userDetails = {};
+		$scope.userDetails = readLocalStorageJson("currentUser");
+		$scope.userName = $scope.userDetails[0].name;
+		$scope.userId = $scope.userDetails[0]._id;
+		$scope.tasks = $scope.userDetails[0].tasks;
+		$scope.taskName = $routeParams.taskname;
+	
+		for (var i=0;i<$scope.tasks.length; ++i) {
+			if ($scope.tasks[i].name == $routeParams.taskname) {
+				//setDifficultyLevel($scope.tasks[i].level -1);
+				$scope.taskLevel = $scope.SquareAppData.Levels[$scope.tasks[i].level -1];
+				$scope.array_Table = InitArrayObject($scope.taskLevel);
+				$scope.taskInstructions = $scope.tasks[i].description;
+				break;
+			}
+		}
+
+		$scope.trackResult($scope.array_Table);
+	
+	}
+	
+	/*function setDifficultyLevel(item) {
+
+		if (item > $scope.AppData.Levels) {
+			//set item = to maximum level
+			item = $scope.AppData.Levels.length();
+		}
+		
+		$scope.taskLevel = $scope.AppData.Levels[item];
+
+		$scope.array_Table = InitArrayObject($scope.taskLevel);
 			
-			for (var i=0;i<$scope.tasks; ++i) {
-				if ($scope.tasks[i].name == $scope.name){
-					$scope.setDifficultyLevel($scope.tasks[i].level);
+		$scope.current_Result = 0;
+		$scope.prev_Result = 0;
+		$scope.prev_prev_Result = 0;
+
+		//set how many times a square screen must be presented before user input is accepted for validation
+		$scope.ScreenTimeOut = $scope.taskLevel.ScreenTimeOut;
+		//reset the screen count
+		$scope.clicks = 0;
+
+		$scope.trackResult($scope.array_Table);
+	}*/
+
+	
+			
+	$scope.Draw = function () {
+		//hide the answer
+		$scope.hideAnswer = true;
+		$scope.disableBtn = false;
+		$scope.userInput = "";
+		
+		//track number of times the user has clicked the screen
+		$scope.clicks++;
+		
+		//this sets an array object with radominised 0s and 1 for the given task difficulty level
+		$scope.array_Table = InitArrayObject($scope.taskLevel); 
+		
+		//$scope.message = $scope.array_Table;
+		
+		$scope.trackResult($scope.array_Table);
+
+		if ($scope.clicks == $scope.ScreenTimeOut) {
+			//alert("REached maximum user clciks");
+			model.bVisible = true;
+		}
+
+	}
+
+
+	//define
+	$scope.trackResult = function (table) {
+		
+		switch ($routeParams.level) {
+			case "1":
+				//count the number of Squares in the middle row
+				addSquaresinMiddleRow(table);
+				break;
+			case "2":
+				//count the number of Squares in the middle row
+				addSquaresinMiddleRow(table);
+				break;
+			case "3":
+			//Add number of white squares of present slide with previous slide
+				addSquaresinMiddleRow_N1(table);			
+				break;
+			case "4":
+			//Add number of white squares of present slide with previous slide
+				addSquaresinMiddleRow_N1(table);			
+				break;
+			case "5":
+			//n-2 slides
+			//Add all white squates on first slide, prev and prev to prev slide 
+				addSquaresinMiddleRow_N1(table);			
+				break;
+			case "6":
+			//Add all white squates on first slide and subtract it 
+			//from total of slides form next slide
+				//callLevel-5-Track();
+				break;
+				
+		}
+	}
+	
+	function addSquaresinMiddleRow(arr) {
+		//check the array length if odd so that we can pick the middle row containing the squares
+		//once middle row is determined, find the occurences of "1" as this represent each square in our logic
+		//sum of such occurences of "1" gives the result
+
+		var screen_sum = 0;
+
+		if (arr.length % 2 == 0) {
+			console.log("Error: In CountSquaresJS: Array Table has even number of rows!");
+		} else {
+			//array table is odd, lets begin
+			var middelStr = arr[Math.floor(arr.length / 2)];
+			//var middelStr = arr[middleRow];
+			//var sum = middelStr.match(/1/g).length;
+			for (var i = 0; middelStr.length > i; i++) {
+				if (middelStr.charAt(i) == '1') {
+					++screen_sum;
 				}
 			}
-			
-            $scope.setDifficultyLevel = function (item) {
+		}
+		$scope.calcResult = screen_sum;
+	}
 
-                if (item > $scope.AppData.Levels) {
-                    //set item = to maximum level
-                    item = $scope.AppData.Levels.length();
-                }
-                $scope.taskLevel = $scope.AppData.Levels[item];
-
-                $scope.array_Table = InitArrayObject($scope.taskLevel);
-				
-				$scope.current_Result = 0;
-                $scope.prev_Result = 0;
-                $scope.prev_prev_Result = 0;
-
-                //set how many times a square screen must be presented before user input is accepted for validation
-                $scope.ScreenTimeOut = $scope.taskLevel.ScreenTimeOut;
-                //reset the screen count
-                $scope.clicks = 0;
-
-                $scope.trackResult($scope.array_Table);
-            }
-			
-            $scope.Draw = function (model) {
-				//hide the answer
-				$scope.hideAnswer = true;
-
-                $scope.clicks = $scope.clicks + 1;
-                $scope.array_Table = InitArrayObject($scope.taskLevel); //this sets an array object with radominised 0s and 1 for the given task difficulty level
-                
-				//$scope.message = $scope.array_Table;
-				
-				$scope.trackResult($scope.array_Table);
-
-                if ($scope.clicks == $scope.ScreenTimeOut) {
-                    //alert("REached maximum user clciks");
-                    model.bVisible = true;
-                }
-
-            }
-
-
-            //define
-            $scope.trackResult = function (arr) {
-                console.log("In ngJS: cntrlSquare :: TrackResult()");
-                //check the array length if odd so that we can pick the middle row containing the squares
-                //once middle row is determined, find the occurences of "1" as this represent each square in our logic
-                //sum of such occurences of "1" gives the result
-
-                if (arr.length % 2 == 0) {
-                    console.log("Error: In CountSquaresJS: Array Table has even number of rows!");
-                } else {
-                    //array table is odd, lets begin
-                    var middelStr = arr[Math.floor(arr.length / 2)];
-                    //var middelStr = arr[middleRow];
-                    //var sum = middelStr.match(/1/g).length;
-                    var screen_sum = 0;
-                    for (var i = 0; middelStr.length > i; i++) {
-                        if (middelStr.charAt(i) == '1') {
-                            ++screen_sum;
-                        }
-                    }
-                    //3,4,2,1,4
-                    if ($scope.current_Result == 0) {
-                        $scope.current_Result = screen_sum;
-                        //prev_Result = ;
-                    } else {
-                        /*$scope.prev_prev_Result = $scope.prev_Result;
-                        $scope.prev_Result = $scope.current_Result;
-                        $scope.current_Result = $scope.prev_Result + screen_sum;
-                        $scope.prev_Result = screen_sum;*/
-
-                        $scope.prev_prev_Result = $scope.prev_Result;
-                        $scope.prev_Result = $scope.current_Result;
-                        $scope.current_Result = screen_sum;
-
-
-                    }
-                    var curr = +$scope.current_Result;
-                    var pre = +$scope.prev_Result;
-
-                    $scope.calcResult = curr + pre;
-
-                    $scope.message = ("Sum : " + $scope.calcResult + " Current Number = " + $scope.current_Result + "," + " Previous Number = " + $scope.prev_Result + " Screens = " + $scope.clicks);
-                }
-            }
-			
-			$scope.checkAnswer =  function() {
-				//hide not working properly
-				//also the clicking the button is triggering Draw()/ng-click()!
-				
-				$scope.hideAnswer = false;
-				
-				//store these result in localStorage as when user refreshes the page result will be destroyed
-				if ($scope.calcResult == $scope.model.userInput) {
-					$scope.right += 1;
-				}else {
-					$scope.wrong += 1;
-				}
-			}
-			
-			$scope.taskExit = function() {
-				var endTime = Date();
+	
+	function addSquaresinMiddleRow_N1(table) {
+		// get sum of the current screen; store it in calcResult
+		addSquaresinMiddleRow(table);
 		
-				attempt = {
-							date:startTime,
-							duration: (endTime - startTime) /1000, //store elasped time minutes 
-							right:$scope.right,
-							wrong:$scope.wrong,
-							screens : $scope.clicks //no of screens a user has seen
-						};
+		//3,4,2,1,4
+		var screen_sum = 0;
+
+				if ($scope.current_Result == 0) {
+					$scope.current_Result = $scope.calcResult;
+					//prev_Result = ;
+				} else {
+					$scope.prev_prev_Result = $scope.prev_Result;
+					$scope.prev_Result = $scope.current_Result;
+					$scope.current_Result = $scope.prev_Result + screen_sum;
+					$scope.prev_Result = screen_suev_Result = $scope.prev_Result;
+					$scope.prev_Result = $scope.current_Result;
+					$scope.current_Result = $scope.calcResult;
+
+
+				}
+				var curr = +$scope.current_Result;
+				var pre = +$scope.prev_Result;
+
+				$scope.calcResult = curr + pre;
+
+				//$scope.message = ("Sum : " + $scope.calcResult + " Current Number = " + $scope.current_Result + "," + " Previous Number = " + $scope.prev_Result + " Screens = " + $scope.clicks);
+	}
+		
+
 			
-				updateTasksScores("Smiley Heart Level 1", attempt, dataFactory);
-			}
+	$scope.checkAnswer =  function() {		
+		$scope.disableBtn = true;
+		$scope.hideAnswer = false;
+		
+		//store these result in localStorage as when user refreshes the page result will be destroyed
+		if ($scope.calcResult == $scope.userInput) {
+			$scope.right++;
+		} else {
+			$scope.wrong++;// += 1;
+		}
+	
+		$scope.message = $scope.calcResult;
+		
+		/*if ($routeParams.level == "1" || $routeParams.level == "2")
+			$scope.message = $scope.calcResult;// + "Hits : " + $scope.right + "   Misses : " + $scope.wrong; 
+		else
+			if ($routeParams.level == "3" || $routeParams.level == "4")
+				//$scope.message = ("Sum : " + $scope.calcResult + " Current Number = " + $scope.current_Result + "," + " Previous Number = " + $scope.prev_Result + " Screens = " + $scope.clicks);
+				$scope.message = $scope.calcResult;
+				*/
+	}
+			
+	$scope.taskExit = function() {
+		var endTime = Date();
+
+		attempt = {
+					date: $scope.startTime,
+					duration: (endTime - $scope.startTime) /1000, //store elasped time minutes 
+					right: $scope.right,
+					wrong: $scope.wrong,
+					screens: $scope.clicks //no of screens a user has seen
+				};
+	
+		updateTasksScores($routeParams.taskname, attempt, dataFactory);
+	}
 });
+
+function updateTasksScores(taskName, score, dataFactory){
+		//task details
+		//find out who the user is? 
+		//find out all the particular task being performed by this user
+		// at the end of this task, determine the score and store it 
+		
+		var userDetails = {};
+		userDetails = readLocalStorageJson("currentUser");
+		var userId = userDetails[0]._id;
+		var tasks = userDetails[0].tasks;
+		
+		if (!userId)
+			return;
+		
+		for (var i=0; i < tasks.length;++i) {
+			if ( tasks[i].name == taskName){
+				tasks[i].scores.push(score);
+				
+				break;
+			}
+		}			
+		
+		//now update the local storage
+		writeLocalStorageJson("currentUser",userDetails[0]);
+
+		//update the database
+		//instead of sending all the userdata, send only his _Id, tasks/task_iD, /tasks/task_score 
+		dataFactory.updateAssessee(userId, userDetails[0], "updateAssessee").then(function (success) {
+				
+		}, function(failure){
+			
+		});
+
+}

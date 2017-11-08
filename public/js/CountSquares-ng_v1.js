@@ -1,3 +1,16 @@
+/* //self invoking function
+var CountSquares = function () {
+	"use strict";
+   return {
+      InitAppData: (function () {
+        return 'test';
+      }()),
+      test2: (function () {
+        return console.log('test 2');
+      })
+   };
+}());
+*/
 
 //Global Variables
 var g_prev_Result = 0;
@@ -10,8 +23,8 @@ var g_init = false;
 var g_AppData = null;
 //var g_AppData;
 
- function LoadSquaresAppData() {
-     //console.log("CountSquaresJS : Inside InitAppData()");
+ function InitAppData() {
+     console.log("CountSquaresJS : Inside InitAppData()");
 
      g_init = false; //hack; for reasons unknown at the moment, global var are initialised for every call from NS.js script
     if (!g_init) {
@@ -20,10 +33,10 @@ var g_AppData = null;
 
         //build the JSON formatted AppData
         g_AppData = {
-            "Application Name": "Squares App",
+            "Application Name": "My App Task 1",
             "Version": "1.0.0.1",
             //"Client": "My Tree Hospitals",
-            //"TaskName": "Count The Squares",
+            "TaskName": "Count The Squares",
             "Levels": [
                    {
                        "Low_Seed": 1,
@@ -54,35 +67,6 @@ var g_AppData = null;
                     "ScreenTimeOut": 10 // time duration after which next screen is presented
                 },
                 {
-				   "Low_Seed": 1,
-				   "High_Seed": 7,
-				   "Table": {
-					   "row_clr":
-						  ["green", "blue", "red"],
-					   "rows": 3,
-					   "columns": 3,
-				   },
-
-                       "Repeats": "5", //no of screen to present
-                       "Completed": 0, // how many times a user a run the task so far
-                       "ScreenTimeOut": 3 // time duration after which next screen is presented
-                   },
-                {
-                    "Low_Seed": 8,
-                    "High_Seed": 15,
-                    "Table": {
-                        "row_clr":
-                           ["green", "blue", "red"],
-                        "rows": 3,
-                        "columns": 5,
-                    },
-
-                    "Repeats": "5", //no of screen to present
-                    "Completed": 0, // how many times a user a run the task so far
-                    "ScreenTimeOut": 10 // time duration after which next screen is presented
-                },
-
-                {
                     "Low_Seed": 15,
                     "High_Seed": 45,
                     "Table": {
@@ -98,7 +82,7 @@ var g_AppData = null;
                 }
             ],
             "Runs": "5",// how many times this task is permitted to used
-            "Expiry": "30/08/2019" // date after which app should not run
+            "Expiry": "30/08/2018" // date after which app should not run
         } //end of AppData
     }
     return g_AppData;
@@ -132,11 +116,10 @@ var g_AppData = null;
      }
 
      //populate the rows and columns of the array with radominised 0s and 1s
-     // 1s represent the white squares in the table
+     // 1srepresent the white squares in the table
      for (var i = 0; i < g_array_Table.length; ++i) { //gives the no of rows
     
-		// toString(2) --> base 2 - binary format
-         tmp = randomIntInc(g_taskLevel.Low_Seed, g_taskLevel.High_Seed).toString(2).toString(); 
+         tmp = randomIntInc(g_taskLevel.Low_Seed, g_taskLevel.High_Seed).toString(2).toString(); // base 2 - binary format to
 
          if (tmp.length < g_taskLevel.Table.columns) {//build the columns
              diff = g_taskLevel.Table.columns - tmp.length;
@@ -247,7 +230,7 @@ var g_AppData = null;
  function randomIntInc(low, high) {
 
      //var val = Math.floor(1000 + Math.random() * 9000);//gives fixed lenght of 4
-		
+
      return Math.floor(Math.random() * (high - low + 1) + low);
  }
 
