@@ -2,56 +2,84 @@
     <title></title>
 	<link rel="stylesheet" type="text/css" href="../css/neuro.css">
 </head>
-
-<div class="floatSmall"> 
-		<a  class="white" href="./#!workingmemory"> 
-			<div class="floatSmall laborange" >
-				< Task Panel
-			</div>
-		</a>
-</div>	
-<div  ng-controller="ctrlSquares"  ng-init="Draw()" ng-click="Draw(model)">
-	<!-- this selection of task is moved within the controller
-		<div align="center"><p>&nbsp</p>
-		<label><input type="radio" name="Level" ng-click="setDifficultyLevel('0')" checked /> Level 1</label>
-		<label><input type="radio" name="Level" ng-click="setDifficultyLevel('1')" /> Level 2</label>
-		<label><input type="radio" name="Level" ng-click="setDifficultyLevel('2')" /> Level 3</label>
+<div ng-controller="ctrlSquares" >
+	<div class="floatSmall" ng-click="taskExit()"> 
+			<a  class="white" href="./#!workingmemory"> 
+				<div class="floatSmall laborange" >
+					< Tasks 
+				</div>
+			</a>
 	</div>
-	-->
-	<div >	
-	<table  border="10px" style="height:300px" id="myTable" >
-		<tr ng-repeat="row in array_Table track by $index" style=background-color:{{row_clrs[$index]}}>
-			<td width="60px" ng-repeat="col in row track by $index" align="center"` ng-switch="col" >
-				<!-- if the table display is not proper, check array and low-seed and high seed settings -->
-				<span ng-switch-when="1">
-					<img align="center" src="./res/white_rect.jpg" width="60px" height="40px"/>
-				</span>
-				<span ng-switch-when="0">&nbsp;</span>
-			</td>
-		</tr>
-	</table>
-	<!--<pre>{{message |json }} </pre>-->
-	
-	<div align="center">
-		<form id="formResult">
-		<input type="number" name="btnResult" ng-model="model.userInput" required />
-		<div class="alert alert-danger" ng-show="(formResult.btnResult.$touched || formResult.$submitted) && formResult.btnResult.$error.required">
-            Your answer is required
-        </div>
-                  
-		<input type="button" value="Check" ng-click="checkAnswer()">
-		
-		<div id="userResult" ng-hide="!hideAnswer">
-			<h3>Calculated Answer : {{message}}</h3>
-			<!--{{$scope.calsResult}}-->
-		</div>
-		<!--Show Answer: <input type="checkbox" ng-model="checked" aria-label="Toggle ngHide"><br />
-		<div class="check-element animate-show-hide" ng-hide="!checked">
-			<h3>{{message}}</h3>
-			{{$scope.calsResult}}
+	<div>&nbsp </div>	
+	<div  ng-init="Init()">
+		<!-- this selection of task is moved within the controller
+			<div align="center"><p>&nbsp</p>
+			<label><input type="radio" name="Level" ng-click="setDifficultyLevel('0')" checked /> Level 1</label>
+			<label><input type="radio" name="Level" ng-click="setDifficultyLevel('1')" /> Level 2</label>
+			<label><input type="radio" name="Level" ng-click="setDifficultyLevel('2')" /> Level 3</label>
 		</div>
 		-->
-	</form>
+		<div>
+		<p><h3>Task Name : {{taskName}}</h3></p>
+		<p><h3>Intructions : {{taskInstructions}}</h3></p>
+		
+		</div>
+		<div align="center" ng-click="Draw()" >	
+		<table  border="10px" style="height:300px" id="myTable" >
+			<tr ng-repeat="row in array_Table track by $index" style=background-color:{{row_clrs[$index]}}>
+				<td width="60px" ng-repeat="col in row track by $index" align="center"` ng-switch="col" >
+					<!-- if the table display is not proper, check array and low-seed and high seed settings -->
+					<span ng-switch-when="1">
+						<img align="center" src="./res/white_rect.jpg" width="60px" height="40px"/>
+					</span>
+					<span ng-switch-when="0">&nbsp;</span>
+				</td>
+			</tr>
+		</table>
+		</div>
+		<!--<pre>{{message |json }} </pre>-->
+		<div>&nbsp </div>
+		<div align="center">
+			<form id="formResult">
+			<input type="number" name="btnResult" ng-model="userInput"/>
+			<div class="alert alert-danger" ng-show="(formResult.btnResult.$touched || formResult.$submitted) && formResult.btnResult.$error.required">
+				Your answer is required
+			</div>
+			<input type="button" value="Check" ng-click="checkAnswer()" ng-disabled="disableBtn">
+			<div  style="margin-left:20%;text-align:left" id="userResult" ng-hide="hideAnswer">
+				<span ng-if="taskName == 'White Squares Level 1' ">
+					<h4>Sum : {{message}}</h4>
+					<h4>Hits : {{right}}</h4>
+					<h4>Misses : {{wrong}}</h4>
+				</span>
+				<span ng-if="taskName == 'White Squares Level 2' ">
+					<h4>Sum : {{message}}</h4>
+					<h4>Hits : {{right}}</h4>
+					<h4>Misses : {{wrong}}</h4>
+				</span>
+				
+				<span ng-if="taskName == 'White Squares Level 3'">
+					<h4>Current Sum : {{message}}</h4>
+					<h4>Previous Sum :{{prev_Result}} </h4>
+					<h4>Hits : {{right}}</h4>
+					<h4>Misses : {{wrong}}</h4>
+				</span>
+				<span ng-if="taskName == 'White Squares Level 4'">
+					<h4>Current Sum : {{message}}</h4>
+					<h4>Previous Sum :{{prev_Result}} </h4>
+					<h4>Hits : {{right}}</h4>
+					<h4>Misses : {{wrong}}</h4>
+				</span>
+				<span ng-if="taskName == 'White Squares Level 5'">
+					<h4>Current Sum : {{message}}</h4>
+					<h4>Last Number :{{prev_Result}} </h4>
+					<h4>Before to Last Number :{{prev_prev_Result}} </h4>
+					<h4>Hits : {{right}}</h4>
+					<h4>Misses : {{wrong}}</h4>
+				</span>
+			</div>
+		</form>
+		</div>
 	</div>
 </div>
    
