@@ -1,21 +1,37 @@
-﻿    <div style="margin:5%" ng-controller="ctrlAssesment" ng-init="Init()">
-    <h2> Assessment Section</h2> {{date}}
-    
-        <div class="container" id="assessee" ng-show="bAssesseDetails">
+﻿    <div style="margin:1%" ng-controller="ctrlAssesment" ng-init="Init()">
+		<h2> Assessment Section</h2> {{date}}
+	    <span class="container" id="assesseeExiting" ng-if="bAssesseDetails == 'update'">
+			<p><h3>Found {{progressCount}} assessment(s) for {{fname}} {{lname}}.</h3></p>
+			<p> <h3>Click button below to do another assesment.</h3> </p>
+			<input type="submit" value="Assess Again" class="btn btn-primary" ng-click="assessAgain()" />
+		</span>
+        <span ng-if="bAssesseDetails == 'new'">
 		<h4> To serve you better please provide following information:</h4>
             <form class="form-horizontal" name="formUser"  novalidate>
                 <!--Assesse profile details-->
                 <div class="form-group">
                     <div class="col-md-2">
-                        <label>Your Name</label>
+                        <label>First Name</label>
                     </div>
                     <div class="col-md-5">
-                        <input type="text" name="name" ng-model="model.name" autofocus   required>
-                        <div class="alert alert-danger" ng-show="(formUser.name.$touched || formUser.$submitted) && formUser.name.$error.required">
-                            Username is required
+                        <input type="text" name="fname" ng-model="model.fname" autofocus   required>
+                        <div class="alert alert-danger" ng-show="(formUser.fname.$touched || formUser.$submitted) && formUser.fname.$error.required">
+                            First name is required
                         </div>
                     </div>
                 </div>
+				<div class="form-group">
+                    <div class="col-md-2">
+                        <label>Last Name</label>
+                    </div>
+                    <div class="col-md-5">
+                        <input type="text" name="lname" ng-model="model.lname" autofocus   required>
+                        <div class="alert alert-danger" ng-show="(formUser.lname.$touched || formUser.$submitted) && formUser.lname.$error.required">
+                            Last name is required
+                        </div>
+                    </div>
+                </div>
+
 				<div class="form-group">
                     <div class="col-md-2">
                         <label>e-Mail</label>
@@ -32,7 +48,7 @@
                     <div class="col-md-2">
                         <label>Age Group</label>
                     </div>
-                    <div class="col-md-2">
+                    <div class="col-md-3">
                         <select name="ageGroup" class="form-control" ng-model="model.ageGroup" ng-required="true">
                             <option value="6to16">6 to 16 years</option>
                             <option value="16to25">16 to 25 years</option>
@@ -50,7 +66,7 @@
                     <div class="col-md-2">
                         <label>Occupation</label>
                     </div>
-                    <div class="col-md-5">
+                    <div class="col-md-3">
                         <select ng-model="model.occupation" ng-options="item.type for item in occupationType" ng-required="true"></select>
                         <div class="alert alert-danger" ng-show="(formUser.occupation.$touched || formUser.$submitted) && formUser.occupation.$error.required">
                             Occupation is required
@@ -62,7 +78,7 @@
                     <div class="col-md-2">
                         <label>Stream</label>
                     </div>
-                    <div class="col-md-5">
+                    <div class="col-md-3">
                         <select name="stream" ng-model="model.stream" ng-options="item for item in model.occupation.data" ></select>
                     </div>
                 </div><!-- end div form-group -->
@@ -81,25 +97,72 @@
                         </div>
                     </div>
                 </div>
+			<!--	<div class="form-group">
+                    <div class="col-md-2">
+                        <label>Institution</label>
+                    </div>
+                    <div class="col-md-3">
+                        <select ng-model="model.institute" ng-options="institute.name for institutes in institutes" ng-required="true"></select>
+                        <div class="alert alert-danger" ng-show="(formUser.institute.$touched || formUser.$submitted) && formUser.institute.$error.required">
+                            Institution name is required
+                        </div>
+                    </div>
+                </div>
+				<div class="form-group">
+                    <div class="col-md-2">
+                        <label>City Name</label>
+                    </div>
+                    <div class="col-md-3">
+                        <select ng-model="model.city" ng-options="city.name for cities in cities" ng-required="true"></select>
+                        <div class="alert alert-danger" ng-show="(formUser.city.$touched || formUser.$submitted) && formUser.city.$error.required">
+                            City name is required
+                        </div>
+                    </div>
+				</div>
+				<div class="form-group">
+                    <div class="col-md-2">
+                        <label>State</label>
+                    </div>
+                    <div class="col-md-3">
+                        <select ng-model="model.state" ng-options="state.name for states in states" ng-required="true"></select>
+                        <div class="alert alert-danger" ng-show="(formUser.state.$touched || formUser.$submitted) && formUser.state.$error.required">
+                            State name is required
+                        </div>
+                    </div>
+                </div>
+				<div class="form-group">
+                    <div class="col-md-2">
+                        <label>Country</label>
+                    </div>
+                    <div class="col-md-3">
+                        <select ng-model="model.country" ng-options="country.name for countries in countries" ng-required="true"></select>
+                        <div class="alert alert-danger" ng-show="(formUser.country.$touched || formUser.$submitted) && formUser.country.$error.required">
+                            Country name is required
+                        </div>
+                    </div>
+
+                </div>
+			-->
+				
                 <div class="form-group">
                     <div class="col-md-offset-2 col-md-5">
                         <!--  <input type="submit" value="Submit" class="btn btn-primary" ng-click="form.$valid && Register(model)" /> -->
-                        <input type="submit" value="Create New User" class="btn btn-primary" ng-click="CreateNewAssessee(model)" ng-disabled="formUser.$invalid || !bEnable" />
+                        <input type="submit" value="Create New Assessee" class="btn btn-primary" ng-click="CreateNewAssessee(model)" ng-disabled="formUser.$invalid || !bEnable" />
                     </div>
                 </div>
             </form>
             <pre>{{message|json}}</pre>
-        </div>
-        <div class="container" id="questions" ng-show="!bAssesseDetails" ng-init="InitQuestions()">
-		<p><h3>Hi {{model.name}}, please answer all the questions. </h3></p>
+        </span>
+        <span class="container" id="questions" ng-if="bAssesseDetails == 'questions'" ng-init="InitQuestions()">
+		<p><h3>Hi {{fname}}, please answer all the questions. </h3></p>
             <form class="form-horizontal" id="formQs"  novalidate>
                 <div class="form-group">
                     <div class="col-md-2">
                         <label><h3>{{qSlNo}}</h3></label>
                     </div>
                     <div class="col-md-7">
-						<!--<h3><textarea style="border:ridge overflow: hidden" rows="4" cols="70" style="align-content:stretch" readonly>{{qText}} </textarea></h3>-->
-						<label style="width:50% height:20% border:5px grey margin-left:5% margin-right:5%" ><h3>{{qText}}<h3></label>
+						<h3><textarea style="border:ridge overflow: hidden" rows="4" cols="70" style="align-content:stretch" readonly>{{qText}} </textarea></h3>
+						<!--<label style="width:50% height:20% border:5px grey margin-left:5% margin-right:5%" ><h3>{{qText}}<h3></label>-->
 					</div>
                 </div>
                 <div class="form-group">
@@ -128,7 +191,7 @@
                 </div>
 
             </form>
-	    </div> <!--Question details -->
+	    </span> <!--Question details -->
 
     </div>
 

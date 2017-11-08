@@ -60,7 +60,8 @@
     <p style="margin:1%"><h4>Click on Tasks below -</h4></p>
 
     <div style="margin:0.5%" class="tab" >
-        <button class="tablinks" onclick="openTab(event, 'users')">Users</button>
+        <button class="tablinks" onclick="openTab(event, 'assessees')">Assessees</button>
+        <button class="tablinks" onclick="openTab(event, 'institute')">Institutes</button>
         <button class="tablinks" onclick="openTab(event, 'profiles')">Profiles</button>
         <button class="tablinks" onclick="openTab(event, 'profilesMedian')">Profiles Median</button>
         <button class="tablinks" onclick="openTab(event, 'questions')">Questions</button>
@@ -69,10 +70,90 @@
         <button class="tablinks" onclick="openTab(event, 'sync')">Sync</button>
 	</div>
 
-    <div id="users" class="tabcontent">
-        <h3>Manage Users</h3>
-        <p>Here you manage users.</p>
+    <div id="assessees" style="margin-left:5%" class="tabcontent" ng-controller="ctrlAssessees" ng-init="Init()">
+    <div>
+        <!--<input type="radio" name="selectQ" ng-click="taskMode('create')" checked> <label>Create New</label>
+        <input type="radio" name="selectQ" ng-click="taskMode('modify')"> <label>Modify</label>
+        <input type="radio" name="selectQ" ng-click="taskMode('find')"> <label>Find</label>-->
     </div>
+		<div class="container" id="users"  ng-if="mode == 'find'" ng-init="InitAssessee()">
+			<p><h3>Find an Assessee</h3></p>
+	        <form class="form-horizontal" name="formAssessee"  novalidate>
+                <div class="form-group">
+                    <div class="col-md-2">
+                        <label>e-mail</label>
+                    </div>
+                    <div class="col-md-5">
+                        <input type="email" name="email" ng-model="model.email" ng-change="clearDisplay()" autofocus   required>
+                        <div class="alert alert-danger" ng-show="(formAssessee.email.$touched || formAssessee.$submitted) && formAssessee.email.$error.required">
+                            email is required
+                        </div>
+                    </div>
+                </div> <!--form-group-->
+
+                <div class="form-group">
+                    <div class="col-md-offset-2 col-md-5">
+                        <input type="submit" value="Find Assessee" class="btn btn-primary" ng-click="findAssessee(model)" ng-disabled="formAssessee.$invalid" />
+                    </div>
+                </div>
+		
+				</form>
+				<div ng-if="display">
+				<form class="form-horizontal" name="formCurrentAssessee"  novalidate>
+					<div class="form-group">
+						<div class="col-md-2">
+							<label>First Name</label>
+						</div>
+						<div class="col-md-5">
+							<label>{{user.fname}}</label>
+						</div>
+					</div> <!--form-group-->
+					 <div class="form-group">
+							<div class="col-md-2">
+								<label>Last Name</label>
+							</div>
+							<div class="col-md-5">
+								<label>{{user.lname}}</label>
+							</div>
+						</div> <!--form-group-->
+					 <div class="form-group">
+						<div class="col-md-2">
+							<label>Age Group</label>
+						</div>
+						<div class="col-md-5">
+							<label>{{user.ageGroup}}</label>
+						</div>
+					</div> <!--form-group-->
+					 <div class="form-group">
+							<div class="col-md-2">
+								<label>Occupation</label>
+							</div>
+							<div class="col-md-5">
+								<label>{{user.occupation}}</label>
+							</div>
+						</div> <!--form-group-->
+
+						<div class="form-group">
+							<div class="col-md-offset-2 col-md-5">
+								<input type="submit" value="Select Assessee" class="btn btn-primary" ng-click="selectAssessee(model)" ng-disabled="formCurrentAssessee.$invalid" />
+							</div>
+						</div>
+			
+					</form>
+
+				</div>
+				
+				
+				<pre> {{message | json}} </pre>
+			</div>
+		
+		
+    </div>
+	<div id="institute" class="tabcontent">
+        <h3>Manage Institutes</h3>
+        <p>Here you manage institute name, city, area within the city, state and country.</p>
+    </div>
+
     <div style="margin-left:5%" id="tasks" class="tabcontent" ng-controller="ctrlTasks" ng-init="Init()">
     <div>
         <input type="radio" name="selectQ" ng-click="taskMode('create')" checked> <label>Create New</label>
@@ -250,7 +331,10 @@
 					<!--<p><input type="button" value="CreateDummyRecords" ng-click="CreateDummyRecords()" /> </p>-->
 					
 					<p>
-						<input type="button" value="Force Upload" ng-click="UploadLocalDB()" ng-disabled="!{{localData.length}}" /> Pending records : {{localData.length}}
+						<input type="button" value="Force Upload" ng-click="UploadLocalDB()" ng-disabled="!{{localData.length}}" /> 
+						<p>Pending new records : {{localDataNew.length}}  (..check for duplicates)</p>
+						<p>Pending update records : {{localDataUpdate.length}}</p>
+						<p>Duplicate records found : {{localDataDuplicates.length}} (...check for uniqueness)</p> 
 					</p>
 				</div>
 			<p>Local Storage : 
@@ -258,6 +342,7 @@
 					<li>Web Pages and resources</li>
 					<li>Profiles (Student) (Total:{{profilesList.length}} )</li>
 					<li>Questions (Total:{{questions.length}})</li>
+					<li>Tasks (Total:{{tasks.length}})</li>
 				</ul>
 			</p>
 			
@@ -699,7 +784,7 @@
             <th>Name</th><th> Age </th> <th> Attention</th> <th>Working Memory </th><th>Impulsivity</th>
             <th>Mental Flexibility</th>
             <tr ng-repeat="user in users track by $index" >
-                <td>{{user.name}}</td>
+                <td>{{user.fname}} {{user.lname}}</td>
                 <td>{{user.ageGroup}}</td>
                 <td>{{user.Attention}}</td>
                 <td>{{user.WorkingMemory}}</td>
