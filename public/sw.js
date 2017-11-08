@@ -1,4 +1,4 @@
-var version = 'NeuroAppHTMLCache_v1.0.0.1';
+var version = 'NeuroAppHTMLCache_v1.0.0.2';
 
 //Ref site https://css-tricks.com/serviceworker-for-offline/
 /*
@@ -49,6 +49,9 @@ self.addEventListener("install", function (event) {
 				'./partials/impulsivity.html',
 				'./partials/mentalflexibility.html',
 				'./partials/workingmemory.html',
+				'./tasks/attention/smiley.html',
+				'./tasks/attention/squares.html',
+				'./tasks/attention/squaresblack.html',
 				'./js/ng.js',
 				'./css/hexagon.css',
 				'./css/neuro.css',
