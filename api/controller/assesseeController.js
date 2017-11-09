@@ -81,9 +81,25 @@ exports.bulkInsert = function (req, res) {
 	}
 	
 	if (op == 'update') {
-			console.log(arryBulk.length + ": records received for bulk Update on Assessees document");
+			console.log(arryBulk.length + ": records received for bulk Update on Assessees document ");
 			
-			Assessee.collection.update('email', req.body.email , Assessee(req.body), onUpdate);
+			for (var i=0;i< arryBulk.length; ++i) {
+				
+			console.log("Received updated data for user with mail id  : " + arryBulk[i].email);
+			
+			Assessee.findOneAndUpdate({email: String(arryBulk[i].email) }, arryBulk[i], {upsert: true , returnNewDocument: true }, function (err, profile) {
+				if (err) {
+					console.log("Error in updating the user with email Id:"+ arryBulk[i].email + "error: " + err);
+					res.send(err);
+				}else {
+				console.log("Successfully updated the data" ); //+ profile);
+				res.json(profile);
+				}
+			});
+
+				
+			}
+			//Assessee.collection.update('email', String(req.body.email), Assessee(req.body), onUpdate);
 			/*  
 			var ids = req.params.ids;
 	
@@ -93,7 +109,7 @@ exports.bulkInsert = function (req, res) {
 				
 				Assessee.find({ '_id': mongoose.Types.ObjectId(id)})
 						.updateOne(req.body);
-			
+			 
 			}*/
 	}
 	
