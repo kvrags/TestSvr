@@ -521,6 +521,7 @@ rootApp.controller('ctrlSync', function ($scope,$http,$rootScope,dataFactory) {
 								}
 							}
 						}
+						$scope.lsUpdateRecords = readLocalStorageJson("updateAssessee");
 					}
 				
 				}
@@ -2521,41 +2522,46 @@ rootApp.controller('ctrlSquares', function ($scope, $routeParams,dataFactory) {
 					screens: $scope.clicks //no of screens a user has seen
 				};
 	
-		updateTasksScores($routeParams.taskname, attempt, dataFactory);
-	}
-});
-
-function updateTasksScores(taskName, score, dataFactory){
-		//task details
+		//record this score for this task 
 		//find out who the user is? 
 		//find out all the particular task being performed by this user
 		// at the end of this task, determine the score and store it 
 		
 		var userDetails = {};
-		userDetails = readLocalStorageJson("currentUser");
-		var userId = userDetails[0]._id;
-		var tasks = userDetails[0].tasks;
+		var tasks;
 		
-		if (!userId)
+		userDetails = readLocalStorageJson("currentUser");
+		
+		if (userDetails.length == 0)
 			return;
 		
+	
+		userDetails = userDetails[0];
+		//userEmail = userDetails.email;
+		tasks = userDetails.tasks;
+	
+	
 		for (var i=0; i < tasks.length;++i) {
-			if ( tasks[i].name == taskName){
-				tasks[i].scores.push(score);
-				
-				break;
+			if ( tasks[i].name == $routeParams.taskname){
+				tasks[i].scores.push(attempt);
+			break;
 			}
 		}			
 		
 		//now update the local storage
-		writeLocalStorageJson("currentUser",userDetails[0]);
+		//writeLocalStorageJson("currentUser",userDetails);
 
 		//update the database
 		//instead of sending all the userdata, send only his _Id, tasks/task_iD, /tasks/task_score 
-		dataFactory.updateAssessee(userId, userDetails[0], "updateAssessee").then(function (success) {
+		dataFactory.updateAssessee(userDetails.email, userDetails, "updateAssessee").then(function (success) {
 				
 		}, function(failure){
 			
 		});
 
+				
+	}
+});
+
+function updateTasksScores(taskName, score, dataFactory){
 }
