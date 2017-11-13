@@ -17,6 +17,7 @@ Questions = require('./api/models/questionModel'); //created model loading here
 Assessee = require('./api/models/assesseeModel'); //Assessee model definition
 Tasks = require('./api/models/taskModel'); //Task model definition
 Domains = require('./api/models/domainModel'); //Cognitive Areas/domain definition
+Institute = require('./api/models/InstituteModel'); //Institutes definition
 
 
 // config files TBD
@@ -24,6 +25,7 @@ Domains = require('./api/models/domainModel'); //Cognitive Areas/domain definiti
 
 ////DB connection setting
 var mongoURI = "mongodb://localhost/neurogym";
+//var mongoURI = "mongodb://localhost/neurogymLive";
 
 var promise = mongoose.connect(mongoURI, {
   useMongoClient: true,
@@ -59,6 +61,7 @@ require('./api/routes/questionRoutes.js')(app);
 require('./api/routes/assesseeRoutes.js')(app);
 require('./api/routes/taskRoutes.js')(app);
 require('./api/routes/domainRoutes.js')(app);
+require('./api/routes/instituteRoutes.js')(app);
 
 //// frontend client application routes-------------------------------------------------------------
 app.get('*', function (req, res) {
