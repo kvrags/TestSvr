@@ -319,9 +319,9 @@ rootApp.factory('dataFactory',  function($http, $rootScope) {
 				});
 		},
 		
-		searchAssessee: function(email){ 
-		return $http.get(base_url + "assessee/" + email ).then(function(success) {
-					assessee = success.data;
+		searchAssessee: function(query){ 
+		return $http.get(base_url + "assessee/" + query ).then(function(success) {
+					assessee = success;
 					return assessee;
 				},function(error){
 					return error;
@@ -330,7 +330,7 @@ rootApp.factory('dataFactory',  function($http, $rootScope) {
 
 		insertNewAssessee: function(newAssessee){
 			return $http.post(base_url + "assessee", newAssessee).then(function(success) {
-					assessee = success.data;
+					assessee = success;
 					
 					//save it local storage for offline support
 					//appendToLocalStorage("newAssessee",newAssessee);
@@ -342,14 +342,17 @@ rootApp.factory('dataFactory',  function($http, $rootScope) {
 					//Return the same data set when offline to mimic mongoDB action by 
 					//creating and allocating a fake id
 					//this will prevent over writing of records in localstorage!!
+					//error.data.code = "9999999"; // write custom code to indicate offline
+					error.data =  newAssessee;
 					var d = new Date();
-					newAssessee._id = d.getTime();
-					return newAssessee;
+					error.data._id = d.getTime();
+					error.status = 200;
+					return error;
 				});
 		},
 
-		updateAssessee:function(email, data,str){
-			return $http.put(base_url + "assessee/" + email, data).then(function(success) {
+		updateAssessee:function(mobile, data,str){
+			return $http.put(base_url + "assessee/" + mobile, data).then(function(success) {
 					assessee = success.data;
 					//$rootScope.$broadcast('questions',quesions);
 					
@@ -369,8 +372,8 @@ rootApp.factory('dataFactory',  function($http, $rootScope) {
 					// to update the tasks details/scores str with updateAssessee is used.
 					// this new local record with updateAssessee key will be picked up bulkUpdateAssessee
 					
-					writeLocalStorageJson(str + email,data,false);
-					
+					writeLocalStorageJson(str + mobile,data,false);
+	
 					writeLocalStorageJson("currentUser",data);
 					writeLocalStorageJson("scores",data.progress,false);
 	
@@ -403,12 +406,12 @@ rootApp.factory('dataFactory',  function($http, $rootScope) {
 			writeLocalStorageJson("tasks", tasks);
 
 			return tasks;
-		},function(error){
-			//on error attempt from localstorage
-			tasks = readLocalStorageJson("tasks");
-			return tasks[0];
-		});
-},
+			},function(error){
+				//on error attempt from localstorage
+				tasks = readLocalStorageJson("tasks");
+				return tasks[0];
+			});
+		},
 
 		getAllDomains: function(){
 			return $http.get(base_url + "domains").then(function(success) {
@@ -416,7 +419,23 @@ rootApp.factory('dataFactory',  function($http, $rootScope) {
 				},function(error){
 					return error;
 				});
-		}
+		},
+		
+		insertNewInstitute: function(data){
+			return $http.post(base_url + "institute", data).then(function(success) {
+					return ;
+				},function(error){
+					return error;
+				});
+		},
+		getAllInstitutes: function(query){
+			//return $http.get(base_url + "institute" + query).then(function(success) {
+			return $http.get(base_url + "institute" ).then(function(success) {
+					return success;
+				},function(error){
+					return error;
+				});
+		},
 
 		
 	  };	
@@ -495,13 +514,15 @@ rootApp.controller('ctrlSync', function ($scope,$http,$rootScope,dataFactory) {
 			// condition
 			//new user created -- gets stored under newAssessee
 			//after running thru tasks, -- gets stored under updateAssessee
-			//when bulkOperation, first newAssessee records get new id
+			//when bulkOperation, first newAssessee records get new TEMP id
 			//while coming to updation, the updateAssessee record for the newAssessee will not match
 		
 			//length of the temp Id created is 13 and that of Mongo DB is lengthier
 			//if newAssessee and updateAssessee records have _id length of 13 and are same then merge 
 			//both the records into a single newAssessee record
 			//
+		
+			
 			if ($scope.lsUpdateRecords.length > 0) {
 				
 				for (var i=0;i<$scope.lsUpdateRecords.length;++i) {
@@ -510,22 +531,21 @@ rootApp.controller('ctrlSync', function ($scope,$http,$rootScope,dataFactory) {
 					if (updateID.length < 14 ){
 						if($scope.lsNewRecords.length > 0) {
 							for(var j=0;j<$scope.lsNewRecords.length ;++j) {
-								if(($scope.lsUpdateRecords[i]._id == $scope.lsNewRecords[j]._id)){
+								if(($scope.lsNewRecords[j]._id == $scope.lsUpdateRecords[i]._id)){
 									//now our is record found
 									//update cache data for newAssessee then
 									//delete cache data for updateAssessee
 									$scope.lsNewRecords[j] = $scope.lsUpdateRecords[i];
 									//lsUpdateRecords[i].delete();
 									//alert("Deleting UpdateAssessee : " + $scope.lsUpdateRecords[i]._id);
-									localStorage.removeItem("updateAssessee" + $scope.lsUpdateRecords[i]._id);
+									writeLocalStorageJson("newAssessee" + $scope.lsNewRecords[j].mobile,$scope.lsNewRecords[j]); 
+									localStorage.removeItem("updateAssessee" + $scope.lsUpdateRecords[i].mobile);
 								}
 							}
 						}
-						$scope.lsUpdateRecords = readLocalStorageJson("updateAssessee");
+						//$scope.lsUpdateRecords = readLocalStorageJson("updateAssessee");
 					}
-				
 				}
-				
 			}
 		}
 		
@@ -814,10 +834,82 @@ rootApp.controller('ctrlHome', function ($scope,$rootScope) {
 });
 
 
+//called from admin page
+rootApp.controller('ctrlInstitute', function ($scope, dataFactory) {
+
+    
+	$scope.Init = function (){
+		$scope.stream = ["CBSE", "ICSE", "State","NIOS","IGCSE"];
+
+	}
+	
+	$scope.clearDisplay = function(){
+		$scope.institutes = "enter search criteria";
+	}
+	
+	$scope.taskMode = function(mode){
+		if(mode == "create")
+			$scope.mode = "create";
+		if(mode == "find")
+			$scope.mode = "find";
+	}
+	
+	$scope.create = function(model){
+		dataFactory.insertNewInstitute(model).then(function (res) {
+			if(res.status == 200)
+				$scope.message = "New Institute details successfully posted to server  ";// + res.data;
+			else
+				$scope.message = "Error is creatng new Institute. Please check wifi/internet connection.";// + res.data;
+		}, function(res){
+			//error
+			$scope.message = "Error in creating of new Institute. Error: " + res;
+			
+		});
+
+	}
+	
+	$scope.find = function(model){
+		
+		var query = "?";
+		
+		//build query string
+		//sameple https://api.example.com/customers?lastname=Skywalker	
+		
+		dataFactory.getAllInstitutes().then(function (res) {
+			if(res.status == 200) {
+				if (res.data.length > 0) {
+					$scope.institutes = res.data;
+					$scope.display = true;
+				}else {
+					$scope.institutes = null;
+				}
+			$scope.message = $scope.institutes;
+			}else
+				$scope.message = "Error is retriving Institutes list. Please check wifi/internet connection.";// + res.data;
+		}, function(err){
+			//error
+			$scope.message = "Error in fetching of Institutes list. Error: " + err;
+		});
+	}
+	
+	$scope.fetchInstituteByName = function(name) {
+		
+		for(i=0;i < $scope.institutes.length;++i) {
+			if ($scope.institutes[i].name == name){
+				$scope.institute = $scope.institutes[i];	
+				alert($scope.institute.name);
+			}
+		}
+		
+	}
+});
+
+
 rootApp.controller('ctrlAttention', function ($scope, dataFactory) {
     
 	$scope.Init = function (){
 		$scope.userDetails = readLocalStorageJson("currentUser");
+		
 		$scope.userName = $scope.userDetails[0].fname;
 		$scope.message = "Dear " + $scope.userName + ", Our analysis recommends the following tasks to improve your cognitive area of attention. ";
 		$scope.mode = "panel";  // a task page with back button
@@ -1022,6 +1114,9 @@ rootApp.controller('ctrlTasks', function ($scope,dataFactory) {
 
 rootApp.controller('ctrlassessmentReport', function ($scope) {
     $scope.userDetails = readLocalStorageJson("currentUser");
+
+	//if ($scope.userDetails.length != 0)
+		//return;
 
 	if ($scope.userDetails.length == 1) {
 		$scope.fname = $scope.userDetails[0].fname;
@@ -1422,38 +1517,52 @@ rootApp.controller('ctrladminSurvey', function ($scope,dataFactory) {
 			//$scope.message = "Profiles fetch unsuccessful!";
 		});
 
+	//$scope.fetchAssesees;
 	
-	dataFactory.getAllAssessee().then(function (res){
-		var tmp =  res;
-		var user = {
-				fname:"",
-				lname:"",
-				ageGroup:"",
-				Attention:"",
-				WorkingMemory:"",
-				Impulsivity:"",
-				MentalFlexibility:""				
-		};
+	$scope.Init = function() {
+		dataFactory.getAllAssessee().then(function (res){
+			$scope.users = [];
+			var tmp =  res;
+			var user = {
+					fname:"",
+					lname:"",
+					mobile:"",
+					ageGroup:"",
+					Attention:"",
+					WorkingMemory:"",
+					Impulsivity:"",
+					MentalFlexibility:""				
+			};
 
-		////build an array with all the details that is required for the UI table display
-		//name,ageGroup,Attention,WorkingMemory,Impulsivity,MentalFlexibility
-		for (var i=0; i < tmp.length; ++i) {
-				user.fname = tmp[i].fname;
-				user.lname = tmp[i].lname;
-				user.ageGroup = tmp[i].ageGroup;
-				user.Attention = tmp[i].progress[tmp[i].progress.length-1].Attention;
-				user.WorkingMemory = tmp[i].progress[tmp[i].progress.length-1].WorkingMemory;
-				user.Impulsivity = tmp[i].progress[tmp[i].progress.length-1].Impulsivity;
-				user.MentalFlexibility = tmp[i].progress[tmp[i].progress.length-1].MentalFlexibility;
-				
-				$scope.users.push(user);
-				user = {};
-		}
+			////build an array with all the details that is required for the UI table display
+			//name,ageGroup,Attention,WorkingMemory,Impulsivity,MentalFlexibility
+			for (var i=0; i < tmp.length; ++i) {
+					user.fname = tmp[i].fname;
+					user.lname = tmp[i].lname;
+					user.mobile = tmp[i].mobile;
+					user.ageGroup = tmp[i].ageGroup;
+					if (tmp[i].progress.length > 0) {
+						user.Attention = tmp[i].progress[tmp[i].progress.length-1].Attention;
+						user.WorkingMemory = tmp[i].progress[tmp[i].progress.length-1].WorkingMemory;
+						user.Impulsivity = tmp[i].progress[tmp[i].progress.length-1].Impulsivity;
+						user.MentalFlexibility = tmp[i].progress[tmp[i].progress.length-1].MentalFlexibility;
+					}else {
+						user.Attention = " ";
+						user.WorkingMemory = " ";
+						user.Impulsivity = " ";
+						user.MentalFlexibility = " ";
+					}				
 					
-		}, function(res){
-			//error
-			$scope.message = "Error in fetching assessees. check internet/wi-fi connection and rety later.";
-		});
+					$scope.users.push(user);
+					user = {};
+			}
+						
+			}, function(res){
+				//error
+				$scope.message = "Error in fetching assessees. check internet/wi-fi connection and rety later.";
+			});
+			
+	}
 });
 
 //called from admin Questions
@@ -1653,12 +1762,17 @@ rootApp.controller('ctrlAssessees', function ($scope, $window, dataFactory) {
 	}
 	
 	$scope.findAssessee = function (model) {
+		//wild card search ~~ like
+		//try db.users.find({name: /a/}) db.users.find({"name": /m/}
 		
-		dataFactory.searchAssessee(model.email).then(function (res){
-			if (res.length == 1){
+		//case-insensitive search would be done like this: 
+		//try db.users.find({'name': {'$regex': 'sometext', '$options': 'i'}})
+		
+		dataFactory.searchAssessee(model.mobile).then(function (res){
+			if (res.data.length == 1){
 				$scope.display = true;
-				$scope.user = res[0];
-				$scope.message = res[0];
+				$scope.user = res.data[0];
+				$scope.message = res.data[0];
 			}else {
 				alert ("No Assessee details found!");
 			}
@@ -1678,6 +1792,7 @@ rootApp.controller('ctrlAssessees', function ($scope, $window, dataFactory) {
    }
 });
 
+//rootApp['ui.bootstrap'] injects $dialog
 rootApp.controller('ctrlAssesment', function ($scope,$window,dataFactory) {
 	
 		
@@ -1708,6 +1823,10 @@ rootApp.controller('ctrlAssesment', function ($scope,$window,dataFactory) {
          { type: 'Housewife', data: $scope.Retired, displayName: 'Retired' }
 
     ];
+	$scope.countries = ["India","New Zealand"];
+	$scope.state = ["Andhra Pradesh","Arunachal Pradesh","Assam","Bihar","Chhattisgarh","Goa","Gujarat","Haryana","Himachal Pradesh","Jammu & Kashmir","Jharkhand","Karnataka","Kerala","Madhya Pradesh","Maharashtra","Manipur","Meghalaya","Mizoram","Nagaland","Orissa","Punjab","Rajasthan","Sikkim","Tamil Nadu","Telangana","Tripura","Uttar Pradesh","Uttarakhand","West Bengal"];
+	$scope.city = ["Bangalore-City","Bangalore-Rural","Kanakapura","Mysore","Tumkur"];
+	
 
 	dataFactory.getAllProfiles().then(function (res){
 		$scope.profilesList = res;
@@ -1716,7 +1835,11 @@ rootApp.controller('ctrlAssesment', function ($scope,$window,dataFactory) {
 		//Online fetch unsuccessful hence reading from localstorage
 		$scope.profilesList=res;
 	});
-1
+
+	/*$scope.searchInstitute = function(model) {
+		alert("Searching " + model.stream +" Institutes list", );
+		
+	}*/
     ////retrieve all the questions based on the selected profile
 	//TBD
 	//{}
@@ -1745,8 +1868,26 @@ rootApp.controller('ctrlAssesment', function ($scope,$window,dataFactory) {
 			$scope.strOperation = "newAssessee";
 
 		}
-	}
+		
+		//fetch all the institutes 
+		
+		dataFactory.getAllInstitutes().then(function (res) {
+			if(res.status == 200) {
+				if (res.data.length > 0) {
+					$scope.institutes = res.data;
+					$scope.display = true;
+				}else {
+					$scope.institutes = null;
+				}
+			$scope.message = $scope.institutes;
+			}else
+				$scope.message = "Error is retriving Institutes list. Please check wifi/internet connection.";// + res.data;
+			}, function(err){
+				//error
+				$scope.message = "Error in fetching of Institutes list. Error: " + err;
+			});
 
+	}
 	$scope.assessAgain = function(){
 		$scope.bAssesseDetails = "questions";
 		GetQuestions("","");
@@ -1793,7 +1934,30 @@ rootApp.controller('ctrlAssesment', function ($scope,$window,dataFactory) {
 	//create a new Assessee as per the above model
 	//progress array will contain scores from respective Cogntive areas
     $scope.CreateNewAssessee = function(model) {
-
+		
+		$scope.user = model;
+		//$scope.institute is set in selectInstitute() local function
+		
+			
+		$scope.user.institute = $scope.institute.name;
+		
+		if ($scope.institute.name == null){
+			alert("Please select institute name");
+			return;
+		}
+		$scope.user.city = $scope.institute.city;
+		$scope.user.state = $scope.institute.state;
+		$scope.user.country = "India";
+		$scope.user.occupation = model.occupation.type;
+		
+		//build a template place holder for profileMedian data type
+        $scope.user.profileMedian = {"name":"","id":"","Attention":"","WorkingMemory":"","Impulsivity":"","MentalFlexibility":""};
+		
+		//stream field seems to disappear during asyn calls hence
+		$scope.stream = "xyz";
+		$scope.stream = $scope.user.stream;
+		$scope.user.stream = $scope.stream;
+		
 		if (!$scope.profilesList.length) {
 			$scope.message = "Profile creation error. Please check internet/wifi connection and try again.";			
 			return;
@@ -1802,29 +1966,24 @@ rootApp.controller('ctrlAssesment', function ($scope,$window,dataFactory) {
 		//Keep Next button/flag disable until DB post process is complete
 		$scope.bEnable = false; 
 		
-        model.occupation = model.occupation.type;
-		
-		//build a template place holder for profileMedian data type
-        model.profileMedian = {"name":"","id":"","Attention":"","WorkingMemory":"","Impulsivity":"","MentalFlexibility":""};
-		
+        
         for (var i = 0; i < $scope.profilesList.length; ++i) {
             ////find a matching median profile by comparing on ageGroup,occupation,stream,cityType
 			//// stream field is optional as in case of Retired or Housewife hence
 			////not included in the if statements below - $scope.profilesList[i].stream == model.stream 
-            if ($scope.profilesList[i].ageGroup == model.ageGroup && $scope.profilesList[i].occupation == model.occupation && $scope.profilesList[i].stream == model.stream && $scope.profilesList[i].cityType == model.cityType) {
-				model.profileMedian.name = $scope.profilesList[i].name;
-				model.profileMedian.id = $scope.profilesList[i]._id;
-				model.profileMedian.Attention = $scope.profilesList[i].Attention;
-				model.profileMedian.WorkingMemory = $scope.profilesList[i].WorkingMemory;
-				model.profileMedian.Impulsivity = $scope.profilesList[i].Impulsivity;
-				model.profileMedian.MentalFlexibility = $scope.profilesList[i].MentalFlexibility;
+            if (($scope.profilesList[i].ageGroup == $scope.user.ageGroup) && ($scope.profilesList[i].occupation == $scope.user.occupation) && ($scope.profilesList[i].stream == $scope.user.stream) && ($scope.profilesList[i].cityType == $scope.user.cityType)) {
+				$scope.user.profileMedian.name = $scope.profilesList[i].name;
+				$scope.user.profileMedian.id = $scope.profilesList[i]._id;
+				$scope.user.profileMedian.Attention = $scope.profilesList[i].Attention;
+				$scope.user.profileMedian.WorkingMemory = $scope.profilesList[i].WorkingMemory;
+				$scope.user.profileMedian.Impulsivity = $scope.profilesList[i].Impulsivity;
+				$scope.user.profileMedian.MentalFlexibility = $scope.profilesList[i].MentalFlexibility;
 				break; // break out now
             } 
 		}
-        //$scope.message = model;
-		
-		model.progress = [];
-		model.tasks = [];
+			
+		$scope.user.progress = [];
+		$scope.user.tasks = [];
 		
 		var allTasks;
 		var allProfiles;
@@ -1835,32 +1994,36 @@ rootApp.controller('ctrlAssesment', function ($scope,$window,dataFactory) {
 			
 			for (var i=0; i < allTasks.length; ++i) {
 				for( var j=0; j< allTasks[i].profiles.length;++j) {
-					if ( allTasks[i].profiles[j].name == model.profileMedian.name ){
-						model.tasks.push(allTasks[i]);
+					if ( allTasks[i].profiles[j].name == $scope.user.profileMedian.name ){
+						$scope.user.tasks.push(allTasks[i]);
 					}
 				}
 			}
 			
-			dataFactory.insertNewAssessee(model).then(function (res) {
+			//this stream field is losing its value during getAllTasks Async call/
+			//restore it back
+			$scope.user.stream = $scope.stream;
+			dataFactory.insertNewAssessee($scope.user).then(function (res) {
 				
 				//check if we have a duplicate mail-id
-				if (res.code == "11000") {
+				if (res.data.code == "11000") {
 					alert("Error: This email/record already exists. Choose another one.");
 					$window.location.href = '/index.html';
-				}else {
-					$scope.userDetails = res;
-					$scope.fname = res.fname;
-					$scope.assesseeId = res._id; //not used currently
+				}
+				if (res.status == 200){
+					$scope.userDetails = res.data;
+					$scope.fname = res.data.fname;
+					$scope.assesseeId = res.data._id; //not used currently
 					$scope.message1 = "New Assessee details successfully posted to server  ";// + res.data;
 					GetQuestions(model.profileMedian.name,model.profileMedian.id);
 					}
-			}, function(res){
+			}, function(err){
 				//error
-				$scope.questions = res;
+				$scope.questions = err;
 			});
 		
 			
-			}, function(res){
+			}, function(err){
 				//error
 				$scope.message = "Error retieving tasks. check internet/wi-fi connection and rety later.";
 		});
@@ -1961,7 +2124,7 @@ rootApp.controller('ctrlAssesment', function ($scope,$window,dataFactory) {
 			//also when passed as 'updateAssessee' a bulkUpdate is to be called rather 
 			//than bulkInsertAssessees
 			//"newAssessee";
-			dataFactory.updateAssessee($scope.userDetails.email, $scope.userDetails, $scope.strOperation).then(function (res) {
+			dataFactory.updateAssessee($scope.userDetails.mobile, $scope.userDetails, $scope.strOperation).then(function (res) {
 				$scope.message = "Your assessement details successfully posted to server  " ;//+ res.data;
 				//writeLocalStorageJson("currentUser",res);
 				//writeLocalStorageJson("scores", res.progress);
@@ -1981,6 +2144,14 @@ rootApp.controller('ctrlAssesment', function ($scope,$window,dataFactory) {
             $scope.qText = $scope.questionsList[$scope.qIndex].qText;
         }
     }
+	
+	$scope.selectInstitute = function(msg){
+		//alert(msg.name);
+		$scope.institute = msg;
+		$scope.InstiName = msg.name;
+		//$scope.model.query = null;
+		$scope.query = "";
+	}
 });
 
 function AnalyseScores (attention,workingMemory,impulsivity,mentalFlexibility) {
@@ -2183,7 +2354,7 @@ rootApp.controller('ctrlSmiley', function ($scope,$routeParams,dataFactory) {
 					misses:$scope.misses
 				};
 	
-		updateTasksScores($routeParams.taskname, attempt, dataFactory);
+//		updateTasksScores($routeParams.taskname, attempt, dataFactory);
 	
 		/*
 		$scope.userDetails = {};
@@ -2293,6 +2464,7 @@ rootApp.controller('ctrlSquares', function ($scope, $routeParams,dataFactory) {
  	$scope.startTime = Date();
 	$scope.right = 0;
 	$scope.wrong = 0;
+	
 	var attempt = {
 					date: "",
 					duration:"",	
@@ -2303,6 +2475,7 @@ rootApp.controller('ctrlSquares', function ($scope, $routeParams,dataFactory) {
 	
 	
 	$scope.Init = function() {
+		
 		//capture when this was activated
 		$scope.startTime = Date();
 	
@@ -2333,6 +2506,7 @@ rootApp.controller('ctrlSquares', function ($scope, $routeParams,dataFactory) {
 		$scope.row_clrs = $scope.taskLevel.Table["row_clr"];
 		$scope.userDetails = {};
 		$scope.userDetails = readLocalStorageJson("currentUser");
+		
 		$scope.userName = $scope.userDetails[0].name;
 		$scope.userId = $scope.userDetails[0]._id;
 		$scope.tasks = $scope.userDetails[0].tasks;
@@ -2527,23 +2701,20 @@ rootApp.controller('ctrlSquares', function ($scope, $routeParams,dataFactory) {
 		//find out all the particular task being performed by this user
 		// at the end of this task, determine the score and store it 
 		
-		var userDetails = {};
+		$scope.userDetails = {};
 		var tasks;
 		
-		userDetails = readLocalStorageJson("currentUser");
-		
-		if (userDetails.length == 0)
-			return;
+		$scope.userDetails = readLocalStorageJson("currentUser");
 		
 	
-		userDetails = userDetails[0];
+		$scope.userDetails = $scope.userDetails[0];
 		//userEmail = userDetails.email;
-		tasks = userDetails.tasks;
+		//tasks = userDetails.tasks;
 	
 	
-		for (var i=0; i < tasks.length;++i) {
-			if ( tasks[i].name == $routeParams.taskname){
-				tasks[i].scores.push(attempt);
+		for (var i=0; i < $scope.userDetails.tasks.length;++i) {
+			if ( $scope.userDetails.tasks[i].name == $routeParams.taskname){
+				$scope.userDetails.tasks[i].scores.push(attempt);
 			break;
 			}
 		}			
@@ -2553,9 +2724,13 @@ rootApp.controller('ctrlSquares', function ($scope, $routeParams,dataFactory) {
 
 		//update the database
 		//instead of sending all the userdata, send only his _Id, tasks/task_iD, /tasks/task_score 
-		dataFactory.updateAssessee(userDetails.email, userDetails, "updateAssessee").then(function (success) {
-				
-		}, function(failure){
+		dataFactory.updateAssessee($scope.userDetails.mobile, $scope.userDetails, "updateAssessee").then(function (success) {
+
+			//read the latest task scores into $scope.userDetails so that UI will have updated data
+			$scope.userDetails = readLocalStorageJson("currentUser");
+			$scope.userDetails = $scope.userDetails[0];
+
+			}, function(failure){
 			
 		});
 
@@ -2563,5 +2738,3 @@ rootApp.controller('ctrlSquares', function ($scope, $routeParams,dataFactory) {
 	}
 });
 
-function updateTasksScores(taskName, score, dataFactory){
-}
