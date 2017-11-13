@@ -24,7 +24,7 @@ module.exports = function (app) {
 	  .patch(assessee.bulkInsert);
 
 
-    app.route('/assessee/:email')
+    app.route('/assessee/:mobile')
       .get(assessee.find_a_assessee)
       .put(assessee.update_a_assessee)
       .delete(assessee.delete_a_assessee);
