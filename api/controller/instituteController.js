@@ -10,7 +10,7 @@ var mongoose = require('mongoose'),
 
 exports.list_all_institutes = function (req, res) {
 	Institute.find({}, function (err, data) {
-		console.log("Calling GET ./institutes --> list_all_domains from institutescontroller.js");
+		console.log("Calling GET ./institutes --> list_all_institutes from institutescontroller.js");
 		//console.log(req.body);
 		if (err)
 			res.send(err);
