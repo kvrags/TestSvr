@@ -14,9 +14,9 @@
 			<ul id="hexGrid" >
 				  <li class="hex" ng-repeat="task in tasks">
 					<div class="hexIn" > 
-					  <a class="hexLink" href="#!{{task.file}}"> <!--href="#!smiley" #!squares  #!squaresblack-->
+					  <a class="hexLink" ng-href="#!{{task.file}}/{{task.name}}/{{task.level}}">
 						<img src="../res/greenRect.jpg" alt=""/>
-						<h2>{{task.name}}</h2> <!--Smiley Hearts Level 1   href=#!squares-->
+						<h2>{{task.name}}</h2>
 					 </a>
 					</div>
 					

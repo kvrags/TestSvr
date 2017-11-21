@@ -73,6 +73,19 @@
 						<span>Attempt {{$index+1}} : {{score.hits}} / {{score.misses}}</span>
 					</div>
 				</span>	
+				<span ng-if="task.name == 'Smiley Heart Level 2' ">
+					<span><b>Hits / Misses</b></span>
+					<div ng-repeat="score in task.scores track by $index">
+						<span>Attempt {{$index+1}} : {{score.hits}} / {{score.misses}}</span>
+					</div>
+				</span>	
+				<span ng-if="task.name == 'Smiley Heart Level 3' ">
+					<span><b>Hits / Misses</b></span>
+					<div ng-repeat="score in task.scores track by $index">
+						<span>Attempt {{$index+1}} : {{score.hits}} / {{score.misses}}</span>
+					</div>
+				</span>	
+
 				<span ng-if="task.name == 'White Squares Level 1' ">
 					<span><b>Right / Wrong</b></span>
 					<div ng-repeat="score in task.scores track by $index">
@@ -101,6 +114,24 @@
 					<span><b>Right / Wrong</b></span>
 					<div ng-repeat="score in task.scores track by $index">
 						<span>Attempt {{$index+1}} : {{score.right}} / {{score.wrong}}</span>
+					</div>
+				</span>
+				<span ng-if="task.name == 'Elly Level 1' ">
+					<span><b>Hits / Misses</b></span>
+					<div ng-repeat="score in task.scores track by $index">
+						<span>Attempt {{$index+1}} : {{score.hits}} / {{score.misses}}</span>
+					</div>
+				</span>
+				<span ng-if="task.name == 'Elly Level 2' ">
+					<span><b>Hits / Misses</b></span>
+					<div ng-repeat="score in task.scores track by $index">
+						<span>Attempt {{$index+1}} : {{score.hits}} / {{score.misses}}</span>
+					</div>
+				</span>
+				<span ng-if="task.name == 'Elly Level 3' ">
+					<span><b>Hits / Misses</b></span>
+					<div ng-repeat="score in task.scores track by $index">
+						<span>Attempt {{$index+1}} : {{score.hits}} / {{score.misses}}</span>
 					</div>
 				</span>
 	

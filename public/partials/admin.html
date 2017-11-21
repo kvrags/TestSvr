@@ -201,7 +201,7 @@
                         <label>Mobile</label>
                     </div>
                     <div class="col-md-5">
-                        <input type="mobile" name="mobile" ng-model="model.mobile" ng-change="clearDisplay()" autofocus   required>
+                        <input type="number" name="mobile" ng-model="model.mobile" ng-change="clearDisplay()" autofocus   required>
                         <div class="alert alert-danger" ng-show="(formAssessee.mobile.$touched || formAssessee.$submitted) && formAssessee.mobile.$error.required">
                             Mobile is required
                         </div>
@@ -210,7 +210,7 @@
 
                 <div class="form-group">
                     <div class="col-md-offset-2 col-md-5">
-                        <input type="submit" style="cursor:wait" value="Find Assessee" class="btn btn-primary" ng-click="findAssessee(model)" ng-disabled="formAssessee.$invalid" />
+                        <input type="submit" value="Find Assessee" class="btn btn-primary" ng-click="findAssessee(model)" ng-disabled="formAssessee.$invalid" />
                     </div>
                 </div>
 		
@@ -261,7 +261,7 @@
 
 						<div class="form-group">
 							<div class="col-md-offset-2 col-md-5">
-								<input type="submit" style="cursor:wait" value="Select Assessee" class="btn btn-primary" ng-click="selectAssessee(model)" ng-disabled="formCurrentAssessee.$invalid" />
+								<input type="submit" value="Select Assessee" class="btn btn-primary" ng-click="selectAssessee(model)" ng-disabled="formCurrentAssessee.$invalid" />
 							</div>
 						</div>
 			
@@ -387,7 +387,7 @@
 
 					<div class="form-group">
 						<div class="col-md-offset-2 col-md-5">
-							<input type="submit" style="cursor:wait" value="Create Institute" class="btn btn-primary" ng-click="create(model)" ng-disabled="formInsti.$invalid" />
+							<input type="submit" value="Create Institute" class="btn btn-primary" ng-click="create(model)" ng-disabled="formInsti.$invalid" />
 						</div>
 					</div>
 				</form>
@@ -470,7 +470,9 @@
                         <label>Description</label>
                     </div>
                     <div class="col-md-5">
-                        <input type="text" name="description" ng-model="model.description" required>
+                    <textarea style="border:ridge" name="description" ng-model="model.description" rows="7" cols="70" style="align-content:stretch" ng-required="true"></textarea>
+
+					<!--<input type="text" name="description" ng-model="model.description" required>-->
                         <div class="alert alert-danger" ng-show="(formTask.description.$touched || formTask.$submitted) && formTask.description.$error.required">
                             Task description is required
                         </div>
@@ -565,7 +567,7 @@
 
                 <div class="form-group">
                     <div class="col-md-offset-2 col-md-5">
-                        <input type="submit" style="cursor:wait" value="Create Task" class="btn btn-primary" ng-click="createTask(model)" ng-disabled="formTask.$invalid" />
+                        <input type="submit" value="Create Task" class="btn btn-primary" ng-click="createTask(model)" ng-disabled="formTask.$invalid" />
                     </div>
                 </div>
 		
@@ -619,6 +621,7 @@
 					<p>
 						<input type="button" value="Sync for Offline" ng-click="Sync()" />
 					</p>
+					<!--<p> make search option to select students of a particular school in a given city</p>-->
 					<!--<p><input type="button" value="CreateDummyRecords" ng-click="CreateDummyRecords()" /> </p>-->
 					
 					<p>
