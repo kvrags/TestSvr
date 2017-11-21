@@ -25,7 +25,7 @@ Institute = require('./api/models/InstituteModel'); //Institutes definition
 
 ////DB connection setting
 var mongoURI = "mongodb://localhost/neurogym";
-//var mongoURI = "mongodb://localhost/neurogymLive";
+//var mongoURI = "mongodb://localhost/neurogymTest";
 
 var promise = mongoose.connect(mongoURI, {
   useMongoClient: true,
@@ -81,6 +81,7 @@ var sslOptions = {key: fs.readFileSync('./config/domain.key'),
 
 https.createServer(sslOptions, app).listen(8443); 	
 console.log("https server instance listening on port " + 8443);
+console.log("Database instance using " + mongoURI);
 	
 	
 /*app.listen(port);
