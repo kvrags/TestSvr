@@ -30,7 +30,7 @@
 				<td width="60px" ng-repeat="col in row track by $index" align="center"` ng-switch="col" >
 					<!-- if the table display is not proper, check array and low-seed and high seed settings -->
 					<span ng-switch-when="1">
-						<img align="center" src="./res/white_rect.jpg" width="60px" height="40px"/>
+						<img align="center" src="./res/white_rect.jpg" width="40px" height="40px"/>
 					</span>
 					<span ng-switch-when="0">&nbsp;</span>
 				</td>
@@ -48,32 +48,32 @@
 			<input type="button" value="Check" ng-click="checkAnswer()" ng-disabled="disableBtn">
 			<div  style="margin-left:20%;text-align:left" id="userResult" ng-hide="hideAnswer">
 				<span ng-if="taskName == 'White Squares Level 1' ">
-					<h4>Sum : {{message}}</h4>
+					<h4>Squares on last slide : {{message}}</h4>
 					<h4>Hits : {{right}}</h4>
 					<h4>Misses : {{wrong}}</h4>
 				</span>
 				<span ng-if="taskName == 'White Squares Level 2' ">
-					<h4>Sum : {{message}}</h4>
+					<h4>Squares on last slide : {{message}}</h4>
 					<h4>Hits : {{right}}</h4>
 					<h4>Misses : {{wrong}}</h4>
 				</span>
 				
 				<span ng-if="taskName == 'White Squares Level 3'">
-					<h4>Current Sum : {{message}}</h4>
-					<h4>Previous Sum :{{prev_Result}} </h4>
+					<h4>Sum : {{message}}</h4>
+					<h4>Squares on last slide : {{prev_Result}} </h4>
 					<h4>Hits : {{right}}</h4>
 					<h4>Misses : {{wrong}}</h4>
 				</span>
 				<span ng-if="taskName == 'White Squares Level 4'">
-					<h4>Current Sum : {{message}}</h4>
-					<h4>Previous Sum :{{prev_Result}} </h4>
+					<h4>Sum : {{message}}</h4>
+					<h4>Squares on last slide : {{prev_Result}} </h4>
 					<h4>Hits : {{right}}</h4>
 					<h4>Misses : {{wrong}}</h4>
 				</span>
 				<span ng-if="taskName == 'White Squares Level 5'">
-					<h4>Current Sum : {{message}}</h4>
-					<h4>Last Number :{{prev_Result}} </h4>
-					<h4>Before to Last Number :{{prev_prev_Result}} </h4>
+					<h4>Sum : {{message}}</h4>
+					<h4>Squares on last slide : {{prev_Result}} </h4>
+					<h4>Squares on before to last slide : {{prev_prev_Result}} </h4>
 					<h4>Hits : {{right}}</h4>
 					<h4>Misses : {{wrong}}</h4>
 				</span>
