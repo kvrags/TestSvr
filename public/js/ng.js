@@ -178,14 +178,18 @@ rootApp.config(function ($routeProvider) {
         templateUrl: './tasks/attention/squares.html',
         controller: 'ctrlSquares'
     })
-    .when('/squaresblack', {
+    .when('/squaresblack/:taskname/:level', {
         templateUrl: './tasks/attention/squaresblack.html',
         controller: 'ctrlBlackSquares'
     })
-    .when('/smiley', {
+    .when('/smiley/:taskname/:level', {
         templateUrl: './tasks/attention/smiley.html',
         controller: 'ctrlSmiley'
-    }) 
+    })
+	.when('/elly/:taskname/:level', {
+        templateUrl: './tasks/attention/elly.html',
+        controller: 'ctrlElly'
+    })	
     .when('/cnntShapes', {
         templateUrl: './partials/connetShapes.html',
         controller: 'ctrlConnectShapes'
@@ -431,8 +435,10 @@ rootApp.factory('dataFactory',  function($http, $rootScope) {
 		getAllInstitutes: function(query){
 			//return $http.get(base_url + "institute" + query).then(function(success) {
 			return $http.get(base_url + "institute" ).then(function(success) {
+					writeLocalStorageJson("institutes", success.data);
 					return success;
 				},function(error){
+					institutes = readLocalStorageJson("institutes");
 					return error;
 				});
 		},
@@ -495,6 +501,16 @@ rootApp.controller('ctrlSync', function ($scope,$http,$rootScope,dataFactory) {
 				//$scope.questions=res;
 				$scope.message = "Error syncing tasks. check internet/wi-fi connection and rety later.";
 			});
+			
+			
+		dataFactory.getAllInstitutes("all").then(function (res){
+				//$scope.tasks = res;
+			}, function(res){
+				//error
+				//$scope.questions=res;
+				$scope.message = "Error syncing institutes. check internet/wi-fi connection and rety later.";
+			});
+
 	}
 	
 	//give the user an option to manually perform upload from localStorage if not done automatically with bOnline flag as above
@@ -1495,8 +1511,8 @@ function getItemByKey(key, array) {
 //admin adminSurvey
 rootApp.controller('ctrladminSurvey', function ($scope,dataFactory) {
     $scope.message = {};// = 'Hello from ctrladminSurvey';
-	var tmp;
-	var user = {
+	$scope.tmp = "";
+	$scope.user = {
 				name:"",
 				ageGroup:"",
 				Attention:"",
@@ -1520,10 +1536,11 @@ rootApp.controller('ctrladminSurvey', function ($scope,dataFactory) {
 	//$scope.fetchAssesees;
 	
 	$scope.Init = function() {
+		$scope.users = [];
+		
 		dataFactory.getAllAssessee().then(function (res){
-			$scope.users = [];
-			var tmp =  res;
-			var user = {
+			$scope.tmp =  res;
+			$scope.user = {
 					fname:"",
 					lname:"",
 					mobile:"",
@@ -1536,25 +1553,25 @@ rootApp.controller('ctrladminSurvey', function ($scope,dataFactory) {
 
 			////build an array with all the details that is required for the UI table display
 			//name,ageGroup,Attention,WorkingMemory,Impulsivity,MentalFlexibility
-			for (var i=0; i < tmp.length; ++i) {
-					user.fname = tmp[i].fname;
-					user.lname = tmp[i].lname;
-					user.mobile = tmp[i].mobile;
-					user.ageGroup = tmp[i].ageGroup;
-					if (tmp[i].progress.length > 0) {
-						user.Attention = tmp[i].progress[tmp[i].progress.length-1].Attention;
-						user.WorkingMemory = tmp[i].progress[tmp[i].progress.length-1].WorkingMemory;
-						user.Impulsivity = tmp[i].progress[tmp[i].progress.length-1].Impulsivity;
-						user.MentalFlexibility = tmp[i].progress[tmp[i].progress.length-1].MentalFlexibility;
+			for (var i=0; i < $scope.tmp.length; ++i) {
+					$scope.user.fname = $scope.tmp[i].fname;
+					$scope.user.lname = $scope.tmp[i].lname;
+					$scope.user.mobile = $scope.tmp[i].mobile;
+					$scope.user.ageGroup = $scope.tmp[i].ageGroup;
+					if ($scope.tmp[i].progress.length > 0) {
+						$scope.user.Attention = $scope.tmp[i].progress[$scope.tmp[i].progress.length-1].Attention;
+						$scope.user.WorkingMemory = $scope.tmp[i].progress[$scope.tmp[i].progress.length-1].WorkingMemory;
+						$scope.user.Impulsivity = $scope.tmp[i].progress[$scope.tmp[i].progress.length-1].Impulsivity;
+						$scope.user.MentalFlexibility = $scope.tmp[i].progress[$scope.tmp[i].progress.length-1].MentalFlexibility;
 					}else {
-						user.Attention = " ";
-						user.WorkingMemory = " ";
-						user.Impulsivity = " ";
-						user.MentalFlexibility = " ";
+						$scope.user.Attention = " ";
+						$scope.user.WorkingMemory = " ";
+						$scope.user.Impulsivity = " ";
+						$scope.user.MentalFlexibility = " ";
 					}				
 					
-					$scope.users.push(user);
-					user = {};
+					$scope.users.push($scope.user);
+					$scope.user = {};
 			}
 						
 			}, function(res){
@@ -2262,7 +2279,7 @@ rootApp.controller('ctrlRetrieveUser', function ($scope) {
 });
 
 //task Controller
-rootApp.controller('ctrlSmiley', function ($scope,$routeParams,dataFactory) {
+rootApp.controller('ctrlSmiley', function ($scope,$routeParams,$interval,dataFactory) {
 	//var d = Date();
 	var startTime; //= Date.getTime();
 	var attempt = {
@@ -2272,36 +2289,79 @@ rootApp.controller('ctrlSmiley', function ($scope,$routeParams,dataFactory) {
 					misses:""
 	};
 	
-    $scope.message = "Hello from ctrlSmiley";
     $scope.hits = 0;
     $scope.misses = 0;
 
+	$scope.Init =  function () {
+		$scope.userDetails = {};
+		$scope.userDetails = readLocalStorageJson("currentUser");
+		$scope.userDetails = $scope.userDetails[0];
+		$scope.userfName = $scope.userDetails.fname;
+		$scope.userMobile = $scope.userDetails.mobile;
+		$scope.tasks = $scope.userDetails.tasks;
+		$scope.taskName = $routeParams.taskname;
+	
+		for (var i=0;i<$scope.tasks.length; ++i) {
+			if ($scope.tasks[i].name == $routeParams.taskname) {
+				$scope.taskLevel = $routeParams.level;
+				$scope.domain = $scope.tasks[i].domains[0].name;
+				$scope.taskInstructions = $scope.tasks[i].description;
+				break;
+			}
+		}
+
+		$interval ($scope.display,5000);
+		$scope.display();
+	}
+	
     $scope.display = function() {
-     
+
         var randomImg = Math.round(Math.random());
+
+		//Level 1 - You will see different kinds of smiley faces.
+		//			If you see a smiley face on the left press the left button 
+		//			If you see the smiley on the right press the right button
+
+		switch($routeParams.level) {
+			case "1":
+				$scope.imageName = "smiley.jpg";
+			break;
+			case "2":
+				$scope.imageName = "heart.jpg";
+				break;
+			case "3":
+		        if (randomImg == 0) 
+					$scope.imageName = "smiley.jpg";
+				else 
+					$scope.imageName = "heart.jpg";
+				break;
+			}
+
         var randomh_align = Math.round(Math.random());
         var randomv_align = Math.round(Math.random());
+			
+		if (randomh_align == 0) 
+			$scope.h_align = "left";
+		else 
+			$scope.h_align = "right";
+		
 
-        if (randomImg == 0) {
-            $scope.imageName = "smiley.jpg";
-        }
-        else {
-            $scope.imageName = "heart.jpg";
-        }
+		if (randomv_align == 0)
+			$scope.v_align = "top";
+		else
+			$scope.v_align = "bottom";
 
-        if (randomh_align == 0) {
-            $scope.h_align = "left";
-        } else {
-            $scope.h_align = "right";
-        }
-
-        if (randomv_align == 0) {
-            $scope.v_align = "top";
-        } else {
-            $scope.v_align = "bottom";
-        }
-        $scope.status = "Image Name : " + $scope.imageName + " hAlign : " + $scope.h_align + " vAlign : " + $scope.v_align;
+        //$scope.status = "Image Name : " + $scope.imageName + " hAlign : " + $scope.h_align + " vAlign : " + $scope.v_align;
     }
+	
+	$scope.clickLeft = function(){
+		$scope.KeyDownF(37);
+	}
+	
+	$scope.clickRight = function(){
+		$scope.KeyDownF(39);
+	}
+	
 	
     $scope.KeyDownF = function (keyCode) {
 		startTime = Date();
@@ -2354,40 +2414,388 @@ rootApp.controller('ctrlSmiley', function ($scope,$routeParams,dataFactory) {
 					misses:$scope.misses
 				};
 	
-//		updateTasksScores($routeParams.taskname, attempt, dataFactory);
-	
-		/*
+		//record this score for this task 
+		//find out who the user is? 
+		//find out all the particular task being performed by this user
+		// at the end of this task, determine the score and store it 
+		
 		$scope.userDetails = {};
-		//didn't work using global variable
-		//$scope.user = $rootScope.currentUser;
+		var tasks;
+		
 		$scope.userDetails = readLocalStorageJson("currentUser");
-		$scope.userName = $scope.userDetails[0].name;
-		$scope.userId = $scope.userDetails[0]._id;
-		$scope.tasks = $scope.userDetails[0].tasks;
 		
-		$scope.taskName = "Smiley Heart Level 1"; //this is hardcoded
-		
-		for (var i=0; i < $scope.tasks.length;++i) {
-			if ( $scope.tasks[i].name == $scope.taskName){
-				$scope.tasks[i].scores.push(attempt);
-				break;
+	
+		$scope.userDetails = $scope.userDetails[0];
+		//userEmail = userDetails.email;
+		//tasks = userDetails.tasks;
+	
+	
+		for (var i=0; i < $scope.userDetails.tasks.length;++i) {
+			if ( $scope.userDetails.tasks[i].name == $routeParams.taskname){
+				$scope.userDetails.tasks[i].scores.push(attempt);
+			break;
 			}
 		}			
 		
 		//update the database
-		//instead of sending all the userdata, send only his _Id, tasks/task_iD, /tasks/task_score 
-		dataFactory.updateAssessee($scope.userId, $scope.userDetails[0], "updateAssessee").then(function (res) {
-			$scope.message = "Smiley Heart details of Task update successful";
-			
-			//now update the local storage
-			writeLocalStorageJson("currentUser",res);
-		}, function(res){
+		dataFactory.updateAssessee($scope.userDetails.mobile, $scope.userDetails, "updateAssessee").then(function (success) {
+
+			//read the latest task scores into $scope.userDetails so that UI will have updated data
+			$scope.userDetails = readLocalStorageJson("currentUser");
+			$scope.userDetails = $scope.userDetails[0];
+
+			}, function(failure){
 			
 		});
 
-		*/
+	}	
+});
 
+//task Controller
+rootApp.controller('ctrlElly', function ($scope,$routeParams,dataFactory, $interval) {
+
+	var startTime = Date();
+	var attempt = {
+					date: "",
+					duration:"",	
+					hits:"",
+					misses:""
+	};
+	// this var is created to track if it is first load or refresh
+	$scope.canvasFirstLoad = true;
+
+	
+	$scope.Init = function(){
+		$scope.canvas = document.getElementById('canvas');
+		$scope.context = canvas.getContext('2d');
+		$scope.imageSrc = document.getElementById('imageSource');    
+		$scope.canvas.width = window.innerWidth/2; //700;
+		$scope.canvas.height = window.innerHeight/2;//300;
+		
+		$scope.message = "Hello from ctrlElly";
+		$scope.hits = 0;
+		$scope.misses = 0;
+		//$scope.imageName = "ellySquareRed.jpg";
+
+		$scope.userDetails = {};
+		$scope.userDetails = readLocalStorageJson("currentUser");
+		$scope.userDetails = $scope.userDetails[0];
+		$scope.userfName = $scope.userDetails.fname;
+		$scope.userMobile = $scope.userDetails.mobile;
+		$scope.tasks = $scope.userDetails.tasks;
+		$scope.taskName = $routeParams.taskname;
+	
+		for (var i=0;i<$scope.tasks.length; ++i) {
+			if ($scope.tasks[i].name == $routeParams.taskname) {
+				$scope.taskLevel = $routeParams.level;
+				$scope.domain = $scope.tasks[i].domains[0].name;
+				$scope.taskInstructions = $scope.tasks[i].description;
+				break;
+			}
+		}
+		$scope.display();
+		
+		$interval ($scope.display,5000);
+
+	}
+	
+	//Canvas does not display img on load but on refresh
+	//$scope.imageSrc.onload = function() {
+		//$scope.display;
+	//}
+	
+	
+	
+	function getRandomInt(min, max) {
+	  min = Math.ceil(min);
+	  max = Math.floor(max);
+	  return Math.floor(Math.random() * (max - min + 1)) + min; //The maximum is exclusive and the minimum is inclusive
+	}
+	
+    $scope.display = function() {
+    
+		$scope.context.clearRect(0, 0, $scope.canvas.width, $scope.canvas.height);
+		 
+		$scope.randomImg = getRandomInt(0,1);
+		$scope.randomColor = getRandomInt(0,2);
+		
+		switch ($scope.randomColor) {
+				case 0:
+					$scope.randomColor = "red";
+				break;
+				case 1:
+					$scope.randomColor = "blue";
+				break;
+				case 2:
+					$scope.randomColor = "green";
+				break;
+		}
+		
+		var xPos,yPos, imgWidth=120,imgHeight=120, radius = 60;
+		scale = getRandomInt(1,2);
+
+		if ($routeParams.level == 1) {
+			scale = 1;
+		}
+		
+		xPos = getRandomInt(10,($scope.canvas.width-(imgWidth))/scale);
+		yPos = getRandomInt(10,($scope.canvas.height-(imgHeight))/scale);
+		radius = radius/scale;
+
+		switch ($scope.randomImg){
+			case 0: //circle
+				//prevent partial circle
+				if (xPos < radius )
+					xPos = xPos + 2*radius + 10;
 				
+				if (yPos < radius )
+					yPos = yPos + 2*radius + 10;
+			
+				$scope.context.beginPath();
+				$scope.context.arc(xPos,yPos,radius,0,2*Math.PI);
+				$scope.context.fillStyle = $scope.randomColor;
+				$scope.context.fill();	
+				$scope.context.stroke();
+				$scope.randomImg = "ellyCircle" + $scope.randomColor;
+				break;
+			case 1: //square
+				$scope.context.fillStyle = $scope.randomColor;
+				$scope.context.fillRect(xPos,yPos, imgWidth/scale, imgHeight/scale);
+				$scope.randomImg = "ellySquare" + $scope.randomColor;
+				break;
+		}
+
+		//$scope.message = "xPos = " +xPos + "/ yPos = "+ yPos + "/ radius = " + radius;
+		//function template
+		//void ctx.drawImage(image, dx, dy, dWidth, dHeight);
+		//x-min = 10, 	y-min=10
+		//x-max = canvas.width, 	y-max=canvas.height
+		
+		//$scope.canvas.style.background="url('" + $scope.imageName + "')";
+
+		//$scope.context.drawImage($scope.imageSrc, xPos,yPos, imgWidth/scale, imgHeight/scale);
+	 }
+	
+	$scope.clickLeft = function(){
+		//$scope.KeyDownF(37);
+
+		TrackResult("left");
+		
+		/*if ($scope.canvasFirstLoad) {
+			$scope.hits = 0;
+			$scope.misses = 0;
+
+			$scope.canvasFirstLoad = false;
+		}*/
+
+		$scope.display();
+	}
+	
+	$scope.clickRight = function(){
+		//$scope.KeyDownF(39);
+		TrackResult("right");
+
+		/*if ($scope.canvasFirstLoad) {
+			$scope.hits = 0;
+			$scope.misses = 0;
+
+			$scope.canvasFirstLoad = false;
+		}*/
+
+		$scope.display();
+	}
+	
+	
+	//Level - 1 : 
+	//You will see squares or circles in one of three colours- Red, Blue or Green.
+	//When you see Red Press the “Right” Key (Arrow), When you see Blue press the “Left” 
+	//key (arrow).
+	//Shape does not matter.
+	//DO NOT react to GREEN.
+	
+	//Level - 2 :
+	//You will see the familiar blue, red or green circles and squares.
+	//This time press the “Left” key (Arrow) for red and “Right” key (arrow) for blue.
+	//Green - no response.	
+
+	//Level - 3 :
+	//You will once again see the red, blue, green circles and squares. 
+	//Press “Right” key/arrow  for square red and “Left” key/arrow for Square blue. Green- no response
+	//Press “Left” key/ arrow for circle red and “Right” key/arrow for circle blue.
+	//Size does not matter
+	
+	function TrackResult(key){
+		
+		switch ($routeParams.level) { 
+			case "1":
+				if ((($scope.randomColor == "red") && (key == "right")) || (($scope.randomColor == "blue") && (key == "left")))
+					$scope.hits++;
+				else 
+					$scope.misses++;
+				break;
+			
+			case "2": 
+				if ((($scope.randomColor == "red") && (key == "left")) || (($scope.randomColor == "blue") && (key == "right")))
+					$scope.hits++;
+				else 
+					$scope.misses++;
+				
+				break;
+				//Press “Right” key/arrow  for square red and “Left” key/arrow for Square blue. Green- no response
+				//Press “Left” key/ arrow for circle red and “Right” key/arrow for circle blue.
+				//Size does not matter
+
+			case "3": 
+					if (key == "right") {
+						if (($scope.randomImg == "ellySquarered") || ($scope.randomImg == "ellyCircleblue"))
+							$scope.hits++;
+						else 
+							$scope.misses++;
+					}else if (key == "left") {
+						if (($scope.randomImg == "ellySquarered") || ($scope.randomImg == "ellyCirclered"))
+							$scope.hits++;
+						else 
+							$scope.misses++;	
+					}				
+	
+				break;
+			
+		}
+		
+		
+	}
+
+	$scope.taskExit = function() {
+		//save the results 
+		var endTime = Date();
+		
+		attempt = {
+					date:startTime,
+					duration: (endTime - startTime) /1000, //store elasped time minutes 
+					hits:$scope.hits,
+					misses:$scope.misses
+				};
+	
+		//record this score for this task 
+		//find out who the user is? 
+		//find out all the particular task being performed by this user
+		// at the end of this task, determine the score and store it 
+		
+		$scope.userDetails = {};
+		var tasks;
+		
+		$scope.userDetails = readLocalStorageJson("currentUser");
+		
+	
+		$scope.userDetails = $scope.userDetails[0];
+		//userEmail = userDetails.email;
+		//tasks = userDetails.tasks;
+	
+	
+		for (var i=0; i < $scope.userDetails.tasks.length;++i) {
+			if ( $scope.userDetails.tasks[i].name == $routeParams.taskname){
+				$scope.userDetails.tasks[i].scores.push(attempt);
+			break;
+			}
+		}			
+		
+		//update the database
+		dataFactory.updateAssessee($scope.userDetails.mobile, $scope.userDetails, "updateAssessee").then(function (success) {
+
+			//read the latest task scores into $scope.userDetails so that UI will have updated data
+			$scope.userDetails = readLocalStorageJson("currentUser");
+			$scope.userDetails = $scope.userDetails[0];
+
+			}, function(failure){
+			
+		});
+
+	}	
+    $scope.KeyDownF = function (keyCode) {
+		startTime = Date();
+		
+		if (keyCode == 39){
+            //$scope.message = "right arrow";
+            
+            if (($scope.imageName == "smiley.jpg") && ($scope.h_align == "right")) {
+                $scope.hits = $scope.hits + 1;
+            } else {
+				if (($scope.imageName == "heart.jpg") && ($scope.h_align == "left")) {
+					$scope.hits = $scope.hits + 1;
+				} else {
+					$scope.misses = $scope.misses + 1;
+				}            
+			}
+
+
+            
+            $scope.display();
+        }
+      
+		if (keyCode == 37) {
+            //$scope.message = "left arrow pressed"
+
+            if (($scope.imageName == "smiley.jpg") && ($scope.h_align == "left" )) {
+				$scope.hits = $scope.hits + 1;
+			} else {
+				if (($scope.imageName == "heart.jpg") && ($scope.h_align == "right" )){
+					$scope.hits = $scope.hits + 1;
+				} else {
+					$scope.misses = $scope.misses + 1;
+				}
+			}
+
+
+            $scope.display();
+
+        }
+		
+    };
+	$scope.taskExit = function() {
+		//save the results 
+		var endTime = Date();
+		
+		attempt = {
+					date:startTime,
+					duration: (endTime - startTime) /1000, //store elasped time minutes 
+					hits:$scope.hits,
+					misses:$scope.misses
+				};
+	
+		//record this score for this task 
+		//find out who the user is? 
+		//find out all the particular task being performed by this user
+		// at the end of this task, determine the score and store it 
+		
+		$scope.userDetails = {};
+		var tasks;
+		
+		$scope.userDetails = readLocalStorageJson("currentUser");
+		
+	
+		$scope.userDetails = $scope.userDetails[0];
+		//userEmail = userDetails.email;
+		//tasks = userDetails.tasks;
+	
+	
+		for (var i=0; i < $scope.userDetails.tasks.length;++i) {
+			if ( $scope.userDetails.tasks[i].name == $routeParams.taskname){
+				$scope.userDetails.tasks[i].scores.push(attempt);
+			break;
+			}
+		}			
+		
+		//update the database
+		dataFactory.updateAssessee($scope.userDetails.mobile, $scope.userDetails, "updateAssessee").then(function (success) {
+
+			//read the latest task scores into $scope.userDetails so that UI will have updated data
+			$scope.userDetails = readLocalStorageJson("currentUser");
+			$scope.userDetails = $scope.userDetails[0];
+
+			}, function(failure){
+			
+		});
+
 	}	
 });
 
@@ -2578,14 +2986,17 @@ rootApp.controller('ctrlSquares', function ($scope, $routeParams,dataFactory) {
 	//define
 	$scope.trackResult = function (table) {
 		
+		
 		switch ($routeParams.level) {
 			case "1":
-				//count the number of Squares in the middle row
-				addSquaresinMiddleRow(table);
+				//count the number of Squares in the middle row of Previous Slide
+				addSquaresinMiddleRow_N1(table);	
+				$scope.calcResult  = $scope.prev_Result;
 				break;
 			case "2":
-				//count the number of Squares in the middle row
-				addSquaresinMiddleRow(table);
+				//count the number of Squares in the middle row of Previous Slide
+				addSquaresinMiddleRow_N1(table);		
+				$scope.calcResult  = $scope.prev_Result;
 				break;
 			case "3":
 			//Add number of white squares of present slide with previous slide
@@ -2597,12 +3008,14 @@ rootApp.controller('ctrlSquares', function ($scope, $routeParams,dataFactory) {
 				break;
 			case "5":
 			//n-2 slides
-			//Add all white squates on first slide, prev and prev to prev slide 
-				addSquaresinMiddleRow_N1(table);			
+			//Add all white squares on current slide, with those on previous slide
+			//and previous to previous slide. 
+				addSquaresinMiddleRow_N1(table);
+				$scope.calcResult = $scope.current_Result + $scope.prev_Result + $scope.prev_prev_Result;
 				break;
 			case "6":
-			//Add all white squates on first slide and subtract it 
-			//from total of slides form next slide
+			//Add all white squares on previous slide and subtract it from total 
+			//of squares form current slide.
 				//callLevel-5-Track();
 				break;
 				
@@ -2667,7 +3080,8 @@ rootApp.controller('ctrlSquares', function ($scope, $routeParams,dataFactory) {
 		$scope.disableBtn = true;
 		$scope.hideAnswer = false;
 		
-		//store these result in localStorage as when user refreshes the page result will be destroyed
+		//store these result in localStorage as when user refreshes the page result will 
+		//be destroyed
 		if ($scope.calcResult == $scope.userInput) {
 			$scope.right++;
 		} else {
@@ -2675,14 +3089,6 @@ rootApp.controller('ctrlSquares', function ($scope, $routeParams,dataFactory) {
 		}
 	
 		$scope.message = $scope.calcResult;
-		
-		/*if ($routeParams.level == "1" || $routeParams.level == "2")
-			$scope.message = $scope.calcResult;// + "Hits : " + $scope.right + "   Misses : " + $scope.wrong; 
-		else
-			if ($routeParams.level == "3" || $routeParams.level == "4")
-				//$scope.message = ("Sum : " + $scope.calcResult + " Current Number = " + $scope.current_Result + "," + " Previous Number = " + $scope.prev_Result + " Screens = " + $scope.clicks);
-				$scope.message = $scope.calcResult;
-				*/
 	}
 			
 	$scope.taskExit = function() {
@@ -2719,11 +3125,7 @@ rootApp.controller('ctrlSquares', function ($scope, $routeParams,dataFactory) {
 			}
 		}			
 		
-		//now update the local storage
-		//writeLocalStorageJson("currentUser",userDetails);
-
 		//update the database
-		//instead of sending all the userdata, send only his _Id, tasks/task_iD, /tasks/task_score 
 		dataFactory.updateAssessee($scope.userDetails.mobile, $scope.userDetails, "updateAssessee").then(function (success) {
 
 			//read the latest task scores into $scope.userDetails so that UI will have updated data

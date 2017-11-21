@@ -244,11 +244,14 @@ var g_AppData = null;
  }
 
 
- function randomIntInc(low, high) {
+ function randomIntInc(min, max) {
 
      //var val = Math.floor(1000 + Math.random() * 9000);//gives fixed lenght of 4
-		
-     return Math.floor(Math.random() * (high - low + 1) + low);
+	min = Math.ceil(min);
+	max = Math.floor(max);
+	
+	//return inclusive values
+    return Math.floor(Math.random() * (max - min + 1) + min);
  }
 
 /*
