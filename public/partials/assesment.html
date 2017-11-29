@@ -183,7 +183,8 @@
             <form class="form-horizontal" id="formQs"  novalidate>
                 <div class="form-group">
                     <div class="col-md-2">
-                        <label><h3>{{qSlNo}}</h3></label>
+                        <!--<label><h3>{{qSlNo}}</h3></label>-->
+                        <label><h3>Question {{qIndex +1}}</h3></label>
                     </div>
                     <div class="col-md-7">
 						<h3><textarea style="border:ridge overflow: hidden" rows="4" cols="70" style="align-content:stretch" readonly>{{qText}} </textarea></h3>
@@ -211,8 +212,9 @@
                     <div class="col-md-offset-2 col-md-5">
                         <!--  <input type="submit" value="Submit" class="btn btn-primary" ng-click="form.$valid && Register(model)" /> -->
 						<!--<input type="submit" value="Create New User" class="btn btn-primary" ng-click="CreateNewAssessee(model)" ng-disabled="formUser.$invalid || !bEnable" />-->
-                        <input type="submit" style="cursor:wait"  value="Next" class="btn btn-primary" ng-click="SubmitQuestions(model)" ng-disabled="formQs.$invalid || formQs.$submitted || !model.reply" />
-                    </div>
+                        <input type="submit" value="Next" class="btn btn-primary" ng-click="SubmitQuestions(model)" ng-disabled="formQs.$invalid || formQs.$submitted || !model.reply" />
+                    <!--    <input type="button" value="Back" class="btn btn-primary" ng-click="GotoPrevQuestion(qIndex)" />-->
+						</div>
                 </div>
 
             </form>

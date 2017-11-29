@@ -60,7 +60,7 @@
     <p style="margin:1%"><h4>Click on Tasks below -</h4></p>
 
     <div style="margin:0.5%" class="tab" >
-        <button class="tablinks" onclick="openTab(event, 'assessees')">Assessees</button>
+        <!--<button class="tablinks" onclick="openTab(event, 'assessees')">Assessees</button>-->
         <button class="tablinks" onclick="openTab(event, 'institute')">Institutes</button>
         <button class="tablinks" onclick="openTab(event, 'profiles')">Profiles</button>
         <button class="tablinks" onclick="openTab(event, 'profilesMedian')">Profiles Median</button>
@@ -68,124 +68,10 @@
         <button class="tablinks" onclick="openTab(event, 'tasks')">Tasks</button>
         <button class="tablinks" onclick="openTab(event, 'survey')">Survey</button>
         <button class="tablinks" onclick="openTab(event, 'sync')">Sync</button>
-        <button class="tablinks" onclick="openTab(event, 'tests')">Tests</button>
+        <!--<button class="tablinks" onclick="openTab(event, 'tests')">Tests</button>-->
 	</div>
 
 	
-    <div id="tests" style="margin-left:5%" class="tabcontent" ">
-		<div> <h4> Online Mode -- Client Browser is connected to server/db</h4>
-			<table style="align:left">
-				<tr> <td>First time User</td><td></td>
-				<tr> 
-					<td>Client Browser - Nightly</td>
-					<td>Admin Browser - Chrome</td>
-					<td><input type="checkbox"</input>
-				</tr>
-				</tr>
-				<tr> 
-					<td> start Nightly as a User</td>
-					<td> start Chrome as a admin for Server - DBupdates view)</td>
-					<td><input type="checkbox"</input>
-				</tr>
-				<tr>
-					<td>Click link Assesment and enter assessee details. </td> 
-					<td> new assessees details (name with null assessment scores) should appear on survey tab</td>
-					<td><input type="checkbox"</input>
-				</tr>
-				<tr>
-					<td>Click CreateNewAssessee.  Questionaire page should appear.</td> 
-					<td> Assessee details (name and median scores) should appear on survey tab</td>
-					<td><input type="checkbox"</input>
-				</tr>
-
-				<tr>
-					<td>Answer all the questions</td>
-					<td>Assessment score and Profile Median scores should appear in Assesment Report</td>
-					<td><input type="checkbox"</input>					
-				</tr>
-				<tr>
-					<td>Go to each of the Cognitive domains. Perform a task- note the score (hits/misses).</td>
-					<td>Scores should appear Assesment Report against this task.</td>
-					<td><input type="checkbox"</input>					
-				</tr>
-				<tr> <td>Existing User</td><td></td>
-				<tr>
-					<td>Go to Admin >> Assessee tab.Enter mobile and click Find.</td><td> Existing user details should be listed below.</td>
-					<td><input type="checkbox"</input>					
-				</tr>
-				<tr>
-					<td>Click Select Assessee.</td><td>Confirmation dialog. Home page loaded with selected user details.</td>
-					<td><input type="checkbox"</input>					
-				</tr>
-				<tr>
-					<td>Go to Assessment Report page.</td><td>All the previous assessments and tasks scoring history should appear.</td>
-					<td><input type="checkbox"</input>					
-				</tr>
-			</table>
-		</div>
-		<div>
-		</div>
-		
-		<div> <h4> Offline Mode -- Client Browser is NOT connected to server </h4>
-			<table>
-				<tr>
-					<td>Prerequiste : Browser shoud connect online once and user should perform Sync</td>
-					<td>Verify in Sync tab : Profiles,Questions and Tasks copied</td>
-					<td><input type="checkbox"</input>
-				</tr>
-
-				<tr>
-					<td>Perform - Steps: </br>Create new Assessee,Perform Tasks</td>
-					<td>Verify in the Assesment Report: Assesment score, Task score.</td>
-					<td><input type="checkbox"</input>					
-				</tr>
-				<tr>
-					<td>Click on Assesment link.</td>
-					<td>Assesment report should display number of previous assessments.</td>
-					<td><input type="checkbox"</input>					
-				</tr>
-				<tr>
-					<td>Click Perform Next Assesment</td>
-					<td>Questionaire should be displayed.</td>
-					<td><input type="checkbox"</input>					
-				</tr>
-				<tr>
-					<td>Answer all the questions. click assessment report.</td>
-					<td>Assessment report should show historical scores against median scores.</td>
-					<td><input type="checkbox"</input>					
-				</tr>
-				<tr>
-					<td>Go to Sync tab.</td>
-					<td>Sync tab to display number of new users assessed.</td>
-					<td><input type="checkbox"</input>					
-				</tr>
-		
-				<tr>
-					<td>Update an existing Assessee</td><td></td>
-				</tr>
-				<tr>
-					<td>Go online.</br>From Admin panel, find Assessee and load user details.</td>
-					<td>User details - Historical Assesment reports, tasks scores should be displayed. </td>
-					<td><input type="checkbox"</input>					
-				</tr>
-				<tr>
-					<td>Go offline. </br>Perform tasks under various Cognitive domains.</td>
-					<td>All the scores should be available.</td>
-					<td><input type="checkbox"</input>					
-				</tr>
-				<tr>
-					<td>Go online. </br> Perform Sync.</td>
-					<td>All the offline scores should be available.</td>
-					<td><input type="checkbox"</input>					
-
-				<tr>
-					<td></td><td></td>
-					<td><input type="checkbox"</input>					
-				</tr>
-
-			</table>
-		</div>
-	</div>
 
 	<div id="assessees" style="margin-left:5%" class="tabcontent" ng-controller="ctrlAssessees" ng-init="Init()">
     <div>
@@ -266,11 +152,11 @@
 						</div>
 			
 					</form>
+				<!--<pre> {{message | json}} </pre>-->
 
 				</div>
 				
 				
-				<pre> {{message | json}} </pre>
 			</div>
 		
 		
@@ -284,7 +170,7 @@
 		<div class="container" id="instituteC"  ng-init="InitCreateTask()">
 			<div class="container" id="institute" ng-if="mode == 'create'" ng-init="Init()">
 				<p><h3>Create entry for an Institution</h3></p>
-				<form class="form-horizontal" name="formInsti"  novalidate>
+				<form class="form-horizontal" name="formInsti"  ng-change="onChange()" novalidate>
 					<div class="form-group">
 						<div class="col-md-2">
 							<label>Institute Name</label>
@@ -311,12 +197,20 @@
 						<div class="col-md-2">
 							<label>Stream</label>
 						</div>
-						<div class="col-md-5">
+						<div class="col-md-5">																				<!--item.type for item in occupationType-->
+						<select multiple name="stream" class="form-control" ng-model="model.stream"  ng-options="stream for stream in streams | orderBy: 'name'" ng-required="true">
+						</select>
+						<div class="alert alert-danger" ng-show="(formInsti.stream.$touched || formInsti.$submitted) && formInsti.stream.$error.required">
+							Select at least one Stream required
+						</div>
+					</div>
+
+						<!--<div class="col-md-5">
 							<select type="text" name="stream" ng-model="model.stream" ng-options="item for item in stream" required></select>
 							<div class="alert alert-danger" ng-show="(formInsti.stream.$touched || formInsti.$submitted) && formInsti.stream.$error.required">
 								Stream is required
 							</div>
-						</div>
+						</div>-->
 					</div> <!--form-group-->
 					<div class="form-group">
 						<div class="col-md-2">
@@ -387,7 +281,7 @@
 
 					<div class="form-group">
 						<div class="col-md-offset-2 col-md-5">
-							<input type="submit" value="Create Institute" class="btn btn-primary" ng-click="create(model)" ng-disabled="formInsti.$invalid" />
+							<input type="submit" ng-disabled="isDisabled" value="Create Institute" class="btn btn-primary" ng-click="create(model)" ng-disabled="formInsti.$invalid" />
 						</div>
 					</div>
 				</form>
@@ -1063,32 +957,28 @@
         </table>
     </div>
     </div>
-    <div id="survey" class="tabcontent" ng-controller="ctrladminSurvey" ng-init="Init()"> 
-        <div><h3>Survey Responses : {{users.length}}  </h3>
-		<input type="button" value="Refresh" ng-click="Init()"/>
+    <div id="survey" class="tabcontent" ng-controller="ctrlAdminSurvey" ng-init="Init()"> 
+		<div ng-if="bOnline == true"><h3>Survey Responses <img width="20px" height="15px"  alt="Online" src="./res/greenDot.jpg"> : {{users.length}}  </h3></div>
+		<div ng-if="bOnline == false"><h3>Survey Responses <img width="20px" height="15px"  alt="Offline" src="./res/redDot.jpg"> : {{users.length}}  </h3></div>
+		<div class="col-md-3">
+			Search : <input type="text" ng-model="query" placeholder="enter name" value="query">
 		</div>
-			<div class="col-md-5">																				
-				
-				<!--<select multiple name="profiles" class="form-control" ng-model="profilesList"  ng-options="profile.name for profile in profilesList | orderBy: 'name'" ng-required="true"> </select> -->
-
-			<!--	<div class="alert alert-danger" ng-show="(form.profiles.$touched || form.$submitted) && form.profiles.$error.required">
-					Select at least one Profile required
-					</div>
-			-->
-			</div>
-
+		<div>
+			<input type="button" value="Refresh" ng-click="Init()"/>
+		</div>
         <table>
             <th>Name</th><th>Mobile</th><th> Age </th> <th> Attention</th> <th>Working Memory </th><th>Impulsivity</th>
-            <th>Mental Flexibility</th>
-            <tr ng-repeat="user in users track by $index" >
-                <td>{{user.fname}} {{user.lname}} </td>
+            <th>Mental Flexibility</th><th>Institute</th><th ng-if="bOnline==true"><label ng-dblclick="SavetoLocal()">Sync</label></br></th>
+            <tr ng-repeat="user in users | filter:query ">
+                <td><label ng-dblclick="LoadUser(user.mobile)"> {{user.fname}} {{user.lname}}</label> </td>
                 <td>{{user.mobile}}</td>
                 <td>{{user.ageGroup}}</td>
                 <td>{{user.Attention}}</td>
                 <td>{{user.WorkingMemory}}</td>
                 <td>{{user.Impulsivity}}</td>
                 <td>{{user.MentalFlexibility}}</td>
-                <!--<td>{{user.Total}}</td>-->
+                <td>{{user.institute}}</td>
+                <td ng-if="bOnline==true"><input type="checkbox" ng-model="syncRecords[user.mobile]" ng-change="selectUser(user.mobile)"></td>	
             </tr>
         </table>
         <!--<pre> {{users | json}} </pre>-->
