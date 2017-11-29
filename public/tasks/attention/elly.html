@@ -4,7 +4,7 @@
 </head>
 
 
-<div ng-keyup="KeyDownF($event.keyCode)" ng-controller="ctrlElly" ng-init="Init()">
+<div ng-keyup="KeyDownF($event.keyCode)" ng-controller="ctrlElly"  ng-init="Init()" ">
 	<div class="floatSmall" ng-click="taskExit()"> 
 		<div ng-if="domain == 'Attention'">
 			<a  class="white" href="./#!attention"> 
@@ -24,12 +24,12 @@
 			<a  class="white" href="./#!mentalflexibility"> 
 					<div class="floatSmall techblue" >
 						< Tasks
-					</div>
+					</div>	
 				</a>
 		</div>
 		
 	</div>
-   <table style="margin:1%" border="1" >
+   <table style="margin:1%" border="1" ng-blur="onBlur($event)">
 			<th><h3>{{taskName}}</h3> <p>Instructions : {{taskInstructions}}</p>
 			<!--<p> Press Left or Right buttons when you are ready</p> -->
 			</th>
