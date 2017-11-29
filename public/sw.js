@@ -1,5 +1,36 @@
 var version = 'NeuroAppHTMLCache_v1.0.0.2';
+var fileList1 = [];
+var fileList = [
+			'/',
+			'/index.html',
+			'/favicon.ico',
+			'https://192.168.43.71:8443/partials/about.html', 
+			'/partials/admin.html',
+			'/partials/assesment.html',
+			'/partials/home.html',
 
+			'https://192.168.43.71:8443/partials/workingmemory.html',
+
+			'/partials/assessmentReport.html',
+			'/partials/attention.html',
+			'/partials/contact.html',
+			'/partials/impulsivity.html',
+			'/partials/mentalflexibility.html',
+			'/tasks/attention/smiley.html',
+			'/tasks/attention/squares.html',
+			'/tasks/attention/squaresblack.html',
+			'/js/ng.js',
+			'/js/CountSquares-ng.js',
+			'/js/SquaresBlack.js',
+			'/css/hexagon.css',
+			'/css/neuro.css',
+			'/res/greenRect.jpg',
+			'/res/orangeRect.jpg',
+			'/res/purpleRect.jpg',
+			'/res/blueRect.jpg',
+			'/res/white_rect.jpg'
+		
+		];
 //Ref site https://css-tricks.com/serviceworker-for-offline/
 /*
 1) 	The install event fires when a ServiceWorker is first fetched. This is your chance to 
@@ -12,68 +43,20 @@ var version = 'NeuroAppHTMLCache_v1.0.0.2';
 3)  The activate event fires after a successful installation. You can use it to phase out older 
 	versions of the worker. We'll look at a basic example where we deleted stale cache entries.
 */
-self.addEventListener("install", function (event) {
-    console.log('Service Worker : install event in progress.');
-    event.waitUntil(
-      /* The caches built-in is a promise-based API that helps you cache responses,
-         as well as finding and deleting them.
-      */
-      caches
-        /* You can open a cache by name, and this method returns a promise. We use
-           a versioned cache name here so that we can remove old cache entries in
-           one fell swoop later, when phasing out an older service worker.
-        */
-        .open(version)
-        .then(function (cache) {
-            /* After the cache is opened, we can fill it with the offline fundamentals.
-               The method below will add all resources we've indicated to the cache,
-               after making HTTP requests for each of them.
-                //loca files
-                '/myapp/index.html',
-              '/myapp/res/rect.jpg',
-              '/myapp/js/sw.js',
-              '/myapp/js/CountSquares.js',
-				'../js/ng.js',
 
-            */
-            return cache.addAll([
-                './index.html',
-				'./favicon.ico',
-                './partials/about.html',
-                './partials/admin.html',
-                './partials/assesment.html',
-				'./partials/assessmentReport.html',
-				'./partials/attention.html',
-				'./partials/contact.html',
-				'./partials/home.html',
-				'./partials/impulsivity.html',
-				'./partials/mentalflexibility.html',
-				'./partials/workingmemory.html',
-				'./tasks/attention/smiley.html',
-				'./tasks/attention/squares.html',
-				'./tasks/attention/squaresblack.html',
-				'./js/ng.js',
-				'./css/hexagon.css',
-				'./css/neuro.css',
-				'./res/greenRect.jpg',
-				'./res/orangeRect.jpg',
-				'./res/purpleRect.jpg',
-				'./res/blueRect.jpg',
-				'./res/white_rect.jpg',
-				'./tasks/attention/squares.html',
-                'https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css',
-                'https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js',
-                'https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js',
-                'https://ajax.googleapis.com/ajax/libs/angularjs/1.6.4/angular.js',
-                'https://ajax.googleapis.com/ajax/libs/angularjs/1.6.4/angular-route.js',
-			
-            ]);
-        })
-      .then(function () {
-          console.log('Service Worker: install completed');
-      })
-  );
+this.addEventListener('install', function(event) {
+	console.log('Service Worker : install event in progress.');
+	event.waitUntil(
+		caches.open(version).then(function(cache) {
+		  return cache.addAll(fileList).then (function(){
+			  console.log('Service Worker : files cached');
+		  });
+		})
+	  );
+    console.log('Service Worker : install event in completed.');
+
 });
+
 
 
 self.addEventListener("activate", function (event) {
@@ -112,11 +95,12 @@ self.addEventListener("activate", function (event) {
 
 
 self.addEventListener("fetch", function (event) {
-    console.log('Service Worker: fetch event in progress.');
+	console.log('Service Worker: fetch event in progress.');
 
-    /* We should only cache GET requests, and deal with the rest of method in the
+	/* We should only cache GET requests, and deal with the rest of method in the
        client-side, by handling failed POST,PUT,PATCH,etc. requests.
     */
+
     if (event.request.method !== 'GET') {
         /* If we don't block the event as shown below, then the request will go to
            the network as usual.
@@ -167,7 +151,7 @@ self.addEventListener("fetch", function (event) {
                   // We open a cache to store the response for this request.
                   //.open(version + 'pages')
                     .open(version)
-                  .then(function add(cache) {
+					.then(function add(cache) {
                       /* We store the response for this request. It'll later become
                          available to caches.match(event.request) calls, when looking
                          for cached responses.
