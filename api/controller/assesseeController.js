@@ -67,6 +67,7 @@ exports.create_a_assessee = function (req, res) {
     });
 };
 
+//db.collection.insertMany() to be used..
 exports.bulkInsert = function (req, res) {
 	var op = req.params.operation;
 	var arryBulk = req.body;
@@ -94,8 +95,8 @@ exports.bulkInsert = function (req, res) {
 			console.log(arryBulk.length + ": records received for bulk Update on Assessees document ");
 			
 			for (var i=0;i< arryBulk.length; ++i) {
-				console.log("Processing updated data for user with mobile : " + Number(arryBulk[i].mobile));
-				/*for (var j=0;j<arryBulk[i].tasks.length;++j) {
+				//console.log("Processing updated data for user '" + String(arryBulk[i].fname) + " "+ String(arryBulk[i].lname) +"' with mobile : " + Number(arryBulk[i].mobile));
+				/*for (var j=0;j<arryBulk[i].tasks.length;++j) { 
 					
 					for(var k=0;k<arryBulk[i].tasks[j].scores.length;++k){
 						console.log("Tasks upates : " + arryBulk[i].tasks[j].name);
@@ -106,11 +107,11 @@ exports.bulkInsert = function (req, res) {
 					
 				Assessee.findOneAndUpdate({mobile: Number(arryBulk[i].mobile) }, arryBulk[i], {upsert: true , returnNewDocument: true }, function (err, profile) {
 					if (err) {
-						//console.log("Error in updating the user with mobile : " + Number(arryBulk[i].mobile) + "error: " + err);
+						console.log("Error in updating the user with mobile : " + Number(arryBulk[i].mobile) + "error: " + err);
 						//res.send(err);
 						replyBulk.updateStatus = -1;
 					}else {
-					console.log("Successfully updated the data" ); //+ profile);
+					//console.log("Successfully updated the data " + profile.fname + " " + profile.lname + " with mobile " + profile.mobile);
 					//res.json(profile);
 					}
 				});
