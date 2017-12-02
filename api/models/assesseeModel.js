@@ -40,12 +40,12 @@ var AssesseeSchema = new Schema({
 		dropDups: true // drop duplicates!
     
 	},
-	email: {
+	/*email: {
         type: String
     //  required: true,//'Kindly enter the email of the  User',
 	//	unique: true,
 	//	dropDups: true // drop duplicates!
-    },
+    },*/
     ageGroup: {
         type: String,
         required: 'Kindly enter the ageGroup for this new user'
@@ -57,43 +57,50 @@ var AssesseeSchema = new Schema({
     },
 
     stream: {
-    type: String,
-    //required: 'Kindly enter the stream of the occupation' //not applicable for Retired
+		type: String,
+		//required: 'Kindly enter the stream of the occupation' //not applicable for Retired
     },
 
     cityType: {
-    type: String,
-    required: 'Kindly enter the City Type'
+		type: String,
+		required: 'Kindly enter the City Type'
     },
 
     institute: {
-    type: String,
-    required: 'Kindly enter the institute Type'
+		type: String,
+		required: 'Kindly enter the institute Type'
     },
 
     city: {
-    type: String,
-    required: 'Kindly enter the city Type'
+		type: String,
+		required: 'Kindly enter the city Type'
     },
 
     state: {
-    type: String,
-    required: 'Kindly enter the state Type'
+		type: String,
+		required: 'Kindly enter the state Type'
     },
 	
 	country: {
-    type: String,
-    required: 'Kindly enter the country Type'
+		type: String,
+		required: 'Kindly enter the country Type'
     },
-	
+
+	status: {
+		type: String,
+		required: 'Kindly enter the status field'
+	},
 	profileMedian : {"name":"","Id" : "","Attention":"","WorkingMemory":"","Impulsivity":"","MentalFlexibility":""},
 		
 	tasks: [], // list of task assigned
 	
-	progress:[] //see the example above
+	progress:[], //see the example above
+	
+	notes : [] // to include any other info about the assessee
+	
 
 }); {timestamps: true} 
 
-AssesseeSchema.index({mobile: 1},{name: 'profileIndex'});
+AssesseeSchema.index({mobile: 1},{name: 'assesseeIndex'});
 
 module.exports = mongoose.model('Assessee', AssesseeSchema);
