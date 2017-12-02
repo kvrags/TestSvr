@@ -130,6 +130,7 @@ rootApp.value("currentUser", "tempUser");
 
 rootApp.run(function ($rootScope) {
     $rootScope.currentUser = 'Test User';
+	
 });
 
 
@@ -238,6 +239,14 @@ rootApp.factory('dataFactory',  function($http, $rootScope) {
 	
 		
 	return {
+		ping: function() { //in the service worker, prevent this resource from getting cached by faking a new query everytime
+			return $http.get(base_url + "ping.ico?v=" + new Date().getTime()).then(function(success) {
+					return success;
+				}, function(error){
+					return error;
+				});
+		},			
+		
 		getAllProfiles: function() {
 			return $http.get(base_url + "profiles").then(function(success) {
 					profiles = success.data;
@@ -367,8 +376,10 @@ rootApp.factory('dataFactory',  function($http, $rootScope) {
 					//this will prevent over writing of records in localstorage!!
 					//error.data.code = "9999999"; // write custom code to indicate offline
 					error.data =  newAssessee;
-					var d = new Date();
-					error.data._id = d.getTime();
+					//var d = new Date();
+					//error.data._id = d.getTime();
+					writeLocalStorageJson("currentUser",newAssessee);
+
 					error.status = 200;
 					return error;
 				});
@@ -408,7 +419,11 @@ rootApp.factory('dataFactory',  function($http, $rootScope) {
 			return $http({method: 'PATCH', url: base_url + "assessee/" + strOp , data}).then(function (success) {
 					return(success);
 				}, function (error) {
-					return (error.status);
+					
+					//in case of error save the data back to localStorage
+					//writeLocalStorageJson(strOp + mobile,data,false);
+		
+					return (error);
 				});
 		},
 		
@@ -475,19 +490,31 @@ function appendToLocalStorage(key,newData){
 rootApp.controller('ctrlSync', function ($scope,$http,$rootScope,dataFactory) {
 	$scope.bOnline = true;
 	var isOnline = false;
-	
+	$scope.users =[];
+		
 	$scope.message = "This page helps you to load required data for offline working. Also, after offline/field work one must connect to server for automatic upload.";
 	
 	$scope.Init = function() {
-		$scope.localDataNew = readLocalStorageJson("newAssessee");
-		$scope.localDataUpdate = readLocalStorageJson("updateAssessee");
+		//$scope.localDataNew = readLocalStorageJson("newAssessee");
+		//$scope.localDataUpdate = readLocalStorageJson("updateAssessee");
 		
-		$scope.Sync();
+		//FetchUsersData("new");
+		//FetchUsersData("update");
+		
+		//$scope.Sync();
 		
 	};
 	
-	//check internet connection
+	function FetchUsersData(status){
+		$scope.localData = readLocalStorageJson(status);
+		
+		if ($scope.localData.length) {
+			$scope.users.push($scope.localData[i]);
+		}
+	}
 	
+	/*//check internet connection 
+	//this below logic is not reliable as browser fires event erratically...
 	$rootScope.$on('onlineChanged', function(event, isOnline) {
 		if (isOnline) {
 				$scope.bOnline = true;
@@ -498,10 +525,28 @@ rootApp.controller('ctrlSync', function ($scope,$http,$rootScope,dataFactory) {
 			$scope.bOnline = false;
 		}
 	});
+	*/
+	//works and tested in Firefox browser v58.0a1
+	//if connected to internet AND successfully ping neurogym server then we are truly online
+	//make a datafactory ping to see we are truly online
+	
+	/*dataFactory.ping().then(function (res){
+		if (res.status == 200){
+			$scope.bOnline = true;
+	
+			//now that we are connected to our server && we have localdata then upload them
+			$scope.UploadLocalDB();
+		}else {
+			$scope.bOnline = false;
+		}
+		
+	}, function(error){
+	});*/
+
 
 	//manually called to copy profiles and questions onto localStorage of the device
 	$scope.Sync = function(){
-	
+	/*
 		dataFactory.getAllProfiles().then(function (res){
 				$scope.profilesList = res;
 			}, function(res){
@@ -533,6 +578,20 @@ rootApp.controller('ctrlSync', function ($scope,$http,$rootScope,dataFactory) {
 				$scope.message = "Error syncing institutes. check internet/wi-fi connection and rety later.";
 			});
 
+		dataFactory.ping().then(function (res){
+			if (res.status == 200){
+				$scope.bOnline = true;
+		
+				//now that we are connected to our server && we have localdata then upload them
+				$scope.UploadLocalDB();
+			}else {
+				$scope.bOnline = false;
+			}
+			
+		}, function(error){
+		});
+
+	*/
 	}
 	
 	//give the user an option to manually perform upload from localStorage if not done automatically with bOnline flag as above
@@ -541,193 +600,223 @@ rootApp.controller('ctrlSync', function ($scope,$http,$rootScope,dataFactory) {
 		$scope.lsUpdateRecords = readLocalStorageJson("updateAssessee");
 		$scope.localDataDuplicates = readLocalStorageJson("duplicateAssessee");
 				
-		MergeLocalStorageData();
+		//MergeLocalStorageData();
 		
 		bulkOperation("new");
 		bulkOperation("update");
 			
-		}
+	}
 		
-		function MergeLocalStorageData(){
-			// condition
-			//new user created -- gets stored under newAssessee
-			//after running thru tasks, -- gets stored under updateAssessee
-			//when bulkOperation, first newAssessee records get new TEMP id
-			//while coming to updation, the updateAssessee record for the newAssessee will not match
+	/*// this functionality is no longer required 02-12-2017
+	function MergeLocalStorageData(){
+		// condition
+		//new user created -- gets stored under newAssessee
+		//after running thru tasks, -- gets stored under updateAssessee
+		//when bulkOperation, first newAssessee records get new TEMP id
+		//while coming to updation, the updateAssessee record for the newAssessee will not match
+	
+		//length of the temp Id created is 13 and that of Mongo DB is lengthier
+		//if newAssessee and updateAssessee records have _id length of 13 and are same then merge 
+		//both the records into a single newAssessee record
+		//
+	
 		
-			//length of the temp Id created is 13 and that of Mongo DB is lengthier
-			//if newAssessee and updateAssessee records have _id length of 13 and are same then merge 
-			//both the records into a single newAssessee record
-			//
-		
+		if ($scope.lsUpdateRecords.length > 0) {
 			
-			if ($scope.lsUpdateRecords.length > 0) {
+			for (var i=0;i<$scope.lsUpdateRecords.length;++i) {
+				var updateID = $scope.lsUpdateRecords[i]._id.toString();
 				
-				for (var i=0;i<$scope.lsUpdateRecords.length;++i) {
-					var updateID = $scope.lsUpdateRecords[i]._id.toString();
-					
-					if (updateID.length < 14 ){
-						if($scope.lsNewRecords.length > 0) {
-							for(var j=0;j<$scope.lsNewRecords.length ;++j) {
-								if(($scope.lsNewRecords[j]._id == $scope.lsUpdateRecords[i]._id)){
-									//now our is record found
-									//update cache data for newAssessee then
-									//delete cache data for updateAssessee
-									$scope.lsNewRecords[j] = $scope.lsUpdateRecords[i];
-									//lsUpdateRecords[i].delete();
-									//alert("Deleting UpdateAssessee : " + $scope.lsUpdateRecords[i]._id);
-									writeLocalStorageJson("newAssessee" + $scope.lsNewRecords[j].mobile,$scope.lsNewRecords[j]); 
-									localStorage.removeItem("updateAssessee" + $scope.lsUpdateRecords[i].mobile);
-								}
+				if (updateID.length < 14 ){
+					if($scope.lsNewRecords.length > 0) {
+						for(var j=0;j<$scope.lsNewRecords.length ;++j) {
+							if(($scope.lsNewRecords[j]._id == $scope.lsUpdateRecords[i]._id)){
+								//now our is record found
+								//update cache data for newAssessee then
+								//delete cache data for updateAssessee
+								$scope.lsNewRecords[j] = $scope.lsUpdateRecords[i];
+								//lsUpdateRecords[i].delete();
+								//alert("Deleting UpdateAssessee : " + $scope.lsUpdateRecords[i]._id);
+								writeLocalStorageJson("newAssessee" + $scope.lsNewRecords[j].mobile,$scope.lsNewRecords[j]); 
+								localStorage.removeItem("updateAssessee" + $scope.lsUpdateRecords[i].mobile);
 							}
 						}
-						//$scope.lsUpdateRecords = readLocalStorageJson("updateAssessee");
 					}
+					//$scope.lsUpdateRecords = readLocalStorageJson("updateAssessee");
 				}
 			}
 		}
-		
-		function bulkOperation(opStr) {
-			//if there are pending items in the localstorage then upload them onto server/DB
-			$scope.localData = readLocalStorageJson(opStr);
+	}
+	*/
 	
-			if ($scope.localData.length) {
-				
-				if (opStr == "new") 
-					//get rid of the temp '_id' field so that DB server will create a new one
-					$scope.localData.forEach(function(item){ delete item._id});
+	function bulkOperation(opStr) {
+		//if there are pending items in the localstorage then upload them onto server/DB
+		$scope.localData = readLocalStorageJson(opStr);
+
+		if ($scope.localData.length) {
 			
+			//if (opStr == "new") 
+				
+				//get rid of the temp '_id' field so that DB server will create a new one
+				//$scope.localData.forEach(function(item){ delete item._id});
+				
+				//assume the data will be successfully saved hence set status to saved. if error reset to intervened.
+				$scope.localData.forEach(function(item){ item.status="Saved"});					
+		
 				dataFactory.bulkInsertAssessees($scope.localData, opStr ).then(function(res) {
-					//$scope.message =  res.data.insertedCount + " records uploaded successfully." ;
+				//$scope.message =  res.data.insertedCount + " records uploaded successfully." ;
+				
+				//check the status of the 'res' to know if we were successful
+				//if status = 200 then we could successfully connect to server/db 
+				//if status !=200 preserve the localdata newAssessee data for next attempt
+				
+				
+				//if there are duplicates the we get res.data.code=11000
+				/*if (res.data.code == 11000){
+					writeLocalStorageJson("duplicateAssessee", res.data.op);
+				}else if (res.status == 200){
+					//clearLocalStorageJson(opStr);
 					
-					//check the status of the 'res' to know if we were successful
-					//if status = 200 then we could successfully connect to server/db 
-					//if status !=200 preserve the localdata newAssessee data for next attempt
-					
-					//if there are duplicates the we get res.data.code=11000
-					if (res.data.code == 11000){
-						writeLocalStorageJson("duplicateAssessee", res.data.op);
-					}else if (res.status == 200){
-						clearLocalStorageJson(opStr);
-					}
-					
+					$scope.localData.forEach(function(item){ item.status="Saved"});					
 					//update the data members for UI
 					$scope.localDataNew = readLocalStorageJson("newAssessee");
 					$scope.localDataUpdate = readLocalStorageJson("updateAssessee");
 					$scope.localDataDuplicates = readLocalStorageJson("duplicateAssessee");
 					
-				}, function(res){
-						$scope.message =  "Upload of records failed: error:" +  res.error;
-				});
-			}else {
-				$scope.message =  "No pending records to update!";
-			}
-			
-		}
-		
-		$scope.CreateDummyRecords = function(){
-			var tmpData=[
-				{	
-					"name":"Jay12 Mason",
-					"email":"jaymistry@yahoo.com",
-					"ageGroup":"6to16",
-					"occupation":"Student",
-					"stream":"CBSE",
-					"cityType":"rural",
-					"profileMedian":{
-							"name":"Student_CBSE_Rural","Id" : "434f4wfsdfsd45245fsf45","Attention":"22","WorkingMemory":"10","Implusivity":"10","MentalFlexibility":"19"
-						},
-					"progress":[
-									{"Attention":22,"WorkingMemory":10,"Implusivity":10,"MentalFlexibility":19, "asessmentDate":"27Oct2017" }, //GAP 0 or first test 
-									{Attention:15,WorkingMemory:8,Implusivity:9,MentalFlexibility:12, } //reduction		
-								],
-					"tasks":[
-								{"name":"Task1forAttention", "plannedStartDate":"17July2016", "plannedCompletionDate":"27Oct2016", "actualStartDate":"","actualCompletionDate":""}
-							]
-				},
-				{	
-					"name":"Jay12 Mike",
-					"email":"jay11mistry@yahoo.com",
-					"ageGroup":"6to16",
-					"occupation":"Student",
-					"stream":"CBSE",
-					"cityType":"rural",
-					"profileMedian":{
-							"name":"Student_CBSE_Rural","Id" : "434f4wfsdfsd45245fsf45","Attention":"22","WorkingMemory":"10","Implusivity":"10","MentalFlexibility":"19"
-						},
-					"progress":[
-									{"Attention":22,"WorkingMemory":10,"Implusivity":10,"MentalFlexibility":19, "asessmentDate":"27Oct2017" }, //GAP 0 or first test 
-									{Attention:15,WorkingMemory:8,Implusivity:9,MentalFlexibility:12, } //reduction		
-								],
-					"tasks":[
-								{"name":"Task1forAttention", "plannedStartDate":"17July2016", "plannedCompletionDate":"27Oct2016", "actualStartDate":"","actualCompletionDate":""}
-							]
-				},
-				{	
-					"name":"Killi23 Manju",
-					"email":"killmanju@yahoo.com",
-					"ageGroup":"6to16",
-					"occupation":"Student",
-					"stream":"CBSE",
-					"cityType":"rural",
-					"profileMedian":{
-							"name":"Student_CBSE_Rural","Id" : "434f4wfsdfsd45245fsf45","Attention":"22","WorkingMemory":"10","Implusivity":"10","MentalFlexibility":"19"
-						},
-					"progress":[
-									{"Attention":22,"WorkingMemory":10,"Implusivity":10,"MentalFlexibility":19, "asessmentDate":"27Oct2017" }, //GAP 0 or first test 
-									{Attention:15,WorkingMemory:8,Implusivity:9,MentalFlexibility:12, } //reduction		
-								],
-					"tasks":[
-								{"name":"Task1forAttention", "plannedStartDate":"17July2016", "plannedCompletionDate":"27Oct2016", "actualStartDate":"","actualCompletionDate":""}
-							]
-				},
-
-				{	
-					"name":"Laul23 Paul",
-					"email":"laulpaul@yahoo.com",
-					"ageGroup":"6to16",
-					"occupation":"Student",
-					"stream":"CBSE",
-					"cityType":"rural",
-					"profileMedian":{
-							"name":"Student_CBSE_Rural","Id" : "434f4wfsdfsd45245fsf45","Attention":"22","WorkingMemory":"10","Implusivity":"10","MentalFlexibility":"19"
-						},
-					"progress":[
-									{"Attention":22,"WorkingMemory":10,"Implusivity":10,"MentalFlexibility":19, "asessmentDate":"27Oct2017" }, //GAP 0 or first test 
-									{Attention:15,WorkingMemory:8,Implusivity:9,MentalFlexibility:12, } //reduction		
-								],
-					"tasks":[
-								{"name":"Task1forAttention", "plannedStartDate":"17July2016", "plannedCompletionDate":"27Oct2016", "actualStartDate":"","actualCompletionDate":""}
-							]
-				},
-				{	
-					"name":"Srinidi23 RaoMason",
-					"email":"srao@yahoo.com",
-					"ageGroup":"6to16",
-					"occupation":"Student",
-					"stream":"CBSE",
-					"cityType":"rural",
-					"profileMedian":{
-							"name":"Student_CBSE_Rural","Id" : "434f4wfsdfsd45245fsf45","Attention":"22","WorkingMemory":"10","Implusivity":"10","MentalFlexibility":"19"
-						},
-					"progress":[
-									{"Attention":22,"WorkingMemory":10,"Implusivity":10,"MentalFlexibility":19, "asessmentDate":"27Oct2017" }, //GAP 0 or first test 
-									{Attention:15,WorkingMemory:8,Implusivity:9,MentalFlexibility:12, } //reduction		
-								],
-					"tasks":[
-								{"name":"Task1forAttention", "plannedStartDate":"17July2016", "plannedCompletionDate":"27Oct2016", "actualStartDate":"","actualCompletionDate":""}
-							]
+					
+					
+				}*/
+				//if we are successfully connected to our server and data update ok
+				if (res.status == 200){
+					//clearLocalStorageJson(opStr);
+					//update the data members for UI
+						
+					$scope.localDataNew = readLocalStorageJson("newAssessee");
+					$scope.localDataUpdate = readLocalStorageJson("updateAssessee");
+					$scope.localDataDuplicates = readLocalStorageJson("duplicateAssessee");
+				
 				}
 				
-			];
+				//if we are offline or not able to connect to our server
+				if (res.status == -1){
+					$scope.localData.forEach(function(item){ item.status="Intervened"});					
+				}
 				
-			for(var i=0;i<tmpData.length;++i){
-				writeLocalStorageJson("newAssessee", tmpData[i],true);
+				if (res.data !=null )
+						if (res.data.code == 11000)
+							writeLocalStorageJson("duplicateAssessee", res.data.op);
+				
+			}, function(res){
+					$scope.message =  "Upload of records failed: error:" +  res.error;
+			});
+		}else {
+			$scope.message =  "No pending records to update!";
+		}
+		
+	}
+		
+	$scope.CreateDummyRecords = function(){
+		var tmpData=[
+			{	
+				"name":"Jay12 Mason",
+				"mobile":"21",
+				"ageGroup":"6to16",
+				"occupation":"Student",
+				"stream":"CBSE",
+				"cityType":"rural",
+				"profileMedian":{
+						"name":"Student_CBSE_Rural","Id" : "434f4wfsdfsd45245fsf45","Attention":"22","WorkingMemory":"10","Implusivity":"10","MentalFlexibility":"19"
+					},
+				"progress":[
+								{"Attention":22,"WorkingMemory":10,"Implusivity":10,"MentalFlexibility":19, "asessmentDate":"27Oct2017" }, //GAP 0 or first test 
+								{Attention:15,WorkingMemory:8,Implusivity:9,MentalFlexibility:12, } //reduction		
+							],
+				"tasks":[
+							{"name":"Task1forAttention", "plannedStartDate":"17July2016", "plannedCompletionDate":"27Oct2016", "actualStartDate":"","actualCompletionDate":""}
+						]
+			},
+			{	
+				"name":"Jay12 Mike",
+				"email":"jay11mistry@yahoo.com",
+				"ageGroup":"6to16",
+				"occupation":"Student",
+				"stream":"CBSE",
+				"cityType":"rural",
+				"profileMedian":{
+						"name":"Student_CBSE_Rural","Id" : "434f4wfsdfsd45245fsf45","Attention":"22","WorkingMemory":"10","Implusivity":"10","MentalFlexibility":"19"
+					},
+				"progress":[
+								{"Attention":22,"WorkingMemory":10,"Implusivity":10,"MentalFlexibility":19, "asessmentDate":"27Oct2017" }, //GAP 0 or first test 
+								{Attention:15,WorkingMemory:8,Implusivity:9,MentalFlexibility:12, } //reduction		
+							],
+				"tasks":[
+							{"name":"Task1forAttention", "plannedStartDate":"17July2016", "plannedCompletionDate":"27Oct2016", "actualStartDate":"","actualCompletionDate":""}
+						]
+			},
+			{	
+				"name":"Killi23 Manju",
+				"email":"killmanju@yahoo.com",
+				"ageGroup":"6to16",
+				"occupation":"Student",
+				"stream":"CBSE",
+				"cityType":"rural",
+				"profileMedian":{
+						"name":"Student_CBSE_Rural","Id" : "434f4wfsdfsd45245fsf45","Attention":"22","WorkingMemory":"10","Implusivity":"10","MentalFlexibility":"19"
+					},
+				"progress":[
+								{"Attention":22,"WorkingMemory":10,"Implusivity":10,"MentalFlexibility":19, "asessmentDate":"27Oct2017" }, //GAP 0 or first test 
+								{Attention:15,WorkingMemory:8,Implusivity:9,MentalFlexibility:12, } //reduction		
+							],
+				"tasks":[
+							{"name":"Task1forAttention", "plannedStartDate":"17July2016", "plannedCompletionDate":"27Oct2016", "actualStartDate":"","actualCompletionDate":""}
+						]
+			},
+
+			{	
+				"name":"Laul23 Paul",
+				"email":"laulpaul@yahoo.com",
+				"ageGroup":"6to16",
+				"occupation":"Student",
+				"stream":"CBSE",
+				"cityType":"rural",
+				"profileMedian":{
+						"name":"Student_CBSE_Rural","Id" : "434f4wfsdfsd45245fsf45","Attention":"22","WorkingMemory":"10","Implusivity":"10","MentalFlexibility":"19"
+					},
+				"progress":[
+								{"Attention":22,"WorkingMemory":10,"Implusivity":10,"MentalFlexibility":19, "asessmentDate":"27Oct2017" }, //GAP 0 or first test 
+								{Attention:15,WorkingMemory:8,Implusivity:9,MentalFlexibility:12, } //reduction		
+							],
+				"tasks":[
+							{"name":"Task1forAttention", "plannedStartDate":"17July2016", "plannedCompletionDate":"27Oct2016", "actualStartDate":"","actualCompletionDate":""}
+						]
+			},
+			{	
+				"name":"Srinidi23 RaoMason",
+				"email":"srao@yahoo.com",
+				"ageGroup":"6to16",
+				"occupation":"Student",
+				"stream":"CBSE",
+				"cityType":"rural",
+				"profileMedian":{
+						"name":"Student_CBSE_Rural","Id" : "434f4wfsdfsd45245fsf45","Attention":"22","WorkingMemory":"10","Implusivity":"10","MentalFlexibility":"19"
+					},
+				"progress":[
+								{"Attention":22,"WorkingMemory":10,"Implusivity":10,"MentalFlexibility":19, "asessmentDate":"27Oct2017" }, //GAP 0 or first test 
+								{Attention:15,WorkingMemory:8,Implusivity:9,MentalFlexibility:12, } //reduction		
+							],
+				"tasks":[
+							{"name":"Task1forAttention", "plannedStartDate":"17July2016", "plannedCompletionDate":"27Oct2016", "actualStartDate":"","actualCompletionDate":""}
+						]
 			}
-		
-			$scope.localData = readLocalStorageJson("newAssessee");
-		
-		};
+			
+		];
+			
+		for(var i=0;i<tmpData.length;++i){
+			writeLocalStorageJson("newAssessee", tmpData[i],true);
+		}
+	
+		$scope.localData = readLocalStorageJson("newAssessee");
+	
+	};
 });
 
 function clearLocalStorageJson(key){
@@ -1583,7 +1672,22 @@ rootApp.controller('ctrlAdminSurvey', function ($scope,$rootScope,$window,dataFa
 	//fetch all the profiles to give user the option to look at Assessees for a particular profile
 	//
 	$scope.profilesList=[];
-	
+
+	dataFactory.getAllQuestions().then(function (res){
+			$scope.questions = res;
+		}, function(res){
+			//error
+			//$scope.questions=res;
+			$scope.message = "Error syncing questions. check internet/wi-fi connection and rety later.";
+		});
+	dataFactory.getAllTasks().then(function (res){
+			$scope.tasks = res;
+		}, function(res){
+			//error
+			//$scope.questions=res;
+			$scope.message = "Error syncing tasks. check internet/wi-fi connection and rety later.";
+		});
+
 	//fetch all profiles
 	dataFactory.getAllProfiles().then(function (res){
 		$scope.profilesList = res;
@@ -1622,22 +1726,28 @@ rootApp.controller('ctrlAdminSurvey', function ($scope,$rootScope,$window,dataFa
 				MentalFlexibility:"",				
 				institute:""				
 		};
-		//if ($scope.bOnline == true)
 		
 		//works and tested in Firefox browser v58.0a1
-		if (navigator.onLine) {
-			$scope.bOnline = true;
-			CallDataFactory();
-		} else {
-			$scope.bOnline = false;
-			GoLocal();
-		}
+		//if connected to internet AND successfully ping neurogym server then we are truly online
+		//make a datafactory ping to see we are truly online
 		
-		//CallDataFactory();
-		//GoLocal();
-	
+		dataFactory.ping().then(function (res){
+			if (res.status == 200){
+				$scope.bOnline = true;
+				UploadLocalDB();
+				//CallDataFactory();
+			}else {
+				$scope.bOnline = false;
+				GoLocal("newAssessee");
+				GoLocal("updateAssessee");
+				//$scope.connectMsg =  error;
+			}
+			
+		}, function(error){
+		});
 	}
 	
+		
 	function CallDataFactory() {	
 		//alert("Calling Datafactory");
 		$scope.tmp = "";
@@ -1646,10 +1756,6 @@ rootApp.controller('ctrlAdminSurvey', function ($scope,$rootScope,$window,dataFa
 		dataFactory.getAllAssessee().then(function (res){
 			$scope.tmp =  res;
 	
-			//if ($scope.tmp.length == 0) //probably we areoffline,,,try reading cache
-				//$scope.tmp = readLocalStorageJson("updateAssessee");
-			
-			
 			////build an array with all the details that is required for the UI table display
 			//name,ageGroup,Attention,WorkingMemory,Impulsivity,MentalFlexibility
 			for (var i=0; i < $scope.tmp.length; ++i) {
@@ -1677,12 +1783,9 @@ rootApp.controller('ctrlAdminSurvey', function ($scope,$rootScope,$window,dataFa
 			});
 	}
 	
-	function GoLocal() {
-		//alert("Reading from LocalStorage");
-		//$scope.tmp = "";
-		//$scope.users = [];
 	
-		$scope.tmp = readLocalStorageJson("updateAssessee");
+	function GoLocal(strOp) {
+		$scope.tmp = readLocalStorageJson(strOp);
 			
 		////build an array with all the details that is required for the UI table display
 		//name,ageGroup,Attention,WorkingMemory,Impulsivity,MentalFlexibility
@@ -1708,6 +1811,86 @@ rootApp.controller('ctrlAdminSurvey', function ($scope,$rootScope,$window,dataFa
 		}
 	}
 	
+	//this functionality is called to upload any updated or new data from the LocalStorage
+	//called from Refresh/Init() or when when there is a successful connection to our Server
+	function UploadLocalDB(){
+		//new or update Operation mode is sent to assesController to determine if its a Insert or a Update
+		bulkOperation("new");
+		bulkOperation("update");
+		CallDataFactory();
+			
+	}
+	function bulkOperation(opStr) {
+		//if there are pending items in the localstorage then upload them onto server/DB
+		$scope.localData = readLocalStorageJson(opStr);
+
+		if ($scope.localData.length) {
+			
+			//$scope.localData.forEach(function(item){ item.status="Saved"});					
+
+			dataFactory.bulkInsertAssessees($scope.localData, opStr ).then(function(res) {
+			//$scope.message =  res.data.insertedCount + " records uploaded successfully." ;
+			
+			//check the status of the 'res' to know if we were successful
+			//if status = 200 then we could successfully connect to server/db 
+			//if status !=200 preserve the localdata newAssessee data for next attempt
+			
+			
+			//if there are duplicates the we get res.data.code=11000
+			/*if (res.data.code == 11000){
+				writeLocalStorageJson("duplicateAssessee", res.data.op);
+			}else if (res.status == 200){
+				//clearLocalStorageJson(opStr);
+				
+				//update the data members for UI
+				$scope.localDataNew = readLocalStorageJson("newAssessee");
+				$scope.localDataUpdate = readLocalStorageJson("updateAssessee");
+				$scope.localDataDuplicates = readLocalStorageJson("duplicateAssessee");
+				
+				
+				
+			}*/
+			//if we are successfully connected to our server and data update ok
+			if (res.status == 200){
+					
+				//once we successfully upload the new assessees, rewrite them locally as updateAssessee
+				$scope.localDataNew = readLocalStorageJson("newAssessee");
+				
+				if ($scope.localDataNew.length) {
+					for (i=0; i<$scope.localDataNew.length;++i) {
+						writeLocalStorageJson("updateAssessee" + $scope.localDataNew[i].mobile,$scope.localDataNew[i],false);
+					}
+					
+					clearLocalStorageJson("newAssessee");
+				}
+					
+				//update the data members for UI
+					
+				$scope.localDataNew = readLocalStorageJson("newAssessee");
+				$scope.localDataUpdate = readLocalStorageJson("updateAssessee");
+				$scope.localDataDuplicates = readLocalStorageJson("duplicateAssessee");
+			
+			}
+			
+				//if we are offline or not able to connect to our server
+				if (res.status == -1){
+					$scope.localData.forEach(function(item){ item.status="Intervened"});					
+				}
+				
+				if (res.data !=null )
+						if (res.data.code == 11000)
+							writeLocalStorageJson("duplicateAssessee", res.data.op);
+				
+			}, function(res){
+					$scope.message =  "Upload of records failed: error:" +  res.error;
+			});
+		}else {
+			$scope.message =  "No pending records to update!";
+		}
+		
+	}
+		
+	
 	$scope.LoadUser = function(mobile){
 	//alert("User selected with mobile number : " +  mobile);
 	
@@ -1715,7 +1898,7 @@ rootApp.controller('ctrlAdminSurvey', function ($scope,$rootScope,$window,dataFa
 		if ($scope.users[i].mobile == mobile)
 			$scope.user = $scope.users[i]
 	}
-	
+		$rootScope.currentUser = $scope.user;
 		writeLocalStorageJson("currentUser",$scope.user);
 		writeLocalStorageJson("scores",$scope.progress);
 		alert($scope.user.fname + " " + $scope.user.lname + " details loaded");
@@ -2051,19 +2234,29 @@ rootApp.controller('ctrlAssesment', function ($scope,$window,dataFactory) {
 		
 		if ($scope.userDetails.length == 1) {
 			//there is a user identified
-			$scope.bAssesseDetails = "update";
-			$scope.strOperation = "updateAssessee";
-			
 			$scope.userDetails = $scope.userDetails[0];
-			$scope.fname = $scope.userDetails.fname;
-			$scope.lname = $scope.userDetails.lname;
-			$scope.progress = $scope.userDetails.progress;
-			$scope.progressCount = $scope.progress.length;
+			$scope.bAssesseDetails = "update";
+			
+			//if user ID is null then it is new record created offline otherwise it already exists in DB
+			if ($scope.userDetails._id == null) {
+				//$scope.bAssesseDetails = "new";
+				$scope.strOperation = "newAssessee";
+			} else {
+				$scope.strOperation = "updateAssessee";
+				//$scope.fname = $scope.userDetails.fname;
+				//$scope.lname = $scope.userDetails.lname;
+				//$scope.progress = $scope.userDetails.progress;
+				//$scope.progressCount = $scope.progress.length;
+			}
+				$scope.fname = $scope.userDetails.fname;
+				$scope.lname = $scope.userDetails.lname;
+				$scope.progress = $scope.userDetails.progress;
+				$scope.progressCount = $scope.progress.length;
+		
 		}else{
 			//new 
 			$scope.bAssesseDetails = "new";
 			$scope.strOperation = "newAssessee";
-
 		}
 		
 		//fetch all the institutes 
@@ -2133,23 +2326,25 @@ rootApp.controller('ctrlAssesment', function ($scope,$window,dataFactory) {
     $scope.CreateNewAssessee = function(model) {
 		
 		$scope.user = model;
-		//$scope.institute is set in selectInstitute() local function
 		
-			
 		$scope.user.institute = $scope.institute.name;
 		
 		if ($scope.institute.name == null){
 			alert("Please select institute name");
 			return;
 		}
+		
+		$scope.user.status = "New";
+		//$scope.user._id = null;
 		$scope.user.city = $scope.institute.city;
 		$scope.user.state = $scope.institute.state;
 		$scope.user.country = "India";
 		$scope.user.occupation = model.occupation.type;
 		
+		
 		//build a template place holder for profileMedian data type
         $scope.user.profileMedian = {"name":"","id":"","Attention":"","WorkingMemory":"","Impulsivity":"","MentalFlexibility":""};
-		
+	
 		//stream field seems to disappear during asyn calls hence
 		$scope.stream = "xyz";
 		$scope.stream = $scope.user.stream;
@@ -2181,10 +2376,12 @@ rootApp.controller('ctrlAssesment', function ($scope,$window,dataFactory) {
 			
 		$scope.user.progress = [];
 		$scope.user.tasks = [];
+		$scope.user.notes = [];
 		
 		var allTasks;
 		var allProfiles;
-		var tmp
+		var task ={name: ""};//not used now
+		
 		//get relevant tasks for this profile
 		dataFactory.getAllTasks().then(function (res){
 			allTasks = res;
@@ -2192,11 +2389,12 @@ rootApp.controller('ctrlAssesment', function ($scope,$window,dataFactory) {
 			for (var i=0; i < allTasks.length; ++i) {
 				for( var j=0; j< allTasks[i].profiles.length;++j) {
 					if ( allTasks[i].profiles[j].name == $scope.user.profileMedian.name ){
-						$scope.user.tasks.push(allTasks[i]);
+						$scope.user.tasks.push(allTasks[i]); 
+						//$scope.user.tasks.push(task);
 					}
 				}
 			}
-			
+			//stream field seems to disappear during asyn calls hence
 			//this stream field is losing its value during getAllTasks Async call/
 			//restore it back
 			$scope.user.stream = $scope.stream;
@@ -2298,6 +2496,9 @@ rootApp.controller('ctrlAssesment', function ($scope,$window,dataFactory) {
             $scope.qIndex = $scope.qIndex - 1;
 			$scope.qText = "Thank you for completing the assessment";
             $scope.b_show = false;
+
+			//Keep Next button/flag disable until DB post process is complete
+			$scope.bEnable = false; 
 			
 			var strDate = Date();
 			/*var day = strDate.getDay();
@@ -2314,7 +2515,9 @@ rootApp.controller('ctrlAssesment', function ($scope,$window,dataFactory) {
 						"MentalFlexibility":$scope.mentalFlexibility,
 						"Date":strDate
 				};	
+			
 			$scope.userDetails.progress.push($scope.progress);
+			$scope.userDetails.status = "Assessed";
 			
 			
 			//'newAssessee' is passed on dataFactory param for local Storage indication 
@@ -2322,6 +2525,12 @@ rootApp.controller('ctrlAssesment', function ($scope,$window,dataFactory) {
 			//also when passed as 'updateAssessee' a bulkUpdate is to be called rather 
 			//than bulkInsertAssessees
 			//"newAssessee";
+			
+			if ($scope.userDetails._id == null)
+				$scope.strOperation = "newAssessee";
+			else
+				$scope.strOperation = "updateAssessee";
+				
 			dataFactory.updateAssessee($scope.userDetails.mobile, $scope.userDetails, $scope.strOperation).then(function (res) {
 				$scope.message = "Your assessement details successfully posted to server  " ;//+ res.data;
 				//writeLocalStorageJson("currentUser",res);
@@ -2475,18 +2684,20 @@ rootApp.controller('ctrlRetrieveUser', function ($scope) {
 });
 
 //task Controller
-rootApp.controller('ctrlSmiley', function ($scope,$routeParams,$interval,dataFactory) {
+rootApp.controller('ctrlSmiley', function ($scope,$routeParams,$interval,$rootScope,dataFactory) {
 	//var d = Date();
 	var startTime; //= Date.getTime();
-	var attempt = {
+	var attempt1 = {
 					date: "",
 					duration:"",	
 					hits:"",
 					misses:""
 	};
+	$scope.audio;
 	
-    $scope.hits = 0;
-    $scope.misses = 0;
+    $rootScope.hits = 0;
+    $rootScope.misses = 0;
+	$rootScope.taskName = $routeParams.taskname;
 
 	$scope.Init =  function () {
 		$scope.userDetails = {};
@@ -2558,6 +2769,14 @@ rootApp.controller('ctrlSmiley', function ($scope,$routeParams,$interval,dataFac
 		$scope.KeyDownF(39);
 	}
 	
+	$scope.playAudio = function(flag) {
+		if (flag){//right
+			$scope.audio = new Audio('/res/audio/right.mp3');
+		}else {
+			$scope.audio  = new Audio('/res/audio/wrong.mp3');
+		}
+		$scope.audio.play();
+    };
 	
     $scope.KeyDownF = function (keyCode) {
 		startTime = Date();
@@ -2566,17 +2785,18 @@ rootApp.controller('ctrlSmiley', function ($scope,$routeParams,$interval,dataFac
             //$scope.message = "right arrow";
             
             if (($scope.imageName == "smiley.jpg") && ($scope.h_align == "right")) {
-                $scope.hits = $scope.hits + 1;
+				$scope.playAudio(true);	
+                $rootScope.hits = $rootScope.hits + 1;
             } else {
 				if (($scope.imageName == "heart.jpg") && ($scope.h_align == "left")) {
-					$scope.hits = $scope.hits + 1;
+					$scope.playAudio(true);	
+					$rootScope.hits = $rootScope.hits + 1;
 				} else {
-					$scope.misses = $scope.misses + 1;
+					$scope.playAudio(false);	
+					$rootScope.misses = $rootScope.misses + 1;
 				}            
 			}
 
-
-            
             $scope.display();
         }
       
@@ -2584,12 +2804,15 @@ rootApp.controller('ctrlSmiley', function ($scope,$routeParams,$interval,dataFac
             //$scope.message = "left arrow pressed"
 
             if (($scope.imageName == "smiley.jpg") && ($scope.h_align == "left" )) {
-				$scope.hits = $scope.hits + 1;
+				$scope.playAudio(true);	
+				$rootScope.hits = $rootScope.hits + 1;
 			} else {
 				if (($scope.imageName == "heart.jpg") && ($scope.h_align == "right" )){
-					$scope.hits = $scope.hits + 1;
+					$scope.playAudio(true);	
+					$rootScope.hits = $rootScope.hits + 1;
 				} else {
-					$scope.misses = $scope.misses + 1;
+					$scope.playAudio(false);	
+					$rootScope.misses = $rootScope.misses + 1;
 				}
 			}
 
@@ -2599,6 +2822,16 @@ rootApp.controller('ctrlSmiley', function ($scope,$routeParams,$interval,dataFac
         }
 		
     };
+
+	//this will be called by AngularJS when user moves out of this page. 
+	$scope.$on('$destroy', function(){
+		//scope vars are nullified before coming into this function. hence this place can't be used for saving
+		//hence store this controller var as $rootScope.varName
+		$scope.taskExit();
+    }); 
+	
+	
+	
 	$scope.taskExit = function() {
 		//save the results 
 		var endTime = Date();
@@ -2606,8 +2839,8 @@ rootApp.controller('ctrlSmiley', function ($scope,$routeParams,$interval,dataFac
 		attempt = {
 					date:startTime,
 					duration: (endTime - startTime) /1000, //store elasped time minutes 
-					hits:$scope.hits,
-					misses:$scope.misses
+					hits:$rootScope.hits,
+					misses:$rootScope.misses
 				};
 	
 		//record this score for this task 
@@ -2625,20 +2858,27 @@ rootApp.controller('ctrlSmiley', function ($scope,$routeParams,$interval,dataFac
 		//userEmail = userDetails.email;
 		//tasks = userDetails.tasks;
 	
-	
+		$scope.userDetails.status = "Intervened";
+
 		for (var i=0; i < $scope.userDetails.tasks.length;++i) {
-			if ( $scope.userDetails.tasks[i].name == $routeParams.taskname){
+			if ( $scope.userDetails.tasks[i].name == $rootScope.taskName){
 				$scope.userDetails.tasks[i].scores.push(attempt);
-			break;
+				break;
 			}
 		}			
-		
+
+		if ($scope.userDetails._id == null)
+			$scope.strOperation = "newAssessee";
+		else
+			$scope.strOperation = "updateAssessee";
+	
 		//update the database
-		dataFactory.updateAssessee($scope.userDetails.mobile, $scope.userDetails, "updateAssessee").then(function (success) {
+		dataFactory.updateAssessee($scope.userDetails.mobile, $scope.userDetails, $scope.strOperation).then(function (success) {
 
 			//read the latest task scores into $scope.userDetails so that UI will have updated data
 			$scope.userDetails = readLocalStorageJson("currentUser");
 			$scope.userDetails = $scope.userDetails[0];
+			//$scope.userDetails.status = "Saved";
 
 			}, function(failure){
 			
@@ -2648,7 +2888,7 @@ rootApp.controller('ctrlSmiley', function ($scope,$routeParams,$interval,dataFac
 });
 
 //task Controller
-rootApp.controller('ctrlElly', function ($scope,$routeParams,dataFactory, $interval) {
+rootApp.controller('ctrlElly', function ($scope,$routeParams,dataFactory,$rootScope, $interval) {
 
 	var startTime = Date();
 	var attempt = {
@@ -2669,9 +2909,10 @@ rootApp.controller('ctrlElly', function ($scope,$routeParams,dataFactory, $inter
 		$scope.canvas.height = window.innerHeight/2;//300;
 		
 		$scope.message = "Hello from ctrlElly";
-		$scope.hits = 0;
-		$scope.misses = 0;
-		//$scope.imageName = "ellySquareRed.jpg";
+		
+		$rootScope.hits = 0;
+		$rootScope.misses = 0;
+		$rootScope.taskName = $routeParams.taskname;
 
 		$scope.userDetails = {};
 		$scope.userDetails = readLocalStorageJson("currentUser");
@@ -2802,6 +3043,15 @@ rootApp.controller('ctrlElly', function ($scope,$routeParams,dataFactory, $inter
 		$scope.display();
 	}
 	
+	$scope.playAudio = function(flag) {
+		if (flag){//right
+			$scope.audio = new Audio('/res/audio/right.mp3');
+		}else {
+			$scope.audio  = new Audio('/res/audio/wrong.mp3');
+		}
+		$scope.audio.play();
+    };
+
 	
 	//Level - 1 : 
 	//You will see squares or circles in one of three colours- Red, Blue or Green.
@@ -2822,20 +3072,35 @@ rootApp.controller('ctrlElly', function ($scope,$routeParams,dataFactory, $inter
 	//Size does not matter
 	
 	function TrackResult(key){
+	
+		$rootScope.currentUser;
+		$rootScope.taskIndex;
+		$rootScope.attempt;
+		
+		//$rootScope.currentUser.tasks[$rootScope.taskIndex].scores.push;
+		
+		//$scope.userDetails.tasks[i].scores.push(attempt);
 		
 		switch ($routeParams.level) { 
 			case "1":
-				if ((($scope.randomColor == "red") && (key == "right")) || (($scope.randomColor == "blue") && (key == "left")))
-					$scope.hits++;
-				else 
-					$scope.misses++;
+				if ((($scope.randomColor == "red") && (key == "right")) || (($scope.randomColor == "blue") && (key == "left"))){
+					$scope.playAudio(true);
+					$rootScope.hits++;
+				}else { 
+					$scope.playAudio(false);
+					$rootScope.misses++;
+				}
 				break;
 			
 			case "2": 
-				if ((($scope.randomColor == "red") && (key == "left")) || (($scope.randomColor == "blue") && (key == "right")))
-					$scope.hits++;
-				else 
-					$scope.misses++;
+				if ((($scope.randomColor == "red") && (key == "left")) || (($scope.randomColor == "blue") && (key == "right"))){
+					$scope.playAudio(true);
+					$rootScope.hits++;
+				}
+				else{
+					$scope.playAudio(false);
+					$rootScope.misses++;
+				}
 				
 				break;
 				//Press “Right” key/arrow  for square red and “Left” key/arrow for Square blue. Green- no response
@@ -2844,17 +3109,22 @@ rootApp.controller('ctrlElly', function ($scope,$routeParams,dataFactory, $inter
 
 			case "3": 
 					if (key == "right") {
-						if (($scope.randomImg == "ellySquarered") || ($scope.randomImg == "ellyCircleblue"))
+						if (($scope.randomImg == "ellySquarered") || ($scope.randomImg == "ellyCircleblue")){
+							$scope.playAudio(true);
 							$scope.hits++;
-						else 
+						}else{
+							$scope.playAudio(false);
 							$scope.misses++;
+						}
 					}else if (key == "left") {
-						if (($scope.randomImg == "ellySquarered") || ($scope.randomImg == "ellyCirclered"))
+						if (($scope.randomImg == "ellySquarered") || ($scope.randomImg == "ellyCirclered")){
+							$scope.playAudio(true);
 							$scope.hits++;
-						else 
-							$scope.misses++;	
+						}else{
+								$scope.playAudio(false);
+								$scope.misses++;
+						}
 					}				
-	
 				break;
 			
 		}
@@ -2862,16 +3132,11 @@ rootApp.controller('ctrlElly', function ($scope,$routeParams,dataFactory, $inter
 		
 	}
 
-	
-	//inject directive in HTML ng-destroy="onDestroy()
+	//this will be called by AngularJS when user moves out of this page. 
 	$scope.$on('$destroy', function(){
 		//scope vars are nullified before coming into this function. hence this place can't be used for saving
-		
-		$scope.hits;
-		$scope.misses;
-		
-		//alert("calling $destroy in ctrlElly controller");
-		
+		//hence store this controller var as $rootScope.varName
+		$scope.taskExit();
     }); 
 
 	$scope.onBlur = function($event){
@@ -2890,8 +3155,8 @@ rootApp.controller('ctrlElly', function ($scope,$routeParams,dataFactory, $inter
 		attempt = {
 					date:startTime,
 					duration: (endTime - startTime) /1000, //store elasped time minutes 
-					hits:$scope.hits,
-					misses:$scope.misses
+					hits:$rootScope.hits,
+					misses:$rootScope.misses
 				};
 	
 		//record this score for this task 
@@ -2911,18 +3176,24 @@ rootApp.controller('ctrlElly', function ($scope,$routeParams,dataFactory, $inter
 	
 	
 		for (var i=0; i < $scope.userDetails.tasks.length;++i) {
-			if ( $scope.userDetails.tasks[i].name == $routeParams.taskname){
+			if ( $scope.userDetails.tasks[i].name == $rootScope.taskName){
 				$scope.userDetails.tasks[i].scores.push(attempt);
 			break;
 			}
 		}			
 		
+		if ($scope.userDetails._id == null)
+			$scope.strOperation = "newAssessee";
+		else
+			$scope.strOperation = "updateAssessee";
+	
 		//update the database
-		dataFactory.updateAssessee($scope.userDetails.mobile, $scope.userDetails, "updateAssessee").then(function (success) {
+		dataFactory.updateAssessee($scope.userDetails.mobile, $scope.userDetails, $scope.strOperation).then(function (success) {
 
 			//read the latest task scores into $scope.userDetails so that UI will have updated data
 			$scope.userDetails = readLocalStorageJson("currentUser");
 			$scope.userDetails = $scope.userDetails[0];
+			$scope.userDetails.status = "Saved";
 
 			}, function(failure){
 			
@@ -2974,7 +3245,7 @@ rootApp.controller('ctrlBlackSquares', function ($scope) {
     }
 });
 
-rootApp.controller('ctrlSquares', function ($scope, $routeParams,dataFactory) {
+rootApp.controller('ctrlSquares', function ($scope, $rootScope,$routeParams,dataFactory) {
 
 	//
 	//read the squares app parameters LoadSquaresAppData() --> InitAppData
@@ -2998,12 +3269,11 @@ rootApp.controller('ctrlSquares', function ($scope, $routeParams,dataFactory) {
 	$scope.prev_prev_Result = 0;
 	$scope.calcResult = 0;
 	$scope.ScreenTimeOut = 20;
-	$scope.right = 0;
-	$scope.wrong = 0;
+	$rootScope.right = 0;
+	$rootScope.wrong = 0;
+	$rootScope.taskName = $routeParams.taskname;
 	$scope.startTime = 0;
  	$scope.startTime = Date();
-	$scope.right = 0;
-	$scope.wrong = 0;
 	
 	var attempt = {
 					date: "",
@@ -3207,6 +3477,14 @@ rootApp.controller('ctrlSquares', function ($scope, $routeParams,dataFactory) {
 	}
 		
 
+	$scope.playAudio = function(flag) {
+		if (flag){//right
+			$scope.audio = new Audio('/res/audio/right.mp3');
+		}else {
+			$scope.audio  = new Audio('/res/audio/wrong.mp3');
+		}
+		$scope.audio.play();
+    };
 			
 	$scope.checkAnswer =  function() {		
 		$scope.disableBtn = true;
@@ -3215,22 +3493,31 @@ rootApp.controller('ctrlSquares', function ($scope, $routeParams,dataFactory) {
 		//store these result in localStorage as when user refreshes the page result will 
 		//be destroyed
 		if ($scope.calcResult == $scope.userInput) {
-			$scope.right++;
+			$scope.playAudio(true);
+			$rootScope.right++;
 		} else {
-			$scope.wrong++;// += 1;
+				$scope.playAudio(false);
+				$rootScope.wrong++;// += 1;
 		}
 	
 		$scope.message = $scope.calcResult;
 	}
-			
+
+	//this will be called by AngularJS when user moves out of this page. 
+	$scope.$on('$destroy', function(){
+		//scope vars are nullified before coming into this function. hence this place can't be used for saving
+		//hence store this controller var as $rootScope.varName
+		$scope.taskExit();
+    }); 
+	
 	$scope.taskExit = function() {
 		var endTime = Date();
 
 		attempt = {
 					date: $scope.startTime,
 					duration: (endTime - $scope.startTime) /1000, //store elasped time minutes 
-					right: $scope.right,
-					wrong: $scope.wrong,
+					right: $rootScope.right,
+					wrong: $rootScope.wrong,
 					screens: $scope.clicks //no of screens a user has seen
 				};
 	
@@ -3251,18 +3538,24 @@ rootApp.controller('ctrlSquares', function ($scope, $routeParams,dataFactory) {
 	
 	
 		for (var i=0; i < $scope.userDetails.tasks.length;++i) {
-			if ( $scope.userDetails.tasks[i].name == $routeParams.taskname){
+			if ( $scope.userDetails.tasks[i].name == $rootScope.taskName){
 				$scope.userDetails.tasks[i].scores.push(attempt);
 			break;
 			}
 		}			
-		
+	
+		if ($scope.userDetails._id == null)
+			$scope.strOperation = "newAssessee";
+		else
+			$scope.strOperation = "updateAssessee";
+	
 		//update the database
-		dataFactory.updateAssessee($scope.userDetails.mobile, $scope.userDetails, "updateAssessee").then(function (success) {
+		dataFactory.updateAssessee($scope.userDetails.mobile, $scope.userDetails, $scope.strOperation).then(function (success) {
 
 			//read the latest task scores into $scope.userDetails so that UI will have updated data
 			$scope.userDetails = readLocalStorageJson("currentUser");
 			$scope.userDetails = $scope.userDetails[0];
+			$scope.userDetails.status = "Saved";
 
 			}, function(failure){
 			
