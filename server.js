@@ -9,6 +9,8 @@ var port = process.env.PORT || 8080; 				// set the port
 
 //var morgan = require('morgan'); 		// log requests to the console (express4)
 var bodyParser = require('body-parser'); 	// pull information from HTML POST (express4)
+app.use(bodyParser.json({limit: '50mb'})); // without this we PayLoadTooLargeError
+app.use(bodyParser.urlencoded({limit: '50mb', extended: true})); // without this we PayLoadTooLargeError
 var methodOverride = require('method-override'); // simulate DELETE and PUT (express4)
 
 // configuration ===============================================================
