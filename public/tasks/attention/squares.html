@@ -2,7 +2,7 @@
     <title></title>
 	<link rel="stylesheet" type="text/css" href="../css/neuro.css">
 </head>
-<div ng-controller="ctrlSquares" >
+<div ng-controller="ctrlSquares" ng-destroy="onDestroy()">
 	<div class="floatSmall" ng-click="taskExit()"> 
 			<a  class="white" href="./#!workingmemory"> 
 				<div class="floatSmall laborange" >
