@@ -67,7 +67,7 @@
         <button class="tablinks" onclick="openTab(event, 'questions')">Questions</button>
         <button class="tablinks" onclick="openTab(event, 'tasks')">Tasks</button>
         <button class="tablinks" onclick="openTab(event, 'survey')">Survey</button>
-        <button class="tablinks" onclick="openTab(event, 'sync')">Sync</button>
+        <!--<button class="tablinks" onclick="openTab(event, 'sync')">Log</button>-->
         <!--<button class="tablinks" onclick="openTab(event, 'tests')">Tests</button>-->
 	</div>
 
@@ -492,12 +492,13 @@
 		<p>Task Simulation Mode </p>
 	</div><!--simulate new task-->
 	
-	<div id="sync" class="tabcontent" ng-controller="ctrlSync" ng-init="Init()">
-	
+	<div id="sync" class="tabcontent" ng-controller="ctrlSync" ng-focus="Init()" ng-init="Init()">
+	<pre> {{users | json}}</pre>
+	<!--
 		<div>
 			<table>
 			<tr>
-				<td>Online Connection Status:</td>
+				<td>Connection to NeuroGym Server Status:</td>
 				<td>
 					<div ng-if="bOnline">
 						<img width="20px" height="15px"  alt="Online" src="./res/greenDot.jpg">
@@ -515,13 +516,10 @@
 					<p>
 						<input type="button" value="Sync for Offline" ng-click="Sync()" />
 					</p>
-					<!--<p> make search option to select students of a particular school in a given city</p>-->
-					<!--<p><input type="button" value="CreateDummyRecords" ng-click="CreateDummyRecords()" /> </p>-->
-					
 					<p>
 						<input type="button" value="Force Upload" ng-click="UploadLocalDB()" /> 
-						<p>Pending new records : {{localDataNew.length}}  </p>
-						<p>Pending update records : {{localDataUpdate.length}}</p>
+						<p>New records : {{localDataNew.length}}  </p>
+						<p>Update records : {{localDataUpdate.length}}</p>
 						<p>Duplicate records found : {{localDataDuplicates.length}} </p> 
 					</p>
 				</div>
@@ -533,8 +531,9 @@
 					<li>Tasks (Total:{{tasks.length}})</li>
 				</ul>
 			</p>
-			
+		-->	
 			<pre>{{message	| json}}</pre>
+			
     </div>
 
 	
@@ -958,8 +957,8 @@
     </div>
     </div>
     <div id="survey" class="tabcontent" ng-controller="ctrlAdminSurvey" ng-init="Init()"> 
-		<div ng-if="bOnline == true"><h3>Survey Responses <img width="20px" height="15px"  alt="Online" src="./res/greenDot.jpg"> : {{users.length}}  </h3></div>
-		<div ng-if="bOnline == false"><h3>Survey Responses <img width="20px" height="15px"  alt="Offline" src="./res/redDot.jpg"> : {{users.length}}  </h3></div>
+		<div ng-if="bOnline == true"><h3>Survey Responses <img width="20px" height="15px"  alt="(Online)" src="./res/greenDot.jpg"> : {{users.length}}  </h3></div>
+		<div ng-if="bOnline == false"><h3>Survey Responses <img width="20px" height="15px"  alt="(Offline)" src="./res/redDot.jpg"> : {{users.length}}  </h3></div>
 		<div class="col-md-3">
 			Search : <input type="text" ng-model="query" placeholder="enter name" value="query">
 		</div>
@@ -967,19 +966,21 @@
 			<input type="button" value="Refresh" ng-click="Init()"/>
 		</div>
         <table>
-            <th>Name</th><th>Mobile</th><th> Age </th> <th> Attention</th> <th>Working Memory </th><th>Impulsivity</th>
-            <th>Mental Flexibility</th><th>Institute</th><th ng-if="bOnline==true"><label ng-dblclick="SavetoLocal()">Sync</label></br></th>
-            <tr ng-repeat="user in users | filter:query ">
-                <td><label ng-dblclick="LoadUser(user.mobile)"> {{user.fname}} {{user.lname}}</label> </td>
+            <th>Name</th><th>Mobile</th> 
+			<!--<th> Age </th><th> Attention</th> <th>Working Memory </th><th>Impulsivity</th><th>Mental Flexibility</th>-->
+			<th>Institute</th><th ng-if="bOnline==true"><label ng-dblclick="SavetoLocal()">Save</label></br><th ng-if="bOnline==false">Status</th>
+            <tr  ng-repeat="user in users | filter:query ">
+                <td style="align:right"><label ng-dblclick="LoadUser(user.mobile)"> {{user.fname}} {{user.lname}}</label> </td>
                 <td>{{user.mobile}}</td>
-                <td>{{user.ageGroup}}</td>
+                <!--<td>{{user.ageGroup}}</td>
                 <td>{{user.Attention}}</td>
                 <td>{{user.WorkingMemory}}</td>
                 <td>{{user.Impulsivity}}</td>
-                <td>{{user.MentalFlexibility}}</td>
+                <td>{{user.MentalFlexibility}}</td> -->
                 <td>{{user.institute}}</td>
                 <td ng-if="bOnline==true"><input type="checkbox" ng-model="syncRecords[user.mobile]" ng-change="selectUser(user.mobile)"></td>	
-            </tr>
+                <td ng-if="bOnline==false">{{user.status}}</td>
+			</tr>
         </table>
         <!--<pre> {{users | json}} </pre>-->
     </div>
