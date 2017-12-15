@@ -233,9 +233,14 @@ rootApp.factory('dataFactory',  function($http, $rootScope) {
 	//var host_addr = "http://192.168.43.71";
 	//var port = "8080";
 
+	//var host_addr = "mongodb://neuroAdmin:time2log123*@neurotest-shard-00-00-pxkfq.mongodb.net:27017,neurotest-shard-00-01-pxkfq.mongodb.net:27017,neurotest-shard-00-02-pxkfq.mongodb.net:27017/test?ssl=true&replicaSet=NeuroTest-shard-0&authSource=admin";
+	//var base_url = host_addr + "/";
+	
 	var host_addr = "https://192.168.43.71";
 	var port = "8443";
 	var base_url = host_addr +":"+ port + "/";
+	
+	
 	
 		
 	return {
@@ -379,6 +384,7 @@ rootApp.factory('dataFactory',  function($http, $rootScope) {
 					//var d = new Date();
 					//error.data._id = d.getTime();
 					writeLocalStorageJson("currentUser",newAssessee);
+					writeLocalStorageJson("newAssessee" + newAssessee.mobile,newAssessee,false);
 
 					error.status = 200;
 					return error;
@@ -651,18 +657,38 @@ rootApp.controller('ctrlSync', function ($scope,$http,$rootScope,dataFactory) {
 	function bulkOperation(opStr) {
 		//if there are pending items in the localstorage then upload them onto server/DB
 		$scope.localData = readLocalStorageJson(opStr);
-
+		$scope.localDataDirty = [];
+		var tmpDirty="";
+		
 		if ($scope.localData.length) {
 			
-			//if (opStr == "new") 
+				//save the PREVIOUS state of the record
+				//TRANSITION:  new -> Assessed -> Intervened -> Saved
+				//			   new -> Assessed -> Saved
+				//			   new -> Assessed -> Intervened -> Not Uploaded/not saved online
 				
-				//get rid of the temp '_id' field so that DB server will create a new one
-				//$scope.localData.forEach(function(item){ delete item._id});
-				
+				/*$scope.localData.forEach(function(item){
+					if (item.status=="Assessed") || (item.status=="Intervened") {
+						item.prevStatus = item.status;
+						item.status = "Saved"; //assume this will get saved successfully
+						$scope.localDataDirty.push(item);
+					}
+				);*/
+
+				//save the records with either Assessed or Intervened in a tmp array so that 
+				// when there is error in uploading into the DB, we restore the last known state
+				for (i=0;i<$scope.localData.length;++i){
+					if(($scope.localData[i].status == "Assessed") || ($scope.localData[i].status=="Intervened")){
+						$scope.localDataDirty.push($scope.localData[i]);
+						$scope.localData[i].status = "Saved";
+					}
+						
+				}				
+			
 				//assume the data will be successfully saved hence set status to saved. if error reset to intervened.
-				$scope.localData.forEach(function(item){ item.status="Saved"});					
+				//$scope.localData.forEach(function(item){ item.status="Saved"});					
 		
-				dataFactory.bulkInsertAssessees($scope.localData, opStr ).then(function(res) {
+				dataFactory.bulkInsertAssessees($scope.localDataDirty, opStr ).then(function(res) {
 				//$scope.message =  res.data.insertedCount + " records uploaded successfully." ;
 				
 				//check the status of the 'res' to know if we were successful
@@ -698,7 +724,12 @@ rootApp.controller('ctrlSync', function ($scope,$http,$rootScope,dataFactory) {
 				
 				//if we are offline or not able to connect to our server
 				if (res.status == -1){
-					$scope.localData.forEach(function(item){ item.status="Intervened"});					
+					//$scope.localData.forEach(function(item){ item.status="Not Uploaded"});	
+						for(i=0;i<$scope.localDataDirty.length;++i){
+							tmpDirty = readLocalStorageJson(opStr + $scope.localDataDirty.mobile);
+							tmpDirty.status = $scope.localDataDirty[i].prevStatus;
+							writeLocalStorageJson(opStr + $scope.localDataDirty[i].mobile, $scope.localDataDirty[i],false);
+						}
 				}
 				
 				if (res.data !=null )
@@ -1052,7 +1083,7 @@ rootApp.controller('ctrlAttention', function ($scope, dataFactory) {
 		$scope.userDetails = readLocalStorageJson("currentUser");
 		
 		$scope.userName = $scope.userDetails[0].fname;
-		$scope.message = "Dear " + $scope.userName + ", Our analysis recommends the following tasks to improve your cognitive area of attention. ";
+		$scope.message = "Dear " + $scope.userName + ", Our analysis recommends the following tasks to improve your attention. ";
 		$scope.mode = "panel";  // a task page with back button
 		$scope.tasks=[];
 		
@@ -1079,7 +1110,7 @@ rootApp.controller('ctrlImpulsivity', function ($scope, dataFactory) {
 	$scope.Init = function (){
 		$scope.userDetails = readLocalStorageJson("currentUser");
 		$scope.userName = $scope.userDetails[0].fname;
-		$scope.message = "Dear " + $scope.userName + ", Our analysis recommends the following tasks to improve your cognitive area of attention. ";
+		$scope.message = "Dear " + $scope.userName + ", Our analysis recommends the following tasks to reduce your impulsivity. ";
 		$scope.mode = "panel";  // a task page with back button
 		$scope.tasks=[];
 			dataFactory.getAllTasks().then(function (res){
@@ -1105,7 +1136,7 @@ rootApp.controller('ctrlWorkingMemory', function ($scope, dataFactory) {
 	$scope.Init = function (){
 		$scope.userDetails = readLocalStorageJson("currentUser");
 		$scope.userName = $scope.userDetails[0].fname;
-		$scope.message = "Dear " + $scope.userName + ", our analysis recommends the following tasks to improve your cognitive area of working memory. ";
+		$scope.message = "Dear " + $scope.userName + ", our analysis recommends the following tasks to improve your working memory. ";
 		$scope.mode = "panel";  // a task page with back button
 		$scope.tasks=[];
 			dataFactory.getAllTasks().then(function (res){
@@ -1128,7 +1159,7 @@ rootApp.controller('ctrlmentalflexibility', function ($scope, dataFactory) {
 	$scope.Init = function (){
 		$scope.userDetails = readLocalStorageJson("currentUser");
 		$scope.userName = $scope.userDetails[0].fname;
-		$scope.message = "Dear " + $scope.userName + ", Our analysis recommends the following tasks to improve your cognitive area of attention. ";
+		$scope.message = "Dear " + $scope.userName + ", Our analysis recommends the following tasks to improve your mental flexibility. ";
 		$scope.mode = "panel";  // a task page with back button
 		$scope.tasks=[];
 			dataFactory.getAllTasks().then(function (res){
@@ -1641,6 +1672,8 @@ rootApp.controller('ctrlAdminSurvey', function ($scope,$rootScope,$window,dataFa
 	$scope.sync = [];
 	$scope.message = {};// = 'Hello from ctrlAdminSurvey';
 	$scope.tmp = "";
+	$scope.bUploadNew = false;
+	$scope.bUploadUpdate = false;
 	$scope.user = {
 				name:"",
 				ageGroup:"",
@@ -1823,12 +1856,41 @@ rootApp.controller('ctrlAdminSurvey', function ($scope,$rootScope,$window,dataFa
 	function bulkOperation(opStr) {
 		//if there are pending items in the localstorage then upload them onto server/DB
 		$scope.localData = readLocalStorageJson(opStr);
+		$scope.localDataDirty = [];
+		$scope.tmpDirty="";
 
 		if ($scope.localData.length) {
 			
+			//save the PREVIOUS state of the record
+			//TRANSITION:  new -> Assessed -> Intervened -> Saved
+			//			   new -> Assessed -> Saved
+			//			   new -> Assessed -> Intervened -> Not Uploaded/not saved online
+			
 			//$scope.localData.forEach(function(item){ item.status="Saved"});					
 
-			dataFactory.bulkInsertAssessees($scope.localData, opStr ).then(function(res) {
+			/*$scope.localData.forEach(function(item){
+				if (item.status=="Assessed") || (item.status=="Intervened") {
+					item.prevStatus = item.status;
+					item.status = "Saved"; //assume this will get saved successfully
+					$scope.localDataDirty.push(item);
+				}
+			);*/
+
+			//assume the data will be successfully saved hence set status to saved. if error reset to intervened.
+			//save the records with either Assessed or Intervened in a tmp array so that 
+			// when there is error in uploading into the DB, we restore the last known state
+			for (var i=0;i<$scope.localData.length;++i){
+				if( ($scope.localData[i].status == "Created") || ($scope.localData[i].status == "Assessed") || ($scope.localData[i].status=="Intervened")){
+					$scope.localData[i].status = "Saved";
+					$scope.localDataDirty.push($scope.localData[i]);
+				}
+			}				
+			
+			//if not any changed records then don't make a call to DB
+			if (!$scope.localDataDirty.length) return;
+					
+			
+			dataFactory.bulkInsertAssessees($scope.localDataDirty, opStr ).then(function(res) {
 			//$scope.message =  res.data.insertedCount + " records uploaded successfully." ;
 			
 			//check the status of the 'res' to know if we were successful
@@ -1870,11 +1932,25 @@ rootApp.controller('ctrlAdminSurvey', function ($scope,$rootScope,$window,dataFa
 				$scope.localDataUpdate = readLocalStorageJson("updateAssessee");
 				$scope.localDataDuplicates = readLocalStorageJson("duplicateAssessee");
 			
+				//these two flags are used before clear local storage in ClearLocalData()
+				if($scope.bUploadNew == true) 
+					clearLocalStorageJson("newAssessee");
+
+				if($scope.bUploadUpdate == true) 
+					clearLocalStorageJson("updateAssessee");
+
 			}
 			
 				//if we are offline or not able to connect to our server
 				if (res.status == -1){
-					$scope.localData.forEach(function(item){ item.status="Intervened"});					
+					//$scope.localData.forEach(function(item){ item.status="Intervened"});	
+
+					/*for(i=0;i<$scope.localDataDirty.length;++i){
+						$scope.tmpDirty = readLocalStorageJson(opStr + $scope.localDataDirty.mobile);
+						$scope.tmpDirty.status = $scope.localDataDirty[i].prevStatus;
+						writeLocalStorageJson(opStr + $scope.localDataDirty[i].mobile, $scope.tmpDirty,false);
+					}*/
+					
 				}
 				
 				if (res.data !=null )
@@ -1925,6 +2001,7 @@ rootApp.controller('ctrlAdminSurvey', function ($scope,$rootScope,$window,dataFa
 		for (i=0;i<$scope.users.length;++i) {
 			for (j=0;j<$scope.sync.length;++j) {
 				if ($scope.users[i].mobile == $scope.sync[j]){
+					$scope.users[i].status = "Saved";
 					tmp.push($scope.users[i]);
 					writeLocalStorageJson("updateAssessee" + $scope.users[i].mobile,$scope.users[i],false);
 					$scope.users.splice(i,1);
@@ -1934,6 +2011,13 @@ rootApp.controller('ctrlAdminSurvey', function ($scope,$rootScope,$window,dataFa
 		}
 	}
 	
+	//called from Admin HTML to clear local data...first save adn then clear
+	$scope.ClearLocalData = function(){
+		//next time refresh / db happen these flags will be used.
+			$scope.bUploadNew = true;
+			$scope.bUploadUpdate = true;
+
+	}
 });
 
 //called from admin Questions
@@ -2334,7 +2418,7 @@ rootApp.controller('ctrlAssesment', function ($scope,$window,dataFactory) {
 			return;
 		}
 		
-		$scope.user.status = "New";
+		$scope.user.status = "Created";
 		//$scope.user._id = null;
 		$scope.user.city = $scope.institute.city;
 		$scope.user.state = $scope.institute.state;
@@ -2686,8 +2770,8 @@ rootApp.controller('ctrlRetrieveUser', function ($scope) {
 //task Controller
 rootApp.controller('ctrlSmiley', function ($scope,$routeParams,$interval,$rootScope,dataFactory) {
 	//var d = Date();
-	var startTime; //= Date.getTime();
-	var attempt1 = {
+	var startTime,endTime;// = Date.getTime();
+	var attempt = {
 					date: "",
 					duration:"",	
 					hits:"",
@@ -2700,6 +2784,8 @@ rootApp.controller('ctrlSmiley', function ($scope,$routeParams,$interval,$rootSc
 	$rootScope.taskName = $routeParams.taskname;
 
 	$scope.Init =  function () {
+		startTime = Date();
+
 		$scope.userDetails = {};
 		$scope.userDetails = readLocalStorageJson("currentUser");
 		$scope.userDetails = $scope.userDetails[0];
@@ -2779,7 +2865,6 @@ rootApp.controller('ctrlSmiley', function ($scope,$routeParams,$interval,$rootSc
     };
 	
     $scope.KeyDownF = function (keyCode) {
-		startTime = Date();
 		
 		if (keyCode == 39){
             //$scope.message = "right arrow";
@@ -2857,7 +2942,6 @@ rootApp.controller('ctrlSmiley', function ($scope,$routeParams,$interval,$rootSc
 		$scope.userDetails = $scope.userDetails[0];
 		//userEmail = userDetails.email;
 		//tasks = userDetails.tasks;
-	
 		$scope.userDetails.status = "Intervened";
 
 		for (var i=0; i < $scope.userDetails.tasks.length;++i) {
@@ -3111,18 +3195,18 @@ rootApp.controller('ctrlElly', function ($scope,$routeParams,dataFactory,$rootSc
 					if (key == "right") {
 						if (($scope.randomImg == "ellySquarered") || ($scope.randomImg == "ellyCircleblue")){
 							$scope.playAudio(true);
-							$scope.hits++;
+							$rootScope.hits++;
 						}else{
 							$scope.playAudio(false);
-							$scope.misses++;
+							$rootScope.misses++;
 						}
 					}else if (key == "left") {
 						if (($scope.randomImg == "ellySquarered") || ($scope.randomImg == "ellyCirclered")){
 							$scope.playAudio(true);
-							$scope.hits++;
+							$rootScope.hits++;
 						}else{
 								$scope.playAudio(false);
-								$scope.misses++;
+								$rootScope.misses++;
 						}
 					}				
 				break;
@@ -3173,6 +3257,7 @@ rootApp.controller('ctrlElly', function ($scope,$routeParams,dataFactory,$rootSc
 		$scope.userDetails = $scope.userDetails[0];
 		//userEmail = userDetails.email;
 		//tasks = userDetails.tasks;
+		$scope.userDetails.status = "Intervened";
 	
 	
 		for (var i=0; i < $scope.userDetails.tasks.length;++i) {
@@ -3535,6 +3620,7 @@ rootApp.controller('ctrlSquares', function ($scope, $rootScope,$routeParams,data
 		$scope.userDetails = $scope.userDetails[0];
 		//userEmail = userDetails.email;
 		//tasks = userDetails.tasks;
+		$scope.userDetails.status = "Intervened";
 	
 	
 		for (var i=0; i < $scope.userDetails.tasks.length;++i) {
