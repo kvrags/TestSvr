@@ -95,19 +95,21 @@ exports.bulkInsert = function (req, res) {
 			console.log(arryBulk.length + ": records received for bulk Update on Assessees document ");
 			
 			for (var i=0;i< arryBulk.length; ++i) {
-				//console.log("Processing updated data for user '" + String(arryBulk[i].fname) + " "+ String(arryBulk[i].lname) +"' with mobile : " + Number(arryBulk[i].mobile));
-				/*for (var j=0;j<arryBulk[i].tasks.length;++j) { 
+				console.log("Processing updated data for user '" + String(arryBulk[i].fname) + " "+ String(arryBulk[i].lname) +"' with mobile : " + Number(arryBulk[i].mobile));
+				for (var j=0;j<arryBulk[i].tasks.length;++j) { 
 					
 					for(var k=0;k<arryBulk[i].tasks[j].scores.length;++k){
-						console.log("Tasks upates : " + arryBulk[i].tasks[j].name);
-						console.log("Tasks upates : hits:" + arryBulk[i].tasks[j].scores[k].hits + "/ misses : " + arryBulk[i].tasks[j].scores[k].misses);
+						//console.log("Tasks upates : " + arryBulk[i].tasks[j].name);
+						//console.log("Tasks upates : hits:" + arryBulk[i].tasks[j].scores[k].hits + "/ misses : " + arryBulk[i].tasks[j].scores[k].misses);
 					}
-				}*/	
+				}	
 				
 					
 				Assessee.findOneAndUpdate({mobile: Number(arryBulk[i].mobile) }, arryBulk[i], {upsert: true , returnNewDocument: true }, function (err, profile) {
 					if (err) {
-						console.log("Error in updating the user with mobile : " + Number(arryBulk[i].mobile) + "error: " + err);
+						//this server crashes stating that mobile number is not available.
+						//console.log("Error in updating the user with mobile : " + Number(arryBulk[i].mobile) + "error: " + err);
+						console.log("Error in updating : " + err);
 						//res.send(err);
 						replyBulk.updateStatus = -1;
 					}else {
