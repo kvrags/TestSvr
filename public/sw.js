@@ -4,33 +4,39 @@ var fileList = [
 			'/',
 			'/index.html',
 			'/favicon.ico',
-			'https://192.168.43.71:8443/partials/about.html', 
+			'/partials/about.html',
 			'/partials/admin.html',
 			'/partials/assesment.html',
+			'/partials/contact.html',
 			'/partials/home.html',
-
-			'https://192.168.43.71:8443/partials/workingmemory.html',
-
+			'/partials/workingmemory.html',
 			'/partials/assessmentReport.html',
 			'/partials/attention.html',
-			'/partials/contact.html',
 			'/partials/impulsivity.html',
 			'/partials/mentalflexibility.html',
 			'/tasks/attention/smiley.html',
 			'/tasks/attention/squares.html',
 			'/tasks/attention/squaresblack.html',
-			'/js/ng.js',
-			'/js/CountSquares-ng.js',
-			'/js/SquaresBlack.js',
 			'/css/hexagon.css',
 			'/css/neuro.css',
 			'/res/greenRect.jpg',
+			'/res/smiley.jpg',
+			'/res/heart.jpg',
 			'/res/orangeRect.jpg',
 			'/res/purpleRect.jpg',
 			'/res/blueRect.jpg',
-			'/res/white_rect.jpg'
+			'/res/white_rect.jpg',
+			'/res/audio/right.mp3',
+			'/res/audio/wrong.mp3'
+			/*'/js/ng.js',
+			'/js/CountSquares-ng.js',
+			'/js/SquaresBlack.js',
+			*/
 		
 		];
+		
+//Firefox Nightly: Go to url about:config and set dom.serviceWorkers.enabled to true; restart browser.	
+	
 //Ref site https://css-tricks.com/serviceworker-for-offline/
 /*
 1) 	The install event fires when a ServiceWorker is first fetched. This is your chance to 
@@ -45,7 +51,7 @@ var fileList = [
 */
 
 this.addEventListener('install', function(event) {
-	console.log('Service Worker : install event in progress.');
+	console.log('Service Worker : install event in progress for ' + version);
 	event.waitUntil(
 		caches.open(version).then(function(cache) {
 		  return cache.addAll(fileList).then (function(){
@@ -108,6 +114,14 @@ self.addEventListener("fetch", function (event) {
         console.log('Service Worker: fetch event ignored.', event.request.method, event.request.url);
         return;
     }
+	
+	if (event.request.url.includes("favicon.ico")) {
+		
+		console.log('Service Worker: fetch event forceably ignored.', event.request.method, event.request.url);
+       
+		return;
+	}
+    
     /* Similar to event.waitUntil in that it blocks the fetch event on a promise.
        Fulfillment result will be used as the response, and rejection will end in a
        HTTP response indicating failure.
