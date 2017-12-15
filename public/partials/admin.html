@@ -968,7 +968,7 @@
         <table>
             <th>Name</th><th>Mobile</th> 
 			<!--<th> Age </th><th> Attention</th> <th>Working Memory </th><th>Impulsivity</th><th>Mental Flexibility</th>-->
-			<th>Institute</th><th ng-if="bOnline==true"><label ng-dblclick="SavetoLocal()">Save</label></br><th ng-if="bOnline==false">Status</th>
+			<th>Institute</th><th ng-if="bOnline==true"><label ng-dblclick="SavetoLocal()">Copy</label></br><th ng-if="bOnline==false">Status</th>
             <tr  ng-repeat="user in users | filter:query ">
                 <td style="align:right"><label ng-dblclick="LoadUser(user.mobile)"> {{user.fname}} {{user.lname}}</label> </td>
                 <td>{{user.mobile}}</td>
@@ -983,6 +983,10 @@
 			</tr>
         </table>
         <!--<pre> {{users | json}} </pre>-->
+		<div ng-if="bOnline == true && users.length ">
+			<input type="button" value="Clear My Data" ng-click="ClearLocalData()"/>
+		</div>
+        <!--<pre>{{users | json}} </pre>-->
     </div>
 
 
