@@ -25,9 +25,13 @@ Institute = require('./api/models/InstituteModel'); //Institutes definition
 // config files TBD
 //var db = require('./config/db');
 
-////DB connection setting
+////Local DB connection setting
 var mongoURI = "mongodb://localhost/neurogym";
 //var mongoURI = "mongodb://localhost/neurogymTest";
+
+//remote DB connection setting
+//var mongoURI = "mongodb://neuroAdmin:time2log123*@neurotest-shard-00-00-pxkfq.mongodb.net:27017,neurotest-shard-00-01-pxkfq.mongodb.net:27017,neurotest-shard-00-02-pxkfq.mongodb.net:27017/test?ssl=true&replicaSet=NeuroTest-shard-0&authSource=admin";
+
 
 var promise = mongoose.connect(mongoURI, {
   useMongoClient: true,
